@@ -1,0 +1,20 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Classic Motoring Japan//Events//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Classic Motoring Japan
+BEGIN:VEVENT
+UID:example-rally-2026@classicmotoringjapan.com
+DTSTAMP:20260920T000000Z
+SEQUENCE:0
+DTSTART:20261017T230000Z
+DTEND:20261019T070000Z
+SUMMARY:Example Classic Rally
+LOCATION:Example Park\, Shizuoka\, Japan
+URL:https://classicmotoringjapan.com/events/example-rally/2026/
+DESCRIPTION:サンプル・クラシックカーラリー\nhttps://classicm
+ otoringjapan.com/events/example-rally/2026/\nLast verified 2026-09-20
+STATUS:CONFIRMED
+END:VEVENT
+END:VCALENDAR
