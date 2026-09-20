@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ title }}</title>
+<link rel="canonical" href="{{ canonical }}">
+<link rel="stylesheet" href="{{ root }}static/style.css">
+<link rel="icon" href="{{ root }}favicon.ico" sizes="32x32">
+<link rel="icon" href="{{ root }}static/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="text/calendar" title="{{ site_name }} events" href="{{ ics_url }}">
+{% for block in jsonld %}
+<script type="application/ld+json">
+{{ block }}
+</script>
+{% endfor %}
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="{{ root or './' }}">
+    <svg viewBox="0 0 140 96" aria-hidden="true" focusable="false">
+      <g stroke="currentColor" stroke-width="4">
+        <line x1="0" y1="4" x2="140" y2="4"/>
+        <line x1="6" y1="12" x2="130" y2="12" opacity=".95"/>
+        <line x1="12" y1="20" x2="120" y2="20" opacity=".89"/>
+        <line x1="0" y1="28" x2="135" y2="28" opacity=".84"/>
+        <line x1="6" y1="36" x2="125" y2="36" opacity=".78"/>
+        <line x1="12" y1="44" x2="140" y2="44" opacity=".73"/>
+        <line x1="0" y1="52" x2="130" y2="52" opacity=".67"/>
+        <line x1="6" y1="60" x2="120" y2="60" opacity=".62"/>
+        <line x1="12" y1="68" x2="135" y2="68" opacity=".56"/>
+        <line x1="0" y1="76" x2="125" y2="76" opacity=".51"/>
+        <line x1="6" y1="84" x2="140" y2="84" opacity=".45"/>
+        <line x1="12" y1="92" x2="130" y2="92" opacity=".4"/>
+      </g>
+      <path class="carve" d="M82.05 26.15A34 34 0 1 0 82.05 69.85L70.55 60.21A19 19 0 1 1 70.55 35.79Z"/>
+    </svg>
+    <span>{{ site_name }}</span>
+  </a>
+</header>
+<main>
+{% block main %}{% endblock %}
+</main>
+<footer class="site-footer">
+{% block footer %}{% endblock %}
+  <p><a href="{{ webcal_url }}">Subscribe to all events in Apple Calendar or Outlook</a>. Dates update automatically.</p>
+  <p>Google Calendar: under Other calendars, choose From URL and paste <code>{{ ics_url }}</code></p>
+</footer>
+{% block scripts %}{% endblock %}
+</body>
+</html>

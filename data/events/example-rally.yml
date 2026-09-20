@@ -1,0 +1,20 @@
+slug: example-rally
+name_en: Example Classic Rally
+name_ja: サンプル・クラシックカーラリー
+organizer: Example Classic Car Club
+official_url: https://example.com/
+summary_en: >
+  Placeholder event. Replace this file with your first real event.
+prefecture: Shizuoka
+venue_en: Example Park
+nearest_station: JR Example Station
+access_notes_en: >
+  15 min walk from the north exit.
+typical_eras: [prewar, 1950s, 1960s]
+typical_scale: About 80 cars
+spectator_fee_jpy: 0
+spectator_notes_en: >
+  Free to watch. Best viewing at the start, 08:00 to 09:30.
+photography_notes_en: >
+  Photography permitted. Do not touch the cars.
+last_verified: 2026-09-20

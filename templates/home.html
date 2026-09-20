@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block main %}
+<h1>Classic car events in Japan</h1>
+<p class="lede">When and where to watch, how to get there, and what you'll see. Checked first-hand, written for visitors who don't read Japanese.</p>
+
+<section id="upcoming" aria-labelledby="upcoming-h">
+  <h2 id="upcoming-h">Upcoming</h2>
+  <p id="no-upcoming" hidden>No upcoming dates are confirmed yet. New dates appear here and in the calendar feed as organizers announce them.</p>
+  <ul class="events" id="upcoming-list">
+{% for r in rows %}
+    <li data-end="{{ r.ed.end.isoformat() }}">
+      <time datetime="{{ r.ed.start.isoformat() }}">{{ r.when }}</time>
+      <div>
+        <a href="{{ root }}{{ r.path }}">{{ r.display_name }}</a>
+{% if r.ed.status == "tentative" %}
+        <span class="badge">Date not confirmed</span>
+{% elif r.ed.status == "cancelled" %}
+        <span class="badge cancelled">Cancelled</span>
+{% endif %}
+        <p class="meta"><span lang="ja">{{ r.ev.name_ja }}</span><br>{{ r.ev.prefecture }}. {{ r.ev.spectator_fee_jpy | fee }}.</p>
+      </div>
+    </li>
+{% endfor %}
+  </ul>
+</section>
+
+<section id="past" aria-labelledby="past-h" hidden>
+  <h2 id="past-h">Past events</h2>
+  <ul class="events" id="past-list"></ul>
+</section>
+
+<details>
+  <summary>How dates are checked</summary>
+  <p>Every date comes from the organizer's own announcement, in Japanese, and is re-checked before each event. Each page shows when it was last verified and links to the original source.</p>
+</details>
+{% endblock %}
+
+{% block footer %}
+{% if latest %}
+  <p>Most recent check: {{ latest.isoformat() }}</p>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function () {
+    var todayInJapan = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+    var past = document.getElementById("past-list");
+    var moved = 0;
+    document.querySelectorAll("#upcoming-list > li[data-end]").forEach(function (li) {
+      if (li.dataset.end < todayInJapan) {
+        past.prepend(li);
+        moved += 1;
+      }
+    });
+    if (moved) document.getElementById("past").hidden = false;
+    if (!document.querySelector("#upcoming-list > li")) document.getElementById("no-upcoming").hidden = false;
+  })();
+</script>
+{% endblock %}

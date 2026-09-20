@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block main %}
+<h1>{{ ev.name_en }}</h1>
+<p class="ja" lang="ja">{{ ev.name_ja }}</p>
+{% if ev.summary_en %}
+<p class="lede">{{ ev.summary_en }}</p>
+{% endif %}
+
+<h2>Dates</h2>
+{% if rows %}
+<div class="table-wrap">
+  <table>
+    <thead><tr><th scope="col">Edition</th><th scope="col">Dates</th><th scope="col">Status</th><th scope="col"><span class="visually-hidden">Details</span></th></tr></thead>
+    <tbody>
+{% for r in rows | reverse %}
+      <tr>
+        <td class="num">{{ r.label }}</td>
+        <td>{{ r.when_full }}</td>
+        <td>{% if r.ed.status == "tentative" %}Not confirmed{% elif r.ed.status == "cancelled" %}Cancelled{% else %}Confirmed{% endif %}</td>
+        <td>{% if r.has_page %}<a href="{{ root }}{{ r.path }}">{% if r.ed.route_en and r.ed.cars %}Route and entry list{% elif r.ed.route_en %}Route{% else %}Entry list{% endif %}</a>{% endif %}</td>
+      </tr>
+{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p>No dates announced yet.</p>
+{% endif %}
+
+<h2>Visiting</h2>
+<dl class="facts">
+  <dt>Where</dt>
+  <dd>{{ ev.venue_en }}, {{ ev.prefecture }}{% if ev.street_address %}<br>{{ ev.street_address }}{% endif %}</dd>
+{% if ev.nearest_station or ev.access_notes_en %}
+  <dt>Getting there</dt>
+  <dd>{% if ev.nearest_station %}Nearest station: {{ ev.nearest_station }}{% endif %}{% if ev.nearest_station and ev.access_notes_en %}<br>{% endif %}{{ ev.access_notes_en or "" }}</dd>
+{% endif %}
+  <dt>Cost</dt>
+  <dd>{{ ev.spectator_fee_jpy | fee }}</dd>
+{% if ev.spectator_notes_en %}
+  <dt>Watching</dt>
+  <dd>{{ ev.spectator_notes_en }}</dd>
+{% endif %}
+{% if ev.photography_notes_en %}
+  <dt>Photography</dt>
+  <dd>{{ ev.photography_notes_en }}</dd>
+{% endif %}
+{% if ev.typical_eras or ev.typical_scale %}
+  <dt>What you'll see</dt>
+  <dd>{% if ev.typical_scale %}{{ ev.typical_scale }}{% endif %}{% if ev.typical_scale and ev.typical_eras %}, {% endif %}{% if ev.typical_eras %}{{ ev.typical_eras | join(", ") }}{% endif %}</dd>
+{% endif %}
+  <dt>Official site</dt>
+  <dd><a href="{{ ev.official_url }}">{{ ev.organizer or ev.official_url }}</a> (Japanese)</dd>
+</dl>
+{% endblock %}
+
+{% block footer %}
+  <p>Last verified {{ verified.isoformat() }}. Source: <a href="{{ ev.official_url }}">official site</a>.</p>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block main %}
+<h1>{{ r.full_name }}</h1>
+<p class="ja" lang="ja">{{ ev.name_ja }}</p>
+
+{% if ed.status == "tentative" %}
+<p class="note">These dates are not confirmed yet. Check the <a href="{{ ed.source_url }}">organizer's announcement</a> before booking travel.</p>
+{% elif ed.status == "cancelled" %}
+<p class="note cancelled">This edition is cancelled.</p>
+{% endif %}
+
+<dl class="facts">
+  <dt>When</dt>
+  <dd>{{ r.when_full }}</dd>
+  <dt>Where</dt>
+  <dd>{{ r.venue }}, {{ ev.prefecture }}</dd>
+  <dt>Cost</dt>
+  <dd>{{ ev.spectator_fee_jpy | fee }}</dd>
+</dl>
+<p><a href="{{ root }}events/{{ ev.slug }}/">Access, viewing spots and photography notes</a></p>
+
+{% if ed.route_en %}
+<h2>Route</h2>
+<p>{{ ed.route_en }}</p>
+{% endif %}
+
+{% if ed.cars %}
+<h2>Entry list</h2>
+<p>Entry list as of {{ ed.list_as_of.isoformat() }}.{% if r.list_provisional %} Provisional: cars may withdraw or change.{% endif %}</p>
+{% set show_colour = ed.cars | selectattr("colour", "defined") | list %}
+<div class="table-wrap">
+  <table>
+    <thead><tr><th scope="col">No.</th><th scope="col">Year</th><th scope="col">Make</th><th scope="col">Model</th>{% if show_colour %}<th scope="col">Colour</th>{% endif %}</tr></thead>
+    <tbody>
+{% for car in ed.cars %}
+      <tr><td class="num">{{ car.entry_no }}</td><td class="num">{{ car.year }}</td><td>{{ car.make }}</td><td>{{ car.model }}</td>{% if show_colour %}<td>{{ car.colour or "" }}</td>{% endif %}</tr>
+{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block footer %}
+  <p>Last verified {{ ed.last_verified.isoformat() }}. Source: <a href="{{ ed.source_url }}">organizer's announcement</a>.</p>
+{% endblock %}
