@@ -103,11 +103,18 @@ def make_fixture(data: Path) -> None:
                    instance_yaml("culture-day-show", 2026, "2026-11-03", "2026-11-03"))
     write_instance(data, "culture-day-show", 2027,
                    instance_yaml("culture-day-show", 2027, "2027-11-03", "2027-11-03", status="cancelled"))
-    write_event(data, "hill-climb", name_en="Hill Climb")
+    write_event(data, "hill-climb", name_en="Hill Climb",
+                extra="typical_eras: [Prewar, 1950s]\ntypical_scale: About 30 cars\n")
     write_instance(data, "hill-climb", "2026-spring",
                    instance_yaml("hill-climb", 2026, "2026-04-12", "2026-04-12"))
     write_instance(data, "hill-climb", "2026-autumn",
                    instance_yaml("hill-climb", 2026, "2026-10-25", "2026-10-25", extra=CARS))
+
+
+def cars_yaml(years, as_of="2026-09-15") -> str:
+    rows = "".join(f'  - entry_no: "{i:02d}"\n    year: {y}\n    make: Test\n    model: Car\n'
+                   for i, y in enumerate(years, 1))
+    return f"list_as_of: {as_of}\ncars:\n{rows}"
 
 
 def unfold(ics: str) -> list[str]:
@@ -283,6 +290,49 @@ class BuildOutputTests(unittest.TestCase):
         self.assertEqual(pinned["geo"], {"@type": "GeoCoordinates",
                                          "latitude": 34.9756, "longitude": 138.3828})
         self.assertNotIn("geo", found["Test Event 2026"][0][1]["location"])
+
+    # The year at a glance
+
+    def test_the_home_page_opens_with_a_strip_per_year(self):
+        html = self.pages["index.html"]
+        self.assertIn(">2026: 4 events, Apr to Nov<", html)
+        self.assertIn(">2027: 1 event, Nov<", html)
+
+    def test_an_edition_sits_where_its_date_falls_in_the_year(self):
+        # 12 Apr 2026 is day 102 of 365, so the bar starts 101 days in.
+        self.assertIn("left: 27.67%", self.pages["index.html"])
+
+    def test_a_one_day_edition_still_gets_a_visible_bar(self):
+        self.assertIn("width: 1.0%", self.pages["index.html"])
+
+    def test_a_cancelled_edition_is_drawn_apart_from_the_rest(self):
+        self.assertEqual(self.pages["index.html"].count('<i class="off"'), 1)
+
+    def test_the_year_strip_restates_the_list_and_stays_out_of_the_way(self):
+        html = self.pages["index.html"]
+        self.assertIn('<span class="chart-track" aria-hidden="true">', html)
+        self.assertIn(">Jan<", html)
+        self.assertIn(">Oct<", html)
+
+    # Chips, dots and the column that earns its place
+
+    def test_eras_render_as_chips(self):
+        html = self.pages["events/hill-climb/index.html"]
+        self.assertIn('<span class="chip">Prewar</span>', html)
+        self.assertIn('<span class="chip">1950s</span>', html)
+        self.assertIn("About 30 cars", html)
+
+    def test_status_keeps_its_word_and_gains_a_dot(self):
+        html = self.pages["events/culture-day-show/index.html"]
+        self.assertIn('<span class="dot" aria-hidden="true"></span>Confirmed', html)
+        self.assertIn('<span class="dot cancelled" aria-hidden="true"></span>Cancelled', html)
+
+    def test_the_details_column_goes_when_no_edition_has_a_page(self):
+        no_pages = self.pages["events/culture-day-show/index.html"]
+        self.assertEqual(no_pages.count("<th scope=\"col\">"), 3)
+        self.assertNotIn("visually-hidden", no_pages)
+        with_pages = self.pages["events/autumn-rally/index.html"]
+        self.assertEqual(with_pages.count("<th scope=\"col\">"), 4)
 
     # Several editions in one year
 
@@ -520,13 +570,13 @@ class RouteChartRenderingTests(unittest.TestCase):
         shutil.rmtree(self.tmp)
 
     def test_one_chart_row_per_day(self):
-        self.assertEqual(self.html.count('class="daychart-track"'), 2)
+        self.assertEqual(self.html.count('class="chart-track"'), 2)
 
     def test_the_summary_is_real_text_not_only_a_bar(self):
         self.assertIn("Day 1, Sun 18 Oct: 09:00 to 11:00, 2 stops", self.html)
 
     def test_the_bars_are_hidden_from_screen_readers_as_a_restatement(self):
-        self.assertIn('class="daychart-track" aria-hidden="true"', self.html)
+        self.assertIn('class="chart-track" aria-hidden="true"', self.html)
 
     def test_the_axis_ends_are_labelled(self):
         self.assertIn(">08:00<", self.html)
@@ -759,6 +809,52 @@ class ValidationTests(unittest.TestCase):
     def test_edition_year_must_match_file_name(self):
         self.assert_rejected(instance_yaml("meet", 2026, "2026-04-12", "2026-04-12"),
                              "must match the file name", stem="2027-spring")
+
+
+class DecadeStripTests(unittest.TestCase):
+    """The entry list's shape, drawn from the same rows the table renders."""
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        data = self.tmp / "data"
+        write_event(data, "meet")
+        write_instance(data, "meet", 2026,
+                       instance_yaml("meet", 2026, "2026-10-18", "2026-10-18",
+                                     extra=cars_yaml([1929, 1959, 1955, 1955])))
+        build.build(data, self.tmp / "site")
+        self.html = (self.tmp / "site" / "events" / "meet" / "2026" / "index.html").read_text(encoding="utf-8")
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp)
+
+    def rows(self) -> list[str]:
+        return re.findall(r'<span class="chart-when">(.*?)</span>', self.html)
+
+    def test_one_row_per_decade_from_the_oldest_car_to_the_newest(self):
+        self.assertEqual(self.rows(), ["1920s: 1 car", "1930s: none", "1940s: none", "1950s: 3 cars"])
+
+    def test_the_busiest_decade_fills_the_track(self):
+        self.assertIn("width: 100.0%", self.html)
+
+    def test_an_empty_decade_keeps_its_place_but_draws_no_bar(self):
+        empty = re.search(r'1930s: none</span>\s*<span class="chart-track"[^>]*>\s*</span>', self.html)
+        self.assertIsNotNone(empty, "an empty decade should hold its row and draw nothing")
+
+    def test_the_bars_are_hidden_from_screen_readers_as_a_restatement(self):
+        self.assertEqual(self.html.count('<span class="chart-track" aria-hidden="true">'), 4)
+
+    def test_an_edition_without_an_entry_list_has_no_strip(self):
+        tmp = Path(tempfile.mkdtemp())
+        try:
+            data = tmp / "data"
+            write_event(data, "meet")
+            write_instance(data, "meet", 2026,
+                           instance_yaml("meet", 2026, "2026-10-18", "2026-10-19", extra=ROUTE))
+            build.build(data, tmp / "site")
+            html = (tmp / "site" / "events" / "meet" / "2026" / "index.html").read_text(encoding="utf-8")
+            self.assertNotIn("chart decades", html)
+        finally:
+            shutil.rmtree(tmp)
 
 
 class CoordinateTests(unittest.TestCase):
