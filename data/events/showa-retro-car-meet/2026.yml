@@ -521,7 +521,7 @@ cars:
     make: Toyota
     model: Toyopet Crown
   - entry_no: "82"
-    year: 1965
+    year: 1985
     make: Toyota
     model: Sprinter Trueno
   - entry_no: "26"
@@ -679,4 +679,4 @@ cars:
   - entry_no: "48"
     year: 1986
     make: Volkswagen
-    model: Golf (second generation)
+    model: Golf Mk2
