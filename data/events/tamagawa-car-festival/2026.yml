@@ -1,0 +1,28 @@
+slug: tamagawa-car-festival
+year: 2026
+status: confirmed
+start: 2026-09-27
+end: 2026-09-27
+start_time: "10:00"
+end_time: "17:00"
+source_url: https://www.takashimaya.co.jp/tamagawa/sc/event/?id=7216
+last_verified: 2026-09-21
+sequence: 0
+list_as_of: 2026-09-21
+# The source names the models it will have on the floor, not the individual cars, so
+# there are no entry numbers and no years to give.
+cars:
+  - make: Toyota
+    model: 2000GT
+  - make: Honda
+    model: S500
+  - make: Isuzu
+    model: 117 Coupé
+  - make: Citroën
+    model: GS
+  - make: Fiat
+    model: 500 Jolly
+  - make: MG
+    model: J2
+  - make: Volkswagen
+    model: Beetle
