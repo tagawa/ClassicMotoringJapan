@@ -1,0 +1,7 @@
+{# Inline SVG, like the header mark: no image files, no extra request, and currentColor
+   carries it into dark mode. Drawn on a 24 grid at stroke-width 2, so at 16px the stroke
+   lands on 1.33px and matches the weight of the mark in the header. Sized in the markup
+   so a missing stylesheet leaves a 16px pin rather than a full-width one. #}
+{% macro map_link(pin) %}
+{%- if pin %}<br><a class="map" href="{{ pin.url }}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M12 21s7-7.4 7-12A7 7 0 0 0 5 9c0 4.6 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>Map</a>{% endif -%}
+{% endmacro %}
