@@ -9,6 +9,11 @@
 <link rel="icon" href="{{ root }}favicon.ico" sizes="32x32">
 <link rel="icon" href="{{ root }}static/favicon.svg" type="image/svg+xml">
 <link rel="alternate" type="text/calendar" title="{{ site_name }} events" href="{{ ics_url }}">
+
+<!-- Fathom - beautiful, simple website analytics -->
+<script src="https://cdn.usefathom.com/script.js" data-site="BKEOTHMG" defer></script>
+<!-- / Fathom -->
+
 {% for block in jsonld %}
 <script type="application/ld+json">
 {{ block }}
