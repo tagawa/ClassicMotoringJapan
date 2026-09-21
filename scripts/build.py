@@ -36,6 +36,11 @@ SLUG_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 EDITION_FILE_RE = re.compile(r"^(?P<year>\d{4})(?:-(?P<edition>[a-z0-9]+(?:-[a-z0-9]+)*))?$")
 TIME_RE = re.compile(r"^([01]\d|2[0-3]):[0-5]\d$")
 URL_RE = re.compile(r"^https?://\S+$")
+# Long prose buries the facts inside it, and a skim-reader never finds them.
+PROSE_MAX_WORDS = 75
+# Percent of the axis. An open-ended checkpoint has no width of its own but still
+# has to be visible, so every bar gets a floor.
+CHART_MIN_BAR = 1.0
 
 EVENT_REQUIRED = {
     "slug": "str", "name_en": "str", "name_ja": "str", "official_url": "url",
@@ -43,9 +48,9 @@ EVENT_REQUIRED = {
     "last_verified": "date",
 }
 EVENT_OPTIONAL = {
-    "organizer": "str", "summary_en": "str", "street_address": "str",
-    "nearest_station": "str", "access_notes_en": "str", "typical_eras": "strlist",
-    "typical_scale": "str", "spectator_notes_en": "str", "photography_notes_en": "str",
+    "organizer": "str", "summary_en": "prose", "street_address": "str",
+    "nearest_station": "str", "access_notes_en": "prose", "typical_eras": "strlist",
+    "typical_scale": "str", "spectator_notes_en": "prose", "photography_notes_en": "prose",
 }
 EDITION_REQUIRED = {
     "slug": "str", "year": "int", "status": "status", "start": "date", "end": "date",
@@ -53,8 +58,11 @@ EDITION_REQUIRED = {
 }
 EDITION_OPTIONAL = {
     "start_time": "time", "end_time": "time", "venue_en": "str", "street_address": "str",
-    "route_en": "str", "list_as_of": "date", "cars": "cars",
+    "route_en": "prose", "route": "route", "list_as_of": "date", "cars": "cars",
 }
+ROUTE_DAY_REQUIRED = {"date": "date", "checkpoints": "checkpoints"}
+CHECKPOINT_REQUIRED = {"start_time": "time", "place_en": "str", "prefecture": "str"}
+CHECKPOINT_OPTIONAL = {"end_time": "time", "place_ja": "str"}
 CAR_REQUIRED = {"entry_no": "str", "year": "int", "make": "str", "model": "str"}
 CAR_OPTIONAL = {"colour": "str"}
 
@@ -102,9 +110,18 @@ def _check_value(kind: str, v, where: str, errors: list[str]) -> None:
     elif kind == "strlist":
         if not isinstance(v, list) or not all(isinstance(x, str) and x.strip() for x in v):
             errors.append(f"{where}: must be a list of text values, got {v!r}")
-    elif kind == "cars":
+    elif kind == "prose":
+        if not isinstance(v, str) or not v.strip():
+            errors.append(f"{where}: must be non-empty text, got {v!r}")
+        elif len(v.split()) > PROSE_MAX_WORDS:
+            errors.append(
+                f"{where}: {len(v.split())} words is too long to skim (limit {PROSE_MAX_WORDS}). "
+                f"Prose this long hides the facts inside it. Break it into bullet points, a table "
+                f"or a diagram, or move the detail into structured fields such as `route` or `cars`"
+            )
+    elif kind in ("cars", "route", "checkpoints"):
         if not isinstance(v, list) or not v:
-            errors.append(f"{where}: must be a non-empty list of cars")
+            errors.append(f"{where}: must be a non-empty list")
 
 
 def _check_fields(obj, required: dict, optional: dict, where: str, errors: list[str]) -> bool:
@@ -141,6 +158,38 @@ def _load_yaml(path: Path, rel: str, errors: list[str]):
     except yaml.YAMLError as e:
         errors.append(f"{rel}: YAML syntax error: {e}")
         return None
+
+
+def _check_route(route, start, end, rel: str, errors: list[str]) -> None:
+    """Days run in order inside the edition's dates, checkpoints in order inside a day."""
+    if not isinstance(route, list):
+        return
+    previous_day = None
+    for i, day in enumerate(route, 1):
+        where = f"{rel}: route day {i}"
+        if not _check_fields(day, ROUTE_DAY_REQUIRED, {}, where, errors):
+            continue
+        date = day.get("date")
+        if type(date) is dt.date:
+            if type(start) is dt.date and type(end) is dt.date and not start <= date <= end:
+                errors.append(f"{where}: {date} is outside the edition's {start} to {end}")
+            if previous_day is not None and date <= previous_day:
+                errors.append(f"{where}: {date} does not come after day {i - 1} ({previous_day})")
+            previous_day = date
+        if not isinstance(day.get("checkpoints"), list):
+            continue
+        latest = None
+        for j, point in enumerate(day["checkpoints"], 1):
+            spot = f"{where}, checkpoint {j}"
+            if not _check_fields(point, CHECKPOINT_REQUIRED, CHECKPOINT_OPTIONAL, spot, errors):
+                continue
+            begins, ends = point.get("start_time"), point.get("end_time")
+            if isinstance(begins, str) and isinstance(ends, str) and ends <= begins:
+                errors.append(f"{spot}: end_time {ends} is not after start_time {begins}")
+            if isinstance(begins, str):
+                if latest is not None and begins < latest:
+                    errors.append(f"{spot}: {begins} comes before checkpoint {j - 1} at {latest}")
+                latest = begins
 
 
 def load_and_validate(data_dir: Path) -> tuple[dict, list]:
@@ -206,6 +255,7 @@ def load_and_validate(data_dir: Path) -> tuple[dict, list]:
                         if no in seen:
                             errors.append(f"{where}: duplicate entry_no {no!r}")
                         seen.add(no)
+        _check_route(ed.get("route"), start, end, rel, errors)
         editions.append({"data": ed, "id": path.stem, "edition": name["edition"]})
 
     if errors:
@@ -227,6 +277,52 @@ def fmt_range(start: dt.date, end: dt.date) -> str:
     if start.year == end.year:
         return f"{start.day} {start:%b} \u2013 {end.day} {end:%b %Y}"
     return f"{fmt_day(start)} \u2013 {fmt_day(end)}"
+
+
+def _minutes(hhmm: str) -> int:
+    hours, mins = hhmm.split(":")
+    return int(hours) * 60 + int(mins)
+
+
+def _hhmm(minutes: int) -> str:
+    return f"{minutes // 60:02d}:{minutes % 60:02d}"
+
+
+def route_chart(route) -> dict | None:
+    """Day shapes on one shared axis: which day starts late, which one runs long.
+
+    Derived from the same checkpoints the tables render, so the picture cannot
+    disagree with the numbers beside it.
+    """
+    if not route:
+        return None
+    points = [(p, _minutes(p["start_time"]),
+               _minutes(p["end_time"]) if p.get("end_time") else _minutes(p["start_time"]))
+              for day in route for p in day["checkpoints"]]
+    axis_start = min(begins for _, begins, _ in points) // 60 * 60
+    # One hour past the last stop, so a bar that starts on the hour still sits inside.
+    axis_end = (max(finishes for _, _, finishes in points) // 60 + 1) * 60
+    span = axis_end - axis_start
+
+    days = []
+    for number, day in enumerate(route, 1):
+        windows = [(_minutes(p["start_time"]),
+                    _minutes(p["end_time"]) if p.get("end_time") else _minutes(p["start_time"]))
+                   for p in day["checkpoints"]]
+        stops = len(windows)
+        days.append({
+            "when": f"Day {number}, {day['date']:%a} {day['date'].day} {day['date']:%b}",
+            "summary": (f"{_hhmm(min(b for b, _ in windows))} to {_hhmm(max(f for _, f in windows))}, "
+                        f"{stops} stop{'' if stops == 1 else 's'}"),
+            "bars": [{"left": round((begins - axis_start) / span * 100, 2),
+                      "width": round(max((finishes - begins) / span * 100, CHART_MIN_BAR), 2)}
+                     for begins, finishes in windows],
+        })
+    return {"start": _hhmm(axis_start), "end": _hhmm(axis_end), "days": days}
+
+
+def fmt_weekday(d: dt.date) -> str:
+    return f"{d:%A} {d.day} {d:%B}"
 
 
 def fmt_fee(fee: int) -> str:
@@ -332,7 +428,9 @@ def make_rows(events: dict, editions: list) -> list[dict]:
         slug, year = ed["slug"], ed["year"]
         edition = fmt_edition(item["edition"]) if item["edition"] else None
         display_name = f"{ev['name_en']} {edition}" if edition else ev["name_en"]
-        has_page = bool(ed.get("route_en") or ed.get("cars"))
+        page_parts = [part for part, present in (("Route", ed.get("route") or ed.get("route_en")),
+                                                 ("Entry list", ed.get("cars"))) if present]
+        has_page = bool(page_parts)
         path = f"events/{slug}/{ed_id}/" if has_page else f"events/{slug}/"
         is_timed = "start_time" in ed
         r = {
@@ -340,13 +438,14 @@ def make_rows(events: dict, editions: list) -> list[dict]:
             "edition": edition, "display_name": display_name,
             "full_name": f"{display_name} {year}",
             "label": f"{edition} {year}" if edition else str(year),
-            "has_page": has_page, "path": path, "abs_url": f"{SITE_URL}/{path}",
+            "has_page": has_page, "page_parts": page_parts, "path": path, "abs_url": f"{SITE_URL}/{path}",
             "uid": f"{slug}-{ed_id}@{UID_DOMAIN}",
             "is_timed": is_timed,
             "venue": ed.get("venue_en") or ev["venue_en"],
             "when": fmt_range(ed["start"], ed["end"]),
             # A list published before the event can still change, but once we have
             # re-checked the source after the event ended, what we show is the last word.
+            "chart": route_chart(ed.get("route")),
             "list_provisional": ("list_as_of" in ed and ed["list_as_of"] < ed["end"]
                                  and ed["last_verified"] <= ed["end"]),
         }
@@ -386,6 +485,7 @@ def build(data_dir: Path, out_dir: Path,
                       autoescape=select_autoescape(["html"]),
                       trim_blocks=True, lstrip_blocks=True, keep_trailing_newline=True)
     env.filters["fee"] = fmt_fee
+    env.filters["weekday"] = fmt_weekday
     host = SITE_URL.split("://", 1)[1]
     common = {"site_name": SITE_NAME, "site_url": SITE_URL,
               "ics_url": f"{SITE_URL}/events.ics", "webcal_url": f"webcal://{host}/events.ics"}
@@ -424,10 +524,9 @@ def build(data_dir: Path, out_dir: Path,
             if not r["has_page"]:
                 continue
             ed = r["ed"]
-            parts = [p for p, present in (("Route", ed.get("route_en")), ("Entry List", ed.get("cars"))) if present]
             write(f"{r['path']}index.html", env.get_template("edition.html").render(
                 **common, root="../../../", canonical=r["abs_url"],
-                title=f"{r['full_name']}: {' and '.join(parts)} | {SITE_NAME}",
+                title=f"{r['full_name']}: {' and '.join(r['page_parts'])} | {SITE_NAME}",
                 ev=ev, r=r, ed=ed, jsonld=[r["jsonld"]]))
             sitemap.append((r["abs_url"], ed["last_verified"]))
 
