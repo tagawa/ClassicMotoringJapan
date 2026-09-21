@@ -18,6 +18,7 @@ import json
 import re
 import shutil
 import sys
+import unicodedata
 from pathlib import Path
 from xml.sax.saxutils import escape as xml_escape
 
@@ -38,6 +39,22 @@ TIME_RE = re.compile(r"^([01]\d|2[0-3]):[0-5]\d$")
 URL_RE = re.compile(r"^https?://\S+$")
 # Long prose buries the facts inside it, and a skim-reader never finds them.
 PROSE_MAX_WORDS = 75
+# Advice, not facts. Cutting one of these loses nothing a visitor came for: the page
+# says what is true and lets the reader draw the conclusion. Deliberately narrow, so a
+# match is always a real one; judgement calls the list cannot make are in CLAUDE.md.
+EDITORIAL_PHRASES = (
+    "the practical way to", "the best way to", "the easiest way to",
+    "worth a look", "worth a visit", "worth the trip", "well worth", "worth it",
+    "don't miss", "do not miss", "not to be missed",
+    "a must", "must-see", "must see", "must-visit", "must visit",
+    "perfect for", "ideal for", "be sure to", "make sure to",
+    "if you're looking for", "highly recommended", "we recommend",
+    "a great place to", "a good place to", "no visit is complete",
+)
+# Whitespace in a phrase spans the line breaks a folded YAML scalar leaves behind.
+EDITORIAL_RE = re.compile(
+    r"\b(" + "|".join(r"\s+".join(map(re.escape, phrase.split())) for phrase in EDITORIAL_PHRASES) + r")\b"
+)
 # Percent of the axis. An open-ended checkpoint has no width of its own but still
 # has to be visible, so every bar gets a floor.
 CHART_MIN_BAR = 1.0
@@ -86,6 +103,19 @@ def _is_int(v) -> bool:
     return isinstance(v, int) and not isinstance(v, bool)
 
 
+def _check_editorial(v: str, where: str, errors: list[str]) -> None:
+    """Refuse prose that tells the reader what to think instead of what is true."""
+    # NFKC folds full-width forms; the apostrophe swap is separate because it does not.
+    text = unicodedata.normalize("NFKC", v).lower().replace("\u2019", "'")
+    for match in EDITORIAL_RE.finditer(text):
+        # Report the phrase, not the line break a folded scalar happened to put inside it.
+        phrase = " ".join(match.group(0).split())
+        errors.append(
+            f"{where}: {phrase!r} is advice, not a fact, and the page is a reference. "
+            f"Cut it, or replace it with the fact it stands in for"
+        )
+
+
 def _check_value(kind: str, v, where: str, errors: list[str]) -> None:
     if kind == "str":
         if not isinstance(v, str) or not v.strip():
@@ -116,12 +146,14 @@ def _check_value(kind: str, v, where: str, errors: list[str]) -> None:
     elif kind == "prose":
         if not isinstance(v, str) or not v.strip():
             errors.append(f"{where}: must be non-empty text, got {v!r}")
-        elif len(v.split()) > PROSE_MAX_WORDS:
-            errors.append(
-                f"{where}: {len(v.split())} words is too long to skim (limit {PROSE_MAX_WORDS}). "
-                f"Prose this long hides the facts inside it. Break it into bullet points, a table "
-                f"or a diagram, or move the detail into structured fields such as `route` or `cars`"
-            )
+        else:
+            if len(v.split()) > PROSE_MAX_WORDS:
+                errors.append(
+                    f"{where}: {len(v.split())} words is too long to skim (limit {PROSE_MAX_WORDS}). "
+                    f"Prose this long hides the facts inside it. Break it into bullet points, a table "
+                    f"or a diagram, or move the detail into structured fields such as `route` or `cars`"
+                )
+            _check_editorial(v, where, errors)
     elif kind in ("cars", "route", "checkpoints"):
         if not isinstance(v, list) or not v:
             errors.append(f"{where}: must be a non-empty list")
