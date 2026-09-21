@@ -495,6 +495,46 @@ class ProseLengthTests(unittest.TestCase):
             self.assertIn(way, message.lower(), f"the fix hint should mention {way}s")
 
 
+class CombinedProseTests(unittest.TestCase):
+    """Fields that land in one block on the page are capped on what the reader sees."""
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.data = self.tmp / "data"
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp)
+
+    def build_with(self, **fields):
+        extra = "".join(f"{k}: {' '.join(['word'] * n)}\n" for k, n in fields.items())
+        write_event(self.data, "meet", extra=extra)
+        write_instance(self.data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-18"))
+        build.build(self.data, self.tmp / "site")
+
+    def refusal(self, **fields) -> str:
+        with self.assertRaises(build.ValidationError) as ctx:
+            self.build_with(**fields)
+        return str(ctx.exception)
+
+    def test_nearest_station_is_prose_and_capped_on_its_own(self):
+        # It reads as a sentence and sits in the same block as access_notes_en.
+        self.assertIn("nearest_station", self.refusal(nearest_station=build.PROSE_MAX_WORDS + 1))
+
+    def test_two_legal_fields_that_share_a_block_can_still_be_too_long_together(self):
+        half = build.PROSE_MAX_WORDS // 2 + 1
+        message = self.refusal(nearest_station=half, access_notes_en=half)
+        self.assertIn("nearest_station", message)
+        self.assertIn("access_notes_en", message)
+        self.assertIn("one block", message)
+
+    def test_the_combined_cap_is_the_same_number(self):
+        half = build.PROSE_MAX_WORDS // 2
+        self.build_with(nearest_station=half, access_notes_en=build.PROSE_MAX_WORDS - half)
+
+    def test_one_field_alone_is_untouched_by_the_combined_rule(self):
+        self.build_with(access_notes_en=build.PROSE_MAX_WORDS)
+
+
 class ValidationTests(unittest.TestCase):
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp())
