@@ -345,7 +345,10 @@ def make_rows(events: dict, editions: list) -> list[dict]:
             "is_timed": is_timed,
             "venue": ed.get("venue_en") or ev["venue_en"],
             "when": fmt_range(ed["start"], ed["end"]),
-            "list_provisional": "list_as_of" in ed and ed["list_as_of"] < ed["end"],
+            # A list published before the event can still change, but once we have
+            # re-checked the source after the event ended, what we show is the last word.
+            "list_provisional": ("list_as_of" in ed and ed["list_as_of"] < ed["end"]
+                                 and ed["last_verified"] <= ed["end"]),
         }
         if is_timed:
             r["start_dt"] = _local_dt(ed["start"], ed["start_time"])
