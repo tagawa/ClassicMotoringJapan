@@ -241,6 +241,36 @@ class BuildOutputTests(unittest.TestCase):
         for page in ("events/hill-climb/index.html", "events/culture-day-show/index.html",
                      "index.html"):
             self.assertNotIn("maps.apple.com", self.pages[page], page)
+            self.assertNotIn('class="map"', self.pages[page], page)
+
+    def map_links(self) -> list[str]:
+        found = [m for html in self.pages.values()
+                 for m in re.findall(r'<a class="map".*?</a>', html, re.S)]
+        self.assertTrue(found, "fixture should have map links to check")
+        return found
+
+    def test_every_map_link_is_drawn_with_a_pin_and_still_reads_as_text(self):
+        for link in self.map_links():
+            self.assertIn("<svg", link)
+            self.assertTrue(link.endswith(">Map</a>"), link)
+
+    def test_the_pin_is_decorative_and_never_reaches_a_screen_reader(self):
+        for link in self.map_links():
+            self.assertIn('aria-hidden="true"', link)
+            self.assertIn('focusable="false"', link)
+
+    def test_the_pin_follows_the_link_colour_instead_of_carrying_its_own(self):
+        # currentColor is what makes one icon work in both themes.
+        for link in self.map_links():
+            svg = link[link.index("<svg"):link.index("</svg>")]
+            self.assertIn('stroke="currentColor"', svg)
+            self.assertNotIn("#", svg, "a baked-in colour would ignore dark mode")
+
+    def test_the_pin_is_sized_in_the_markup_so_it_survives_a_missing_stylesheet(self):
+        for link in self.map_links():
+            svg = link[link.index("<svg"):link.index("</svg>")]
+            self.assertIn('width="16"', svg)
+            self.assertIn('height="16"', svg)
 
     def test_the_calendar_entry_carries_the_pin(self):
         self.assertIn("GEO:34.9756;138.3828", self.ics)
