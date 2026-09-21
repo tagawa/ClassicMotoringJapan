@@ -1,0 +1,226 @@
+slug: la-festa-autunno
+year: 2026
+status: confirmed
+start: 2026-10-02
+end: 2026-10-05
+source_url: https://www.lafesta-autunno.com/2026/schedule/
+last_verified: 2026-09-21
+sequence: 0
+route_en: >
+  The 29th running, over four days. Day 1, 2 October: away from Harajuku and
+  Omotesando between 11:05 and 11:35, then north to Nasunogahara Park and the
+  Tsukuruma circuit at Nasushiobara in Tochigi, on through Nishigo and Tenei in
+  Fukushima and along Lake Inawashiro to the night halt at Urabandai. Day 2, 3
+  October: round Lake Hibara and over into Yamagata for Yonezawa ski ground, back
+  to the Link circuit, Fukushima Sky Park and Iizaka Onsen at Fukushima City,
+  then Shiroishi and Shichikashuku in Miyagi, Onogawa Onsen, Kitakata and the
+  Ouchi-juku post town, finishing the day at the Kanaya hotels in Nikko. Day 3, 4
+  October: the Kirifuri ice arena, Shioya and Sakura in Tochigi, then Kasama
+  Inari shrine and Oarai marina in Ibaraki, and into Chiba for Sawara old town
+  and Narita. Day 4, 5 October: Shibayama, the Kujukuri coast at Kujukuri,
+  Ichinomiya and Onjuku, Katsuura, the Oyama rice terraces at Kamogawa and the
+  Magarigawa Club, then the finish at Makuhari Bay Town in Chiba City between
+  15:30 and 17:00. Tokyo and eight prefectures in all; Gunma and Saitama are
+  passed through without a checkpoint.
+list_as_of: 2026-09-14
+cars:
+  - entry_no: "01"
+    year: 1928
+    make: Bugatti
+    model: T40
+  - entry_no: "02"
+    year: 1927
+    make: Bugatti
+    model: T35B
+  - entry_no: "03"
+    year: 1927
+    make: BNC
+    model: 527 Monza
+  - entry_no: "05"
+    year: 1926
+    make: Bugatti
+    model: T37
+  - entry_no: "06"
+    year: 1926
+    make: Bentley
+    model: Standard 3 Litre
+  - entry_no: "07"
+    year: 1930
+    make: Aston Martin
+    model: International
+  - entry_no: "08"
+    year: 1935
+    make: MG
+    model: N-Type Magnette
+  - entry_no: "09"
+    year: 1936
+    make: MG
+    model: TA Midget
+  - entry_no: "11"
+    year: 1937
+    make: Alvis
+    model: Speed 25 Vanden Plas Tourer
+  - entry_no: "12"
+    year: 1939
+    make: Bentley
+    model: 4¼ Litre DHC by Vanden Plas
+  - entry_no: "13"
+    year: 1947
+    make: Nardi
+    model: Danese Body Sport 750 Barchetta
+  - entry_no: "14"
+    year: 1947
+    make: Stanguellini
+    model: S1100
+  - entry_no: "15"
+    year: 1947
+    make: Fiat
+    model: Farina
+  - entry_no: "16"
+    year: 1949
+    make: OSCA
+    model: MT4
+  - entry_no: "17"
+    year: 1951
+    make: Ferrari
+    model: 212 Export Barchetta Touring
+  - entry_no: "18"
+    year: 1947
+    make: Stanguellini
+    model: 1100 Sport
+  - entry_no: "19"
+    year: 1947
+    make: Gilco-Fiat
+    model: Stanguellini 1100
+  - entry_no: "21"
+    year: 1948
+    make: Cisitalia
+    model: Colombo Barchetta
+  - entry_no: "22"
+    year: 1948
+    make: Ermini
+    model: 1100 Sport
+  - entry_no: "23"
+    year: 1951
+    make: Fiat
+    model: Albanesi 1100 Sport
+  - entry_no: "24"
+    year: 1953
+    make: Alfa Romeo
+    model: 1900C Sprint Coupé Pinin Farina
+  - entry_no: "25"
+    year: 1952
+    make: Siata
+    model: 300BC
+  - entry_no: "26"
+    year: 1954
+    make: Porsche
+    model: 356 Pre-A
+  - entry_no: "27"
+    year: 1954
+    make: Austin-Healey
+    model: 100/4 BN1
+  - entry_no: "28"
+    year: 1955
+    make: Triumph
+    model: TR2
+  - entry_no: "29"
+    year: 1955
+    make: Jaguar
+    model: XK140 SE OTS
+  - entry_no: "31"
+    year: 1955
+    make: Fiat
+    model: 1100TV Pinin Farina Berlinetta
+  - entry_no: "32"
+    year: 1955
+    make: Porsche
+    model: 356 Speedster
+  - entry_no: "33"
+    year: 1955
+    make: Jaguar
+    model: XK140
+  - entry_no: "34"
+    year: 1949
+    make: Bristol
+    model: "400"
+  - entry_no: "35"
+    year: 1965
+    make: Jaguar
+    model: E-Type Series 1 Roadster
+  - entry_no: "36"
+    year: 1956
+    make: Austin-Healey
+    model: 100/4 BN2
+  - entry_no: "37"
+    year: 1956
+    make: Fiat
+    model: Monterosa Spider
+  - entry_no: "38"
+    year: 1956
+    make: Austin-Healey
+    model: 100/4 BN2
+  - entry_no: "39"
+    year: 1956
+    make: Austin-Healey
+    model: 100M
+  - entry_no: "41"
+    year: 1957
+    make: Fiat-Abarth
+    model: 750 Zagato Corsa
+  - entry_no: "43"
+    year: 1957
+    make: Triumph
+    model: TR3
+  - entry_no: "44"
+    year: 1960
+    make: Triumph
+    model: TR3A
+  - entry_no: "45"
+    year: 1960
+    make: BMW
+    model: Isetta 300 Export
+  - entry_no: "46"
+    year: 1968
+    make: Toyota
+    model: 2000GT
+  - entry_no: "47"
+    year: 1969
+    make: Toyota
+    model: Sports 800
+  - entry_no: "48"
+    year: 1958
+    make: Alfa Romeo
+    model: Giulietta Spider 750F
+  - entry_no: "49"
+    year: 1961
+    make: Alfa Romeo
+    model: Giulietta Spider
+  - entry_no: "51"
+    year: 1962
+    make: Alfa Romeo
+    model: Giulia Spider
+  - entry_no: "52"
+    year: 1964
+    make: Porsche
+    model: 356C
+  - entry_no: "53"
+    year: 1963
+    make: Porsche
+    model: 356B
+  - entry_no: "54"
+    year: 1957
+    make: Mercedes-Benz
+    model: 190SL
+  - entry_no: "55"
+    year: 1959
+    make: Alfa Romeo
+    model: Giulietta Sprint Veloce
+  - entry_no: "56"
+    year: 1959
+    make: MG
+    model: A-FHC
+  - entry_no: "57"
+    year: 1961
+    make: MG
+    model: 1600 Mk II
