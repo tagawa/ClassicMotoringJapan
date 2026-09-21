@@ -93,8 +93,13 @@ CHECKPOINT_OPTIONAL = {"end_time": "time", "place_ja": "str"}
 # Fields the templates render into a single block. The cap has to apply to what a
 # reader actually sees there, not to each field measured on its own.
 COMBINED_PROSE = (("nearest_station", "access_notes_en"),)
-CAR_REQUIRED = {"entry_no": "str", "year": "int", "make": "str", "model": "str"}
-CAR_OPTIONAL = {"colour": "str"}
+# A source that names the models a show will have on the floor gives neither an entry
+# number nor a year, and a model's production span is not the age of the car on the stand.
+CAR_REQUIRED = {"make": "str", "model": "str"}
+CAR_OPTIONAL = {"entry_no": "str", "year": "int", "colour": "str"}
+# Order of the table's columns. A column no car fills is dropped, not left blank.
+CAR_COLUMNS = (("entry_no", "No.", True), ("year", "Year", True), ("make", "Make", False),
+               ("model", "Model", False), ("colour", "Colour", False))
 
 
 class BuildError(Exception):
@@ -331,6 +336,13 @@ def load_and_validate(data_dir: Path) -> tuple[dict, list]:
                         if no in seen:
                             errors.append(f"{where}: duplicate entry_no {no!r}")
                         seen.add(no)
+            # Same rule as a checkpoint's prefecture: a column filled for some rows and not
+            # others cannot be scanned, so each of these is given for every car or for none.
+            for key in ("entry_no", "year"):
+                filled = sum(1 for car in cars if isinstance(car, dict) and key in car)
+                if 0 < filled < len(cars):
+                    errors.append(f"{rel}: give {key} on every car or on none "
+                                  f"({filled} of {len(cars)} have one)")
         _check_route(ed.get("route"), start, end, rel, errors)
         editions.append({"data": ed, "id": path.stem, "edition": name["edition"]})
 
@@ -397,13 +409,21 @@ def route_chart(route) -> dict | None:
     return {"start": _hhmm(axis_start), "end": _hhmm(axis_end), "days": days}
 
 
+def car_columns(cars) -> list[dict]:
+    """The columns the table shows: the ones at least one car fills."""
+    return [{"key": key, "label": label, "num": num} for key, label, num in CAR_COLUMNS
+            if any(key in car for car in cars or [])]
+
+
 def decade_chart(cars) -> dict | None:
     """How an entry list falls by decade, counted from the rows the table renders.
 
     A decade with no cars keeps its row, so a gap in the field stays visible instead of
-    closing up and reading as a run.
+    closing up and reading as a run. A list without years has nothing to count, and one
+    drawn from part of the list could contradict the table it sits above, so it is drawn
+    only when every row carries a year.
     """
-    if not cars:
+    if not cars or not all("year" in car for car in cars):
         return None
     counts: dict[int, int] = {}
     for car in cars:
@@ -581,8 +601,14 @@ def make_rows(events: dict, editions: list) -> list[dict]:
         slug, year = ed["slug"], ed["year"]
         edition = fmt_edition(item["edition"]) if item["edition"] else None
         display_name = f"{ev['name_en']} {edition}" if edition else ev["name_en"]
+        columns = car_columns(ed.get("cars"))
+        # Cars with entry numbers entered something and can withdraw; cars without are
+        # exhibits a show has announced, which it can change without anyone pulling out.
+        cars_label, cars_caveat = (("Entry list", "cars may withdraw or change")
+                                   if any(c["key"] == "entry_no" for c in columns)
+                                   else ("Cars on display", "the line-up may change"))
         page_parts = [part for part, present in (("Route", ed.get("route") or ed.get("route_en")),
-                                                 ("Entry list", ed.get("cars"))) if present]
+                                                 (cars_label, ed.get("cars"))) if present]
         has_page = bool(page_parts)
         path = f"events/{slug}/{ed_id}/" if has_page else f"events/{slug}/"
         is_timed = "start_time" in ed
@@ -601,6 +627,7 @@ def make_rows(events: dict, editions: list) -> list[dict]:
             # re-checked the source after the event ended, what we show is the last word.
             "chart": route_chart(ed.get("route")),
             "decades": decade_chart(ed.get("cars")),
+            "car_columns": columns, "cars_label": cars_label, "cars_caveat": cars_caveat,
             "list_provisional": ("list_as_of" in ed and ed["list_as_of"] < ed["end"]
                                  and ed["last_verified"] <= ed["end"]),
         }
