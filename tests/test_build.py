@@ -34,7 +34,8 @@ def write_event(data: Path, slug: str, name_en="Test Event", name_ja="テスト�
     )
 
 
-def instance_yaml(slug: str, year: int, start: str, end: str, status="confirmed", extra="") -> str:
+def instance_yaml(slug: str, year: int, start: str, end: str, status="confirmed", extra="",
+                  verified="2026-09-20") -> str:
     return (
         f"slug: {slug}\n"
         f"year: {year}\n"
@@ -42,7 +43,7 @@ def instance_yaml(slug: str, year: int, start: str, end: str, status="confirmed"
         f"start: {start}\n"
         f"end: {end}\n"
         f"source_url: https://example.com/{slug}/{year}/\n"
-        f"last_verified: 2026-09-20\n"
+        f"last_verified: {verified}\n"
         f"sequence: 0\n" + extra
     )
 
@@ -279,6 +280,41 @@ class BuildOutputTests(unittest.TestCase):
         for page in self.pages:
             url = "https://classicmotoringjapan.com/" + page.removesuffix("index.html")
             self.assertIn(f"<loc>{url}</loc>", sitemap)
+
+
+class EntryListProvisionalTests(unittest.TestCase):
+    """An entry list published before the event only warns while we have not re-checked."""
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.data = self.tmp / "data"
+        write_event(self.data, "meet")
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp)
+
+    def edition_page(self, verified: str) -> str:
+        write_instance(self.data, "meet", 2026,
+                       instance_yaml("meet", 2026, "2026-10-18", "2026-10-18",
+                                     extra=CARS, verified=verified))
+        out = self.tmp / "site"
+        shutil.rmtree(out, ignore_errors=True)
+        build.build(self.data, out)
+        return (out / "events/meet/2026/index.html").read_text(encoding="utf-8")
+
+    def test_list_is_provisional_while_the_event_is_still_ahead_of_our_last_check(self):
+        html = self.edition_page("2026-09-20")
+        self.assertIn("Entry list as of 2026-09-15.", html)
+        self.assertIn("cars may withdraw or change", html)
+
+    def test_list_is_still_provisional_when_we_only_checked_on_the_closing_day(self):
+        # Cars can withdraw during the event, so a same-day check does not settle the list.
+        self.assertIn("cars may withdraw or change", self.edition_page("2026-10-18"))
+
+    def test_list_is_settled_once_we_have_checked_after_the_event_ended(self):
+        html = self.edition_page("2026-10-19")
+        self.assertIn("Entry list as of 2026-09-15.", html)
+        self.assertNotIn("cars may withdraw or change", html)
 
 
 class ValidationTests(unittest.TestCase):
