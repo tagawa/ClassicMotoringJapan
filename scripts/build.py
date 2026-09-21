@@ -397,6 +397,50 @@ def route_chart(route) -> dict | None:
     return {"start": _hhmm(axis_start), "end": _hhmm(axis_end), "days": days}
 
 
+def decade_chart(cars) -> dict | None:
+    """How an entry list falls by decade, counted from the rows the table renders.
+
+    A decade with no cars keeps its row, so a gap in the field stays visible instead of
+    closing up and reading as a run.
+    """
+    if not cars:
+        return None
+    counts: dict[int, int] = {}
+    for car in cars:
+        decade = car["year"] // 10 * 10
+        counts[decade] = counts.get(decade, 0) + 1
+    peak = max(counts.values())
+    rows = []
+    for decade in range(min(counts), max(counts) + 10, 10):
+        n = counts.get(decade, 0)
+        rows.append({
+            "label": f"{decade}s",
+            "count": n,
+            "text": f"{n} car{'' if n == 1 else 's'}" if n else "none",
+            "width": round(max(n / peak * 100, CHART_MIN_BAR), 2) if n else 0,
+        })
+    return {"total": len(cars), "rows": rows}
+
+
+def year_chart(rows: list[dict]) -> list[dict]:
+    """Where a year's editions fall across its months: which season the hobby runs in."""
+    years = []
+    for year in sorted({r["year"] for r in rows}):
+        editions = [r["ed"] for r in rows if r["year"] == year]
+        days = dt.date(year, 12, 31).timetuple().tm_yday
+        first, last = min(e["start"] for e in editions), max(e["start"] for e in editions)
+        when = f"{first:%b}" if first.month == last.month else f"{first:%b} to {last:%b}"
+        years.append({
+            "label": f"{year}: {len(editions)} event{'' if len(editions) == 1 else 's'}, {when}",
+            "bars": [{"left": round((e["start"].timetuple().tm_yday - 1) / days * 100, 2),
+                      "width": round(max(((e["end"] - e["start"]).days + 1) / days * 100,
+                                         CHART_MIN_BAR), 2),
+                      "cancelled": e["status"] == "cancelled"}
+                     for e in editions],
+        })
+    return years
+
+
 def fmt_weekday(d: dt.date) -> str:
     return f"{d:%A} {d.day} {d:%B}"
 
@@ -555,6 +599,7 @@ def make_rows(events: dict, editions: list) -> list[dict]:
             # A list published before the event can still change, but once we have
             # re-checked the source after the event ended, what we show is the last word.
             "chart": route_chart(ed.get("route")),
+            "decades": decade_chart(ed.get("cars")),
             "list_provisional": ("list_as_of" in ed and ed["list_as_of"] < ed["end"]
                                  and ed["last_verified"] <= ed["end"]),
         }
@@ -618,7 +663,7 @@ def build(data_dir: Path, out_dir: Path,
 
     write("index.html", env.get_template("home.html").render(
         **common, root="", canonical=f"{SITE_URL}/", title=f"{title} | {SITE_NAME}",
-        rows=rows, latest=latest, jsonld=[]))
+        rows=rows, years=year_chart(rows), latest=latest, jsonld=[]))
 
     sitemap = [(f"{SITE_URL}/", latest)]
     for slug, ev in sorted(events.items()):
