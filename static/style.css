@@ -91,6 +91,27 @@ a:focus-visible, summary:focus-visible {
 .map { display: inline-block; padding: 4px 0; }
 .map svg { margin-right: 4px; vertical-align: -3px; }
 
+.chip {
+  display: inline-block;
+  margin: 4px 8px 0 0;
+  padding: 0 8px;
+  border: 1px solid #E0E0E0;
+  border-radius: 8px;
+}
+
+/* Decoration beside the word, never instead of it: the status is readable with no colour. */
+.dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 8px;
+  border-radius: 8px;
+  background: #165E83;
+  vertical-align: 1px;
+}
+.dot.tentative { background: #5E4700; }
+.dot.cancelled { background: #8E2A1B; }
+
 .table-wrap { overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; }
 th, td {
@@ -123,21 +144,30 @@ summary { cursor: pointer; font-weight: 600; }
   white-space: nowrap;
 }
 
-/* Route at a glance. Bars are positioned with percentages, not a grid or an
-   SVG viewBox, so the labels stay real text at the base size on a phone. */
-.daychart { list-style: none; margin: 0 0 8px; padding: 0; }
-.daychart > li { margin: 0 0 16px; }
-.daychart-when { display: block; margin-bottom: 4px; }
-.daychart-track {
+/* Every strip on the site shares these: the route's days, an entry list's decades and
+   the home page's years. Bars are positioned with percentages, not a grid or an SVG
+   viewBox, so the labels stay real text at the base size on a phone. */
+.chart { list-style: none; margin: 0 0 8px; padding: 0; }
+.chart > li { margin: 0 0 16px; }
+.chart-when { display: block; margin-bottom: 4px; }
+.chart-track {
   display: block;
   position: relative;
   height: 8px;
   background: #E0E0E0;
   border-radius: 8px;
 }
-.daychart-track i { position: absolute; top: 0; height: 8px; background: #165E83; border-radius: 8px; }
-.daychart-axis { margin: 0 0 24px; color: #5C5C5C; overflow: hidden; }
-.daychart-axis .end { float: right; }
+.chart-track i { position: absolute; top: 0; height: 8px; background: #165E83; border-radius: 8px; }
+.chart-axis { margin: 0 0 24px; color: #5C5C5C; overflow: hidden; }
+.chart-axis .end { float: right; }
+/* Four evenly spaced labels, so a bar in August can be placed by eye. The spans must
+   sit flush in the markup: whitespace between inline-blocks would wrap the last one. */
+.chart-axis.quarters span { display: inline-block; width: 25%; }
+/* The route and year strips end in an axis that carries the gap. The decade strip has no
+   axis, so it supplies its own, or its last bar sits on the table header below. */
+.chart.decades { margin-bottom: 24px; }
+/* Cancelled: still shown, because the list below shows it, but plainly not a date to keep. */
+.chart-track i.off { background: #5C5C5C; }
 
 @media (max-width: 480px) {
   .events > li, .facts { grid-template-columns: 1fr; }
@@ -162,7 +192,12 @@ summary { cursor: pointer; font-weight: 600; }
   .note.cancelled { background: #3A1C16; color: #F2A493; }
   th, td { border-bottom-color: #333333; }
   .site-footer { border-top-color: #333333; color: #A8A8A8; }
-  .daychart-track { background: #333333; }
-  .daychart-track i { background: #8CC4E0; }
-  .daychart-axis { color: #A8A8A8; }
+  .chart-track { background: #333333; }
+  .chart-track i { background: #8CC4E0; }
+  .chart-axis { color: #A8A8A8; }
+  .chart-track i.off { background: #A8A8A8; }
+  .chip { border-color: #333333; }
+  .dot { background: #8CC4E0; }
+  .dot.tentative { background: #F3D98B; }
+  .dot.cancelled { background: #F2A493; }
 }
