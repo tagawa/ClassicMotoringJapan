@@ -2,7 +2,7 @@
 {% from "icons.html" import map_link %}
 {% block main %}
 <h1>{{ r.full_name }}</h1>
-<p class="ja" lang="ja">{{ ev.name_ja }}</p>
+{% if ev.name_ja %}<p class="ja" lang="ja">{{ ev.name_ja }}</p>{% endif %}
 
 {% if ed.status == "tentative" %}
 <p class="note">These dates are not confirmed yet. Check the <a href="{{ ed.source_url }}">organizer's announcement</a> before booking travel.</p>

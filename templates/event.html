@@ -2,7 +2,7 @@
 {% from "icons.html" import map_link %}
 {% block main %}
 <h1>{{ ev.name_en }}</h1>
-<p class="ja" lang="ja">{{ ev.name_ja }}</p>
+{% if ev.name_ja %}<p class="ja" lang="ja">{{ ev.name_ja }}</p>{% endif %}
 {% if ev.summary_en %}
 <p class="lede">{{ ev.summary_en }}</p>
 {% endif %}
