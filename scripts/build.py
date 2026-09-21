@@ -68,11 +68,15 @@ EDITORIAL_RE = re.compile(
 CHART_MIN_BAR = 1.0
 
 EVENT_REQUIRED = {
-    "slug": "str", "name_en": "str", "name_ja": "str", "official_url": "url",
+    "slug": "str", "name_en": "str", "official_url": "url",
     "prefecture": "str", "venue_en": "str", "spectator_fee_jpy": "fee",
     "last_verified": "date",
 }
 EVENT_OPTIONAL = {
+    # Plenty of Japanese car events are named only in Latin script and have no Japanese
+    # form at all. Printing the Latin name again under lang="ja" would tell a screen
+    # reader to read it with Japanese pronunciation rules.
+    "name_ja": "str",
     "organizer": "str", "summary_en": "prose", "street_address": "str",
     "nearest_station": "prose", "access_notes_en": "prose", "typical_eras": "strlist",
     "typical_scale": "str", "spectator_notes_en": "prose", "photography_notes_en": "prose",
@@ -550,7 +554,9 @@ def build_ics(rows: list[dict]) -> str:
             lines.append(f"GEO:{r['pin']['lat']};{r['pin']['lon']}")
         lines += [
             f"URL:{r['abs_url']}",
-            "DESCRIPTION:" + ics_text(f"{ev['name_ja']}\n{r['abs_url']}\nLast verified {ed['last_verified']}"),
+            "DESCRIPTION:" + ics_text("\n".join(
+                filter(None, (ev.get("name_ja"), r["abs_url"],
+                              f"Last verified {ed['last_verified']}")))),
             f"STATUS:{ed['status'].upper()}",
             "END:VEVENT",
         ]
