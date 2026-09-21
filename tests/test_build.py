@@ -3,6 +3,7 @@
 Done checks 1 and 2 need a final manual pass (Google Rich Results Test, calendar subscription on a phone).
 These tests cover everything that can be checked offline, so the manual pass should be a formality.
 """
+import datetime as dt
 import json
 import re
 import shutil
@@ -67,6 +68,27 @@ CARS = (
     "    make: Alfa Romeo\n"
     "    model: 6C 1750 GS\n"
 )
+ROUTE = (
+    "route:\n"
+    "  - date: 2026-10-18\n"
+    "    checkpoints:\n"
+    '      - start_time: "09:00"\n'
+    '        end_time: "09:30"\n'
+    "        place_en: Test Park, Testville\n"
+    "        place_ja: \u30c6\u30b9\u30c8\u516c\u5712\n"
+    "        prefecture: Shizuoka\n"
+    '      - start_time: "11:00"\n'
+    "        place_en: Test Harbour\n"
+    "        prefecture: Shizuoka\n"
+    "  - date: 2026-10-19\n"
+    "    checkpoints:\n"
+    '      - start_time: "08:00"\n'
+    '        end_time: "08:45"\n'
+    "        place_en: Test Hill\n"
+    "        prefecture: Shizuoka\n"
+)
+
+
 RALLY_EXTRA = 'start_time: "08:00"\nend_time: "16:00"\nroute_en: Start Test Park 08:00, finish Test Harbour 16:00.\n' + CARS
 
 
@@ -218,6 +240,25 @@ class BuildOutputTests(unittest.TestCase):
         ends = re.findall(r'data-end="(\d{4}-\d{2}-\d{2})"', self.pages["index.html"])
         self.assertEqual(ends, ["2026-04-12", "2026-10-19", "2026-10-25", "2026-11-03", "2027-11-03"])
 
+    # Old and budget devices: plain CSS only (see ~/.claude/DESIGN.md)
+
+    def css(self) -> str:
+        return (self.out / "static/style.css").read_text(encoding="utf-8")
+
+    def test_stylesheet_declares_no_custom_properties(self):
+        # var() is unsupported on IE and on Android browsers still in use.
+        self.assertNotIn("var(--", self.css())
+        self.assertIsNone(re.search(r"^\s*--[\w-]+\s*:", self.css(), re.M),
+                          "custom property declared")
+
+    def test_flex_containers_use_margins_not_gap(self):
+        # Flex `gap` resolves to nothing on IE and Safari before 14.1: no fallback.
+        for rule in re.findall(r"\{[^}]*display:\s*(?:inline-)?flex[^}]*\}", self.css()):
+            self.assertNotIn("gap", rule, f"flex rule uses gap: {rule}")
+
+    def test_dark_mode_is_defined_by_duplicating_colours(self):
+        self.assertIn("@media (prefers-color-scheme: dark)", self.css())
+
     # Reproducibility and the home-page title
 
     def test_same_data_gives_identical_files(self):
@@ -315,6 +356,143 @@ class EntryListProvisionalTests(unittest.TestCase):
         html = self.edition_page("2026-10-19")
         self.assertIn("Entry list as of 2026-09-15.", html)
         self.assertNotIn("cars may withdraw or change", html)
+
+
+class RouteTests(unittest.TestCase):
+    """A route is structured data, so a skimmer can find a time and a place."""
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.data = self.tmp / "data"
+        write_event(self.data, "meet")
+        write_instance(self.data, "meet", 2026,
+                       instance_yaml("meet", 2026, "2026-10-18", "2026-10-19", extra=ROUTE))
+        build.build(self.data, self.tmp / "site")
+        self.html = (self.tmp / "site/events/meet/2026/index.html").read_text(encoding="utf-8")
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp)
+
+    def test_a_route_alone_earns_the_edition_its_own_page(self):
+        self.assertIn("<h1>Test Event 2026</h1>", self.html)
+
+    def test_one_table_per_day(self):
+        self.assertEqual(self.html.count("<table>"), 2)
+
+    def test_days_are_headed_by_date_and_weekday(self):
+        self.assertIn("Day 1", self.html)
+        self.assertIn("Sunday 18 October", self.html)
+        self.assertIn("Day 2", self.html)
+        self.assertIn("Monday 19 October", self.html)
+
+    def test_a_checkpoint_shows_its_window_place_and_prefecture(self):
+        self.assertIn("09:00\u201309:30", self.html)
+        self.assertIn("Test Park, Testville", self.html)
+        self.assertIn('lang="ja">\u30c6\u30b9\u30c8\u516c\u5712', self.html)
+
+    def test_an_open_ended_window_shows_only_its_start(self):
+        # The organizer leaves some checkpoints open, e.g. "16:40~".
+        self.assertIn(">11:00</td>", self.html)
+
+
+class RouteChartTests(unittest.TestCase):
+    """The day-shape diagram: geometry is computed, not drawn, so it cannot contradict the table."""
+
+    def setUp(self):
+        self.chart = build.route_chart([
+            {"date": dt.date(2026, 10, 18), "checkpoints": [
+                {"start_time": "09:00", "end_time": "09:30"},
+                {"start_time": "11:00"}]},
+            {"date": dt.date(2026, 10, 19), "checkpoints": [
+                {"start_time": "08:00", "end_time": "08:45"}]},
+        ])
+
+    def test_no_route_means_no_chart(self):
+        self.assertIsNone(build.route_chart(None))
+        self.assertIsNone(build.route_chart([]))
+
+    def test_axis_runs_from_the_hour_below_to_the_hour_above(self):
+        # Earliest 08:00, latest 11:00, so the axis must extend past the last bar.
+        self.assertEqual((self.chart["start"], self.chart["end"]), ("08:00", "12:00"))
+
+    def test_a_bar_is_placed_and_sized_by_its_window(self):
+        bar = self.chart["days"][0]["bars"][0]
+        self.assertEqual((bar["left"], bar["width"]), (25.0, 12.5))
+
+    def test_an_open_ended_stop_keeps_a_visible_minimum_width(self):
+        bar = self.chart["days"][0]["bars"][1]
+        self.assertEqual(bar["left"], 75.0)
+        self.assertEqual(bar["width"], build.CHART_MIN_BAR)
+
+    def test_no_bar_can_run_past_the_axis(self):
+        for day in self.chart["days"]:
+            for bar in day["bars"]:
+                self.assertLessEqual(bar["left"] + bar["width"], 100.0)
+
+    def test_each_day_carries_its_span_and_count_as_text(self):
+        self.assertEqual(self.chart["days"][0]["summary"], "09:00 to 11:00, 2 stops")
+        self.assertEqual(self.chart["days"][1]["summary"], "08:00 to 08:45, 1 stop")
+
+    def test_each_day_is_named_and_dated(self):
+        self.assertEqual(self.chart["days"][0]["when"], "Day 1, Sun 18 Oct")
+
+
+class RouteChartRenderingTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        data = self.tmp / "data"
+        write_event(data, "meet")
+        write_instance(data, "meet", 2026,
+                       instance_yaml("meet", 2026, "2026-10-18", "2026-10-19", extra=ROUTE))
+        build.build(data, self.tmp / "site")
+        self.html = (self.tmp / "site/events/meet/2026/index.html").read_text(encoding="utf-8")
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp)
+
+    def test_one_chart_row_per_day(self):
+        self.assertEqual(self.html.count('class="daychart-track"'), 2)
+
+    def test_the_summary_is_real_text_not_only_a_bar(self):
+        self.assertIn("Day 1, Sun 18 Oct: 09:00 to 11:00, 2 stops", self.html)
+
+    def test_the_bars_are_hidden_from_screen_readers_as_a_restatement(self):
+        self.assertIn('class="daychart-track" aria-hidden="true"', self.html)
+
+    def test_the_axis_ends_are_labelled(self):
+        self.assertIn(">08:00<", self.html)
+        self.assertIn(">12:00<", self.html)
+
+
+class ProseLengthTests(unittest.TestCase):
+    """Long prose hides its own facts, so the build refuses it."""
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.data = self.tmp / "data"
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp)
+
+    def build_with_summary(self, words: int):
+        write_event(self.data, "meet", extra=f"summary_en: {' word' * words}\n".replace("  ", " "))
+        write_instance(self.data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-18"))
+        build.build(self.data, self.tmp / "site")
+
+    def test_prose_at_the_cap_is_accepted(self):
+        self.build_with_summary(build.PROSE_MAX_WORDS)
+
+    def test_prose_over_the_cap_is_rejected(self):
+        with self.assertRaises(build.ValidationError) as ctx:
+            self.build_with_summary(build.PROSE_MAX_WORDS + 1)
+        self.assertIn("summary_en", str(ctx.exception))
+
+    def test_the_message_offers_more_than_one_way_out(self):
+        with self.assertRaises(build.ValidationError) as ctx:
+            self.build_with_summary(build.PROSE_MAX_WORDS + 1)
+        message = str(ctx.exception)
+        for way in ("bullet", "table", "diagram"):
+            self.assertIn(way, message.lower(), f"the fix hint should mention {way}s")
 
 
 class ValidationTests(unittest.TestCase):
