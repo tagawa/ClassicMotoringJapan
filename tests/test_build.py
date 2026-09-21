@@ -117,6 +117,12 @@ def cars_yaml(years, as_of="2026-09-15") -> str:
     return f"list_as_of: {as_of}\ncars:\n{rows}"
 
 
+def display_cars_yaml(models, as_of="2026-09-15") -> str:
+    """A show's announced line-up: the source names models, so no numbers and no years."""
+    rows = "".join(f"  - make: {make}\n    model: {model}\n" for make, model in models)
+    return f"list_as_of: {as_of}\ncars:\n{rows}"
+
+
 def unfold(ics: str) -> list[str]:
     return ics.replace("\r\n ", "").split("\r\n")
 
@@ -430,9 +436,15 @@ class BuildOutputTests(unittest.TestCase):
 
     def test_entry_list_labels_and_keeps_leading_zeros(self):
         html = self.pages["events/autumn-rally/2026/index.html"]
+        self.assertIn("<h2>Entry list</h2>", html)
         self.assertIn("Entry list as of 2026-09-15.", html)
-        self.assertIn("Provisional", html)
+        self.assertIn("Provisional: cars may withdraw or change.", html)
         self.assertIn(">037<", html)
+        self.assertEqual(re.findall(r'<th scope="col">(.*?)</th>', html)[-4:],
+                         ["No.", "Year", "Make", "Model"])
+
+    def test_an_admission_fee_renders_as_yen(self):
+        self.assertIn("\u00a51,500", self.pages["events/culture-day-show/index.html"])
 
     def test_every_page_shows_last_verified(self):
         for page, html in self.pages.items():
@@ -791,6 +803,23 @@ class ValidationTests(unittest.TestCase):
         self.assert_rejected(instance_yaml("meet", 2026, "2026-10-18", "2026-10-18", extra='start_time: "08:00"\n'),
                              "together")
 
+    def test_entry_numbers_must_be_given_for_every_car_or_none(self):
+        extra = ('list_as_of: 2026-09-15\ncars:\n  - entry_no: "12"\n    make: Bentley\n    model: Blower\n'
+                 '  - make: Alfa Romeo\n    model: 6C 1750 GS\n')
+        self.assert_rejected(instance_yaml("meet", 2026, "2026-10-18", "2026-10-18", extra=extra),
+                             "entry_no on every car or on none")
+
+    def test_years_must_be_given_for_every_car_or_none(self):
+        extra = ('list_as_of: 2026-09-15\ncars:\n  - year: 1929\n    make: Bentley\n    model: Blower\n'
+                 '  - make: Alfa Romeo\n    model: 6C 1750 GS\n')
+        self.assert_rejected(instance_yaml("meet", 2026, "2026-10-18", "2026-10-18", extra=extra),
+                             "year on every car or on none")
+
+    def test_a_car_still_needs_a_make_and_a_model(self):
+        extra = "list_as_of: 2026-09-15\ncars:\n  - make: Bentley\n"
+        self.assert_rejected(instance_yaml("meet", 2026, "2026-10-18", "2026-10-18", extra=extra),
+                             "missing required field 'model'")
+
     def test_cars_need_list_as_of(self):
         extra = 'cars:\n  - entry_no: "12"\n    year: 1929\n    make: Bentley\n    model: Blower\n'
         self.assert_rejected(instance_yaml("meet", 2026, "2026-10-18", "2026-10-18", extra=extra),
@@ -863,6 +892,55 @@ class DecadeStripTests(unittest.TestCase):
             self.assertNotIn("chart decades", html)
         finally:
             shutil.rmtree(tmp)
+
+
+class DisplayListTests(unittest.TestCase):
+    """A show that names the models it will have on the floor, not the cars that will fill them.
+
+    There are no entry numbers to give, and a model's production span is not the age of the
+    car standing on the stand, so neither column can be filled without inventing the contents.
+    """
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        data = self.tmp / "data"
+        write_event(data, "meet")
+        write_instance(data, "meet", 2026,
+                       instance_yaml("meet", 2026, "2026-10-18", "2026-10-18",
+                                     extra=display_cars_yaml([("Toyota", "2000GT"), ("Honda", "S500")])))
+        build.build(data, self.tmp / "site")
+        self.html = (self.tmp / "site" / "events" / "meet" / "2026" / "index.html").read_text(encoding="utf-8")
+        self.event_html = (self.tmp / "site" / "events" / "meet" / "index.html").read_text(encoding="utf-8")
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp)
+
+    def headers(self) -> list[str]:
+        return re.findall(r'<th scope="col">(.*?)</th>', self.html)
+
+    def test_columns_nothing_can_fill_are_dropped_rather_than_left_blank(self):
+        self.assertEqual(self.headers(), ["Make", "Model"])
+
+    def test_the_rows_still_render(self):
+        self.assertIn("<td>Toyota</td><td>2000GT</td>", self.html)
+
+    def test_it_is_not_called_an_entry_list(self):
+        self.assertIn("<h2>Cars on display</h2>", self.html)
+        self.assertNotIn("Entry list", self.html)
+
+    def test_the_as_of_line_names_what_the_list_is(self):
+        self.assertIn("Cars on display as of 2026-09-15.", self.html)
+
+    def test_a_list_that_can_still_change_says_so_without_calling_them_entrants(self):
+        self.assertIn("Provisional: the line-up may change.", self.html)
+        self.assertNotIn("withdraw", self.html)
+
+    def test_the_link_to_it_is_labelled_for_what_it_holds(self):
+        self.assertIn("Cars on display", self.event_html)
+        self.assertNotIn("Entry list", self.event_html)
+
+    def test_no_decade_strip_without_years_to_count(self):
+        self.assertNotIn("chart decades", self.html)
 
 
 class CoordinateTests(unittest.TestCase):
