@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "icons.html" import map_link %}
 {% block main %}
 <h1>{{ r.full_name }}</h1>
 <p class="ja" lang="ja">{{ ev.name_ja }}</p>
@@ -13,7 +14,7 @@
   <dt>When</dt>
   <dd>{{ r.when_full }}</dd>
   <dt>Where</dt>
-  <dd>{{ r.venue }}, {{ ev.prefecture }}{% if r.pin %}<br><a class="map" href="{{ r.pin.url }}">Map</a>{% endif %}</dd>
+  <dd>{{ r.venue }}, {{ ev.prefecture }}{{ map_link(r.pin) }}</dd>
   <dt>Cost</dt>
   <dd>{{ ev.spectator_fee_jpy | fee }}</dd>
 </dl>

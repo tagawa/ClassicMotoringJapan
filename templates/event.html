@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "icons.html" import map_link %}
 {% block main %}
 <h1>{{ ev.name_en }}</h1>
 <p class="ja" lang="ja">{{ ev.name_ja }}</p>
@@ -30,7 +31,7 @@
 <h2>Visiting</h2>
 <dl class="facts">
   <dt>Where</dt>
-  <dd>{{ ev.venue_en }}, {{ ev.prefecture }}{% if ev.street_address %}<br>{{ ev.street_address }}{% endif %}{% if pin %}<br><a class="map" href="{{ pin.url }}">Map</a>{% endif %}</dd>
+  <dd>{{ ev.venue_en }}, {{ ev.prefecture }}{% if ev.street_address %}<br>{{ ev.street_address }}{% endif %}{{ map_link(pin) }}</dd>
 {% if ev.nearest_station or ev.access_notes_en %}
   <dt>Getting there</dt>
   <dd>{% if ev.nearest_station %}Nearest station: {{ ev.nearest_station }}{% endif %}{% if ev.nearest_station and ev.access_notes_en %}<br>{% endif %}{{ ev.access_notes_en or "" }}</dd>
