@@ -20,6 +20,7 @@ import shutil
 import sys
 import unicodedata
 from pathlib import Path
+from urllib.parse import quote
 from xml.sax.saxutils import escape as xml_escape
 
 import yaml
@@ -29,12 +30,19 @@ from markupsafe import Markup
 SITE_NAME = "Classic Motoring Japan"
 SITE_URL = "https://classicmotoringjapan.com"
 UID_DOMAIN = "classicmotoringjapan.com"
+# Thunderbird has never read X-WR-CALNAME (bugzilla 168176, open since 2002): it names a
+# subscribed calendar after the last path segment, so the file name has to read as a name.
+FEED_FILE = "classic-car-events.ics"
 
 ROOT = Path(__file__).resolve().parent.parent
 JST = dt.timezone(dt.timedelta(hours=9))
 STATUSES = {"confirmed", "tentative", "cancelled"}
 SLUG_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 EDITION_FILE_RE = re.compile(r"^(?P<year>\d{4})(?:-(?P<edition>[a-z0-9]+(?:-[a-z0-9]+)*))?$")
+# Japan's bounding box, Yonaguni to Minamitorishima. A swapped or mistyped pair lands
+# outside it, which is the only coordinate mistake a build can catch on its own.
+JAPAN_LAT = (24.0, 46.0)
+JAPAN_LON = (122.0, 154.0)
 TIME_RE = re.compile(r"^([01]\d|2[0-3]):[0-5]\d$")
 URL_RE = re.compile(r"^https?://\S+$")
 # Long prose buries the facts inside it, and a skim-reader never finds them.
@@ -68,6 +76,7 @@ EVENT_OPTIONAL = {
     "organizer": "str", "summary_en": "prose", "street_address": "str",
     "nearest_station": "prose", "access_notes_en": "prose", "typical_eras": "strlist",
     "typical_scale": "str", "spectator_notes_en": "prose", "photography_notes_en": "prose",
+    "lat": "lat", "lon": "lon",
 }
 EDITION_REQUIRED = {
     "slug": "str", "year": "int", "status": "status", "start": "date", "end": "date",
@@ -76,6 +85,7 @@ EDITION_REQUIRED = {
 EDITION_OPTIONAL = {
     "start_time": "time", "end_time": "time", "venue_en": "str", "street_address": "str",
     "route_en": "prose", "route": "route", "list_as_of": "date", "cars": "cars",
+    "lat": "lat", "lon": "lon",
 }
 ROUTE_DAY_REQUIRED = {"date": "date", "checkpoints": "checkpoints"}
 CHECKPOINT_REQUIRED = {"start_time": "time", "place_en": "str", "prefecture": "str"}
@@ -140,6 +150,13 @@ def _check_value(kind: str, v, where: str, errors: list[str]) -> None:
             )
         elif not isinstance(v, str) or not TIME_RE.match(v):
             errors.append(f'{where}: must be a quoted 24-hour time like "08:00", got {v!r}')
+    elif kind in ("lat", "lon"):
+        low, high = JAPAN_LAT if kind == "lat" else JAPAN_LON
+        if isinstance(v, bool) or not isinstance(v, (int, float)):
+            errors.append(f"{where}: must be a decimal number, got {v!r}")
+        elif not low <= v <= high:
+            errors.append(f"{where}: {v} is outside Japan ({low} to {high}). "
+                          f"Check that lat and lon have not been swapped")
     elif kind == "strlist":
         if not isinstance(v, list) or not all(isinstance(x, str) and x.strip() for x in v):
             errors.append(f"{where}: must be a list of text values, got {v!r}")
@@ -210,6 +227,12 @@ def _check_combined_prose(ev: dict, rel: str, errors: list[str]) -> None:
             )
 
 
+def _check_coords(obj: dict, rel: str, errors: list[str]) -> None:
+    """Half a pair points nowhere, so the build refuses it rather than dropping the link."""
+    if ("lat" in obj) != ("lon" in obj):
+        errors.append(f"{rel}: give lat and lon together, or neither")
+
+
 def _check_route(route, start, end, rel: str, errors: list[str]) -> None:
     """Days run in order inside the edition's dates, checkpoints in order inside a day."""
     if not isinstance(route, list):
@@ -260,6 +283,7 @@ def load_and_validate(data_dir: Path) -> tuple[dict, list]:
             errors.append(f"{rel}: slug {ev.get('slug')!r} must match the file name {path.stem!r}")
             continue
         _check_combined_prose(ev, rel, errors)
+        _check_coords(ev, rel, errors)
         events[path.stem] = ev
 
     for path in sorted(events_dir.glob("*/*.yml")):
@@ -287,6 +311,7 @@ def load_and_validate(data_dir: Path) -> tuple[dict, list]:
                 errors.append(f"{rel}: end {end} is before start {start}")
             if _is_int(ed.get("year")) and start.year != ed["year"]:
                 errors.append(f"{rel}: start {start} is not in year {ed['year']}")
+        _check_coords(ed, rel, errors)
         has_st, has_et = "start_time" in ed, "end_time" in ed
         if has_st != has_et:
             errors.append(f"{rel}: give start_time and end_time together, or neither")
@@ -389,6 +414,28 @@ def _local_dt(d: dt.date, hhmm: str) -> dt.datetime:
     return dt.datetime(d.year, d.month, d.day, h, m, tzinfo=JST)
 
 
+# Map links
+
+def venue_pin(ev: dict, ed: dict | None = None) -> dict | None:
+    """Where a map link points, or None when no coordinates have been recorded.
+
+    Coordinates belong to the venue they were taken at, so an edition that names a venue of
+    its own does not inherit the event's pin: no link beats a link to the wrong field.
+    """
+    if ed and "lat" in ed:
+        source = ed
+    elif ed and ed.get("venue_en"):
+        return None
+    else:
+        source = ev
+    if "lat" not in source:
+        return None
+    # ll fixes the point and q only labels the pin, so the label cannot move it.
+    label = (ed or {}).get("venue_en") or ev["venue_en"]
+    return {"lat": source["lat"], "lon": source["lon"],
+            "url": f"https://maps.apple.com/?ll={source['lat']},{source['lon']}&q={quote(label)}"}
+
+
 # iCalendar
 
 def ics_text(s: str) -> str:
@@ -415,6 +462,8 @@ def build_ics(rows: list[dict]) -> str:
     lines = [
         "BEGIN:VCALENDAR", "VERSION:2.0", f"PRODID:-//{SITE_NAME}//Events//EN",
         "CALSCALE:GREGORIAN", "METHOD:PUBLISH", f"X-WR-CALNAME:{ics_text(SITE_NAME)}",
+        # RFC 7986's spelling of the same thing. Neither reaches Thunderbird; see FEED_FILE.
+        f"NAME:{ics_text(SITE_NAME)}",
     ]
     for r in rows:
         ed, ev = r["ed"], r["ev"]
@@ -431,6 +480,10 @@ def build_ics(rows: list[dict]) -> str:
         lines += [
             f"SUMMARY:{ics_text(r['display_name'])}",
             f"LOCATION:{ics_text(r['venue'] + ', ' + ev['prefecture'] + ', Japan')}",
+        ]
+        if r["pin"]:
+            lines.append(f"GEO:{r['pin']['lat']};{r['pin']['lon']}")
+        lines += [
             f"URL:{r['abs_url']}",
             "DESCRIPTION:" + ics_text(f"{ev['name_ja']}\n{r['abs_url']}\nLast verified {ed['last_verified']}"),
             f"STATUS:{ed['status'].upper()}",
@@ -448,6 +501,10 @@ def build_jsonld(r: dict) -> Markup:
     street = ed.get("street_address") or ev.get("street_address")
     if street:
         address["streetAddress"] = street
+    place = {"@type": "Place", "name": r["venue"], "address": address}
+    if r["pin"]:
+        place["geo"] = {"@type": "GeoCoordinates",
+                        "latitude": r["pin"]["lat"], "longitude": r["pin"]["lon"]}
     data = {
         "@context": "https://schema.org",
         "@type": "Event",
@@ -457,7 +514,7 @@ def build_jsonld(r: dict) -> Markup:
         "eventStatus": "https://schema.org/EventCancelled" if ed["status"] == "cancelled"
                        else "https://schema.org/EventScheduled",
         "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
-        "location": {"@type": "Place", "name": r["venue"], "address": address},
+        "location": place,
         "url": r["abs_url"],
         "isAccessibleForFree": ev["spectator_fee_jpy"] == 0,
     }
@@ -493,6 +550,7 @@ def make_rows(events: dict, editions: list) -> list[dict]:
             "uid": f"{slug}-{ed_id}@{UID_DOMAIN}",
             "is_timed": is_timed,
             "venue": ed.get("venue_en") or ev["venue_en"],
+            "pin": venue_pin(ev, ed),
             "when": fmt_range(ed["start"], ed["end"]),
             # A list published before the event can still change, but once we have
             # re-checked the source after the event ended, what we show is the last word.
@@ -519,7 +577,8 @@ def make_rows(events: dict, editions: list) -> list[dict]:
 def reset_out_dir(out_dir: Path) -> None:
     """Empty out_dir, but only if it is empty or holds a previous build."""
     if out_dir.exists():
-        previous_build = (out_dir / "index.html").is_file() and (out_dir / "events.ics").is_file()
+        # Any .ics, so that renaming the feed does not make the last build unrecognisable.
+        previous_build = (out_dir / "index.html").is_file() and any(out_dir.glob("*.ics"))
         if any(out_dir.iterdir()) and not previous_build:
             raise BuildError([f"{out_dir}: not empty and not a previous build, so it was left untouched. "
                               f"Choose another --out folder"])
@@ -539,7 +598,7 @@ def build(data_dir: Path, out_dir: Path,
     env.filters["weekday"] = fmt_weekday
     host = SITE_URL.split("://", 1)[1]
     common = {"site_name": SITE_NAME, "site_url": SITE_URL,
-              "ics_url": f"{SITE_URL}/events.ics", "webcal_url": f"webcal://{host}/events.ics"}
+              "ics_url": f"{SITE_URL}/{FEED_FILE}", "webcal_url": f"webcal://{host}/{FEED_FILE}"}
 
     reset_out_dir(out_dir)
     # Every other static file is served from static/, but browsers ask for /favicon.ico
@@ -568,7 +627,7 @@ def build(data_dir: Path, out_dir: Path,
         write(f"events/{slug}/index.html", env.get_template("event.html").render(
             **common, root="../../", canonical=f"{SITE_URL}/events/{slug}/",
             title=f"{ev['name_en']}: Visitor Guide | {SITE_NAME}",
-            ev=ev, rows=ev_rows, verified=verified,
+            ev=ev, rows=ev_rows, verified=verified, pin=venue_pin(ev),
             jsonld=[r["jsonld"] for r in ev_rows if not r["has_page"]]))
         sitemap.append((f"{SITE_URL}/events/{slug}/", verified))
         for r in ev_rows:
@@ -581,7 +640,7 @@ def build(data_dir: Path, out_dir: Path,
                 ev=ev, r=r, ed=ed, jsonld=[r["jsonld"]]))
             sitemap.append((r["abs_url"], ed["last_verified"]))
 
-    write("events.ics", build_ics(rows))
+    write(FEED_FILE, build_ics(rows))
     write("robots.txt", f"User-agent: *\nAllow: /\n\nSitemap: {SITE_URL}/sitemap.xml\n")
 
     urls = "".join(f"  <url><loc>{xml_escape(u)}</loc><lastmod>{d.isoformat()}</lastmod></url>\n"
