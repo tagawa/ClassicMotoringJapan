@@ -1,0 +1,682 @@
+slug: showa-retro-car-meet
+year: 2026
+status: confirmed
+start: 2026-10-18
+end: 2026-10-18
+start_time: "09:30"
+end_time: "15:00"
+source_url: https://retrocar.yaesu-net.co.jp/2026_soga/?p=outline
+last_verified: 2026-09-22
+sequence: 0
+# The organizer lists these in two classes, retro and neo-classic. The table has no
+# class column, so they are grouped by marque here, which is what Make implies.
+list_as_of: 2026-09-22
+cars:
+  - entry_no: "81"
+    year: 1957
+    make: Austin
+    model: A35
+  - entry_no: "167"
+    year: 1992
+    make: Birkin
+    model: Seven
+  - entry_no: "91"
+    year: 1994
+    make: BMW
+    model: 525i
+  - entry_no: "98"
+    year: 1974
+    make: Daihatsu
+    model: Fellow MAX
+  - entry_no: "156"
+    year: 1981
+    make: Daihatsu
+    model: Hijet
+  - entry_no: "36"
+    year: 1990
+    make: Daihatsu
+    model: Deck Van
+  - entry_no: "25"
+    year: 1992
+    make: Daihatsu
+    model: Leeza Spider
+  - entry_no: "35"
+    year: 1958
+    make: Datsun
+    model: P310
+  - entry_no: "34"
+    year: 1969
+    make: Datsun
+    model: Fairlady
+  - entry_no: "89"
+    year: 1978
+    make: Datsun
+    model: B210
+  - entry_no: "121"
+    year: 1991
+    make: Ferrari
+    model: Testarossa
+  - entry_no: "56"
+    year: 1967
+    make: Fiat
+    model: 500F
+  - entry_no: "39"
+    year: 1972
+    make: Fiat
+    model: "500"
+  - entry_no: "21"
+    year: 1973
+    make: Ford
+    model: Mustang
+  - entry_no: "150"
+    year: 1965
+    make: GT Development
+    model: GTD40
+  - entry_no: "125"
+    year: 1965
+    make: Honda
+    model: S600
+  - entry_no: "92"
+    year: 1966
+    make: Honda
+    model: S800
+  - entry_no: "13"
+    year: 1969
+    make: Honda
+    model: S800M
+  - entry_no: "118"
+    year: 1971
+    make: Honda
+    model: Vamos Honda 4
+  - entry_no: "80"
+    year: 1972
+    make: Honda
+    model: Life
+  - entry_no: "123"
+    year: 1993
+    make: Honda
+    model: NSX
+  - entry_no: "37"
+    year: 1995
+    make: Honda
+    model: Civic
+  - entry_no: "76"
+    year: 1995
+    make: Honda
+    model: Acty Truck
+  - entry_no: "114"
+    year: 1995
+    make: Honda
+    model: Prelude
+  - entry_no: "175"
+    year: 1975
+    make: Isuzu
+    model: Florian
+  - entry_no: "9"
+    year: 1978
+    make: Isuzu
+    model: 117 Coupé XC
+  - entry_no: "142"
+    year: 1982
+    make: Isuzu
+    model: Florian
+  - entry_no: "28"
+    year: 1991
+    make: Isuzu
+    model: Gemini
+  - entry_no: "24"
+    year: 1997
+    make: Isuzu
+    model: Elf
+  - entry_no: "97"
+    year: 1961
+    make: Jaguar
+    model: MK2
+  - entry_no: "136"
+    year: 2024
+    make: Lamborghini
+    model: Countach LP500S Restomod
+  - entry_no: "106"
+    year: 1993
+    make: Lexus
+    model: ES300
+  - entry_no: "134"
+    year: 1971
+    make: Lotus
+    model: Europa TC
+  - entry_no: "135"
+    year: 1972
+    make: Lotus
+    model: Europa
+  - entry_no: "128"
+    year: 1974
+    make: Lotus
+    model: Europa Special
+  - entry_no: "130"
+    year: 1966
+    make: Mazda
+    model: Carol 360
+  - entry_no: "192"
+    year: 1970
+    make: Mazda
+    model: Cosmo Sport
+  - entry_no: "53"
+    year: 1975
+    make: Mazda
+    model: Savanna GT (RX-3)
+  - entry_no: "116"
+    year: 1985
+    make: Mazda
+    model: Porter Cab
+  - entry_no: "32"
+    year: 1974
+    make: Mercedes-Benz
+    model: 280S
+  - entry_no: "132"
+    year: 1989
+    make: Mercedes-Benz
+    model: 190E
+  - entry_no: "15"
+    year: 1960
+    make: Messerschmitt
+    model: KR200
+  - entry_no: "19"
+    year: 1948
+    make: MG
+    model: YA
+  - entry_no: "124"
+    year: 1952
+    make: MG
+    model: TD
+  - entry_no: "174"
+    year: 1963
+    make: MG
+    model: MGB
+  - entry_no: "162"
+    year: 1958
+    make: Mitsubishi
+    model: Willys Jeep
+  - entry_no: "129"
+    year: 1967
+    make: Mitsubishi
+    model: 360 Van
+  - entry_no: "172"
+    year: 1967
+    make: Mitsubishi
+    model: Minica
+  - entry_no: "141"
+    year: 1968
+    make: Mitsubishi
+    model: Minica
+  - entry_no: "95"
+    year: 1971
+    make: Mitsubishi
+    model: Minicab
+  - entry_no: "137"
+    year: 1971
+    make: Mitsubishi
+    model: Galant GTO-MR
+  - entry_no: "110"
+    year: 1975
+    make: Mitsubishi
+    model: Minicab 360 EL Van
+  - entry_no: "18"
+    year: 1977
+    make: Mitsubishi
+    model: Lancer Celeste
+  - entry_no: "183"
+    year: 1981
+    make: Mitsubishi
+    model: Mirage 1600GT 5-door
+  - entry_no: "38"
+    year: 1992
+    make: Mitsubishi
+    model: GTO
+  - entry_no: "16"
+    year: 1998
+    make: Mitsubishi
+    model: Bravo
+  - entry_no: "84"
+    year: 1961
+    make: Morris
+    model: Minor Pickup
+  - entry_no: "138"
+    year: 1966
+    make: Morris
+    model: Mini Countryman
+  - entry_no: "46"
+    year: 1959
+    make: Nissan
+    model: Datsun Truck
+  - entry_no: "70"
+    year: 1959
+    make: Nissan
+    model: Austin A50 Cambridge
+  - entry_no: "72"
+    year: 1962
+    make: Nissan
+    model: Cedric Van
+  - entry_no: "68"
+    year: 1963
+    make: Nissan
+    model: Cedric Deluxe
+  - entry_no: "8"
+    year: 1965
+    make: Nissan
+    model: Datsun 520
+  - entry_no: "23"
+    year: 1965
+    make: Nissan
+    model: Datsun Truck 1200
+  - entry_no: "30"
+    year: 1967
+    make: Nissan
+    model: Cedric 130
+  - entry_no: "71"
+    year: 1967
+    make: Nissan
+    model: Datsun Fairlady
+  - entry_no: "96"
+    year: 1967
+    make: Nissan
+    model: Silvia
+  - entry_no: "102"
+    year: 1968
+    make: Nissan
+    model: Silvia
+  - entry_no: "29"
+    year: 1969
+    make: Nissan
+    model: Datsun 521
+  - entry_no: "165"
+    year: 1969
+    make: Nissan
+    model: Skyline 2000GT-R
+  - entry_no: "87"
+    year: 1970
+    make: Nissan
+    model: Datsun Bluebird 1800SSS
+  - entry_no: "93"
+    year: 1970
+    make: Nissan
+    model: Skyline Van
+  - entry_no: "112"
+    year: 1970
+    make: Nissan
+    model: Skyline 2000GT
+  - entry_no: "177"
+    year: 1970
+    make: Nissan
+    model: Bluebird
+  - entry_no: "83"
+    year: 1971
+    make: Nissan
+    model: Cedric
+  - entry_no: "191"
+    year: 1971
+    make: Nissan
+    model: Skyline
+  - entry_no: "57"
+    year: 1972
+    make: Nissan
+    model: Fairlady Z 432-R
+  - entry_no: "60"
+    year: 1972
+    make: Nissan
+    model: Skyline
+  - entry_no: "78"
+    year: 1972
+    make: Nissan
+    model: Cedric 2-door Hardtop
+  - entry_no: "105"
+    year: 1972
+    make: Nissan
+    model: Skyline
+  - entry_no: "107"
+    year: 1972
+    make: Nissan
+    model: Skyline
+  - entry_no: "149"
+    year: 1972
+    make: Nissan
+    model: Skyline 2000GT-X
+  - entry_no: "157"
+    year: 1972
+    make: Nissan
+    model: Fairlady 240ZG
+  - entry_no: "173"
+    year: 1972
+    make: Nissan
+    model: Skyline
+  - entry_no: "77"
+    year: 1973
+    make: Nissan
+    model: 230 Gloria
+  - entry_no: "109"
+    year: 1973
+    make: Nissan
+    model: Sunny
+  - entry_no: "187"
+    year: 1973
+    make: Nissan
+    model: Skyline
+  - entry_no: "54"
+    year: 1978
+    make: Nissan
+    model: Fairlady Z
+  - entry_no: "153"
+    year: 1978
+    make: Nissan
+    model: Cedric
+  - entry_no: "49"
+    year: 1982
+    make: Nissan
+    model: Cedric
+  - entry_no: "131"
+    year: 1982
+    make: Nissan
+    model: Cedric (Turbo Brougham 4-door Hardtop)
+  - entry_no: "14"
+    year: 1983
+    make: Nissan
+    model: Bluebird
+  - entry_no: "47"
+    year: 1983
+    make: Nissan
+    model: Skyline RS Turbo
+  - entry_no: "62"
+    year: 1983
+    make: Nissan
+    model: Skyline
+  - entry_no: "158"
+    year: 1983
+    make: Nissan
+    model: Cedric
+  - entry_no: "111"
+    year: 1985
+    make: Nissan
+    model: Gloria Wagon
+  - entry_no: "88"
+    year: 1987
+    make: Nissan
+    model: Be-1
+  - entry_no: "104"
+    year: 1987
+    make: Nissan
+    model: Sunny 1500 Super Saloon
+  - entry_no: "179"
+    year: 1988
+    make: Nissan
+    model: Leopard
+  - entry_no: "42"
+    year: 1990
+    make: Nissan
+    model: Skyline
+  - entry_no: "33"
+    year: 1994
+    make: Nissan
+    model: Skyline GT-R V-Spec II (R32)
+  - entry_no: "59"
+    year: 1994
+    make: Nissan
+    model: Cedric
+  - entry_no: "101"
+    year: 1995
+    make: Nissan
+    model: 180SX
+  - entry_no: "113"
+    year: 1996
+    make: Nissan
+    model: Cedric Sedan
+  - entry_no: "170"
+    year: 1996
+    make: Nissan Diesel
+    model: 8E (RM chassis)
+  - entry_no: "133"
+    year: 1973
+    make: Pontiac
+    model: Firebird Trans Am 455
+  - entry_no: "120"
+    year: 1988
+    make: Pontiac
+    model: Fiero GT
+  - entry_no: "108"
+    year: 1985
+    make: Porsche
+    model: "911"
+  - entry_no: "147"
+    year: 1966
+    make: Prince
+    model: Skyline 2000GT-B
+  - entry_no: "63"
+    year: 1999
+    make: Rover
+    model: Mini
+  - entry_no: "182"
+    year: 1957
+    make: Subaru
+    model: Rabbit T75A
+  - entry_no: "20"
+    year: 1964
+    make: Subaru
+    model: 360 Custom
+  - entry_no: "31"
+    year: 1964
+    make: Subaru
+    model: Sambar
+  - entry_no: "27"
+    year: 1968
+    make: Subaru
+    model: Sambar Van
+  - entry_no: "127"
+    year: 1968
+    make: Subaru
+    model: "360"
+  - entry_no: "17"
+    year: 1969
+    make: Subaru
+    model: 360 Van
+  - entry_no: "169"
+    year: 1971
+    make: Subaru
+    model: R-2
+  - entry_no: "119"
+    year: 1972
+    make: Subaru
+    model: Rex
+  - entry_no: "73"
+    year: 1981
+    make: Subaru
+    model: Rex
+  - entry_no: "100"
+    year: 1987
+    make: Subaru
+    model: Justy
+  - entry_no: "67"
+    year: 1995
+    make: Subaru
+    model: Alcyone SVX
+  - entry_no: "66"
+    year: 1997
+    make: Subaru
+    model: Domingo
+  - entry_no: "161"
+    year: 1986
+    make: Suzuki
+    model: Alto
+  - entry_no: "143"
+    year: 1987
+    make: Suzuki
+    model: Jimny
+  - entry_no: "164"
+    year: 1991
+    make: Suzuki
+    model: Alto Epo Slide Slim
+  - entry_no: "94"
+    year: 1992
+    make: Suzuki
+    model: Cappuccino
+  - entry_no: "51"
+    year: 1963
+    make: Toyota
+    model: Toyopet Crown
+  - entry_no: "82"
+    year: 1965
+    make: Toyota
+    model: Sprinter Trueno
+  - entry_no: "26"
+    year: 1972
+    make: Toyota
+    model: Celica
+  - entry_no: "117"
+    year: 1972
+    make: Toyota
+    model: Crown
+  - entry_no: "186"
+    year: 1972
+    make: Toyota
+    model: Corolla Levin
+  - entry_no: "40"
+    year: 1973
+    make: Toyota
+    model: Corolla Levin
+  - entry_no: "155"
+    year: 1973
+    make: Toyota
+    model: Crown
+  - entry_no: "75"
+    year: 1975
+    make: Toyota
+    model: Corona Mark II GSS
+  - entry_no: "126"
+    year: 1975
+    make: Toyota
+    model: Corona 2000GT
+  - entry_no: "140"
+    year: 1978
+    make: Toyota
+    model: Sprinter
+  - entry_no: "144"
+    year: 1978
+    make: Toyota
+    model: Corona Mark II Grande
+  - entry_no: "6"
+    year: 1979
+    make: Toyota
+    model: Corolla Van
+  - entry_no: "64"
+    year: 1979
+    make: Toyota
+    model: Carina
+  - entry_no: "79"
+    year: 1979
+    make: Toyota
+    model: Crown
+  - entry_no: "148"
+    year: 1980
+    make: Toyota
+    model: Celica Liftback 1600GT
+  - entry_no: "151"
+    year: 1983
+    make: Toyota
+    model: Sprinter Trueno
+  - entry_no: "159"
+    year: 1983
+    make: Toyota
+    model: Crown
+  - entry_no: "160"
+    year: 1983
+    make: Toyota
+    model: Celica Supra
+  - entry_no: "74"
+    year: 1985
+    make: Toyota
+    model: Corolla II
+  - entry_no: "154"
+    year: 1985
+    make: Toyota
+    model: Corolla
+  - entry_no: "85"
+    year: 1986
+    make: Toyota
+    model: Corolla FX
+  - entry_no: "145"
+    year: 1986
+    make: Toyota
+    model: Sprinter Trueno
+  - entry_no: "181"
+    year: 1986
+    make: Toyota
+    model: Supra
+  - entry_no: "58"
+    year: 1987
+    make: Toyota
+    model: Celica 1600GT
+  - entry_no: "52"
+    year: 1988
+    make: Toyota
+    model: Starlet Turbo S
+  - entry_no: "168"
+    year: 1989
+    make: Toyota
+    model: Corolla II
+  - entry_no: "180"
+    year: 1989
+    make: Toyota
+    model: Carina
+  - entry_no: "178"
+    year: 1991
+    make: Toyota
+    model: Carina ED
+  - entry_no: "190"
+    year: 1991
+    make: Toyota
+    model: MR2
+  - entry_no: "69"
+    year: 1992
+    make: Toyota
+    model: Crown
+  - entry_no: "122"
+    year: 1992
+    make: Toyota
+    model: Supra
+  - entry_no: "189"
+    year: 1993
+    make: Toyota
+    model: Hilux
+  - entry_no: "44"
+    year: 1994
+    make: Toyota
+    model: Aristo
+  - entry_no: "146"
+    year: 1996
+    make: Toyota
+    model: Townace Truck
+  - entry_no: "11"
+    year: 1998
+    make: Toyota
+    model: Starlet Remix
+  - entry_no: "86"
+    year: 2000
+    make: Toyota
+    model: Chaser Tourer S
+  - entry_no: "166"
+    year: 1955
+    make: Triumph
+    model: TR2
+  - entry_no: "103"
+    year: 1973
+    make: Triumph
+    model: GT6
+  - entry_no: "90"
+    year: 1990
+    make: Unknown
+    model: K100
+  - entry_no: "61"
+    year: 1967
+    make: Volkswagen
+    model: Type 1
+  - entry_no: "48"
+    year: 1986
+    make: Volkswagen
+    model: Golf (second generation)
