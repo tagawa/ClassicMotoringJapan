@@ -60,8 +60,8 @@
 {% endif %}
 
 {% if ed.cars %}
-<h2>Entry list</h2>
-<p>Entry list as of {{ ed.list_as_of.isoformat() }}.{% if r.list_provisional %} Provisional: cars may withdraw or change.{% endif %}</p>
+<h2>{{ r.cars_label }}</h2>
+<p>{{ r.cars_label }} as of {{ ed.list_as_of.isoformat() }}.{% if r.list_provisional %} Provisional: {{ r.cars_caveat }}.{% endif %}</p>
 {% if r.decades %}
 <ol class="chart decades">
 {% for row in r.decades.rows %}
@@ -76,13 +76,12 @@
 {% endfor %}
 </ol>
 {% endif %}
-{% set show_colour = ed.cars | selectattr("colour", "defined") | list %}
 <div class="table-wrap">
   <table>
-    <thead><tr><th scope="col">No.</th><th scope="col">Year</th><th scope="col">Make</th><th scope="col">Model</th>{% if show_colour %}<th scope="col">Colour</th>{% endif %}</tr></thead>
+    <thead><tr>{% for col in r.car_columns %}<th scope="col">{{ col.label }}</th>{% endfor %}</tr></thead>
     <tbody>
 {% for car in ed.cars %}
-      <tr><td class="num">{{ car.entry_no }}</td><td class="num">{{ car.year }}</td><td>{{ car.make }}</td><td>{{ car.model }}</td>{% if show_colour %}<td>{{ car.colour or "" }}</td>{% endif %}</tr>
+      <tr>{% for col in r.car_columns %}<td{% if col.num %} class="num"{% endif %}>{{ car.get(col.key, "") }}</td>{% endfor %}</tr>
 {% endfor %}
     </tbody>
   </table>
