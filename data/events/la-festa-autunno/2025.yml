@@ -7,22 +7,233 @@ source_url: https://www.lafesta-autunno.com/2025/schedule/
 last_verified: 2026-09-21
 sequence: 0
 route_en: >
-  The 28th running and the first under the La Festa Autunno name, over four days.
-  Day 1, 26 September: the start ceremony at Jingubashi in Harajuku between 11:05
-  and 11:35, then Nasunogahara Park and the Tsukuruma circuit at Nasushiobara in
-  Tochigi, Nishigo and Tenei in Fukushima, the Noguchi Hideyo Memorial Hall and
-  the ski ground at Inawashiro, and the night halt at Urabandai. Day 2, 27
-  September: the Bandai eruption museum, the Nakatsugawa gorge, Jododaira on the
-  Bandai-Azuma Skyline, the Link circuit, Fukushima Sky Park and Iizaka Onsen at
-  Fukushima City, then Shiroishi and Shichikashuku in Miyagi, Onogawa Onsen in
-  Yamagata, Kitakata and the Ouchi-juku post town, finishing at the Kanaya hotels
-  in Nikko. Day 3, 28 September: Shioya, the Shinoi Ring at Utsunomiya, Sakura
-  and Motegi in Tochigi, Kasama Inari shrine and Oarai marina in Ibaraki, then
-  Sawara old town and Narita in Chiba. Day 4, 29 September: Naritasan, Shibayama,
-  the Kujukuri coast at Kujukuri and Ichinomiya, Onjuku, Katsuura, Yorokeikoku
-  station on the Kominato railway, Kisarazu and Tokyo German Village at
-  Sodegaura, then the finish ceremony on Valentine Street at Makuhari Bay Town in
-  Chiba City between 15:30 and 17:00.
+  The 28th running, and the first under the La Festa Autunno name; earlier
+  editions ran as La Festa Mille Miglia. Tokyo and eight prefectures over four
+  days. This is the timetable published before the event.
+route:
+  - date: 2025-09-26
+    checkpoints:
+      - start_time: "11:05"
+        end_time: "11:35"
+        place_en: Jingubashi, Harajuku (start ceremony)
+        place_ja: 原宿・神宮橋（スタートセレモニー）
+        prefecture: Tokyo
+      - start_time: "13:20"
+        end_time: "14:45"
+        place_en: Nasunogahara Park, Nasushiobara
+        place_ja: 那須塩原市・那須野が原公園
+        prefecture: Tochigi
+      - start_time: "14:25"
+        end_time: "15:10"
+        place_en: Tsukuruma Circuit, Nasushiobara
+        place_ja: 那須塩原市・つくるまサーキット
+        prefecture: Tochigi
+      - start_time: "15:20"
+        end_time: "16:05"
+        place_en: Marugoto Saigokan, Nishigo
+        place_ja: 西郷村・まるごと西郷館
+        prefecture: Fukushima
+      - start_time: "15:45"
+        end_time: "16:30"
+        place_en: Michi-no-Eki Toki-no-Sato Tenei, Tenei
+        place_ja: 天栄村・道の駅 季の里天栄
+        prefecture: Fukushima
+      - start_time: "16:40"
+        end_time: "17:25"
+        place_en: Noguchi Hideyo Memorial Hall, Inawashiro
+        place_ja: 猪苗代町・野口英世記念館
+        prefecture: Fukushima
+      - start_time: "16:50"
+        end_time: "17:35"
+        place_en: Inawashiro Ski Resort, Inawashiro
+        place_ja: 猪苗代町・猪苗代スキー場
+        prefecture: Fukushima
+      - start_time: "17:10"
+        end_time: "17:55"
+        place_en: Urabandai Lake Resort, Kitashiobara
+        place_ja: 北塩原村・裏磐梯レイクリゾート
+        prefecture: Fukushima
+  - date: 2025-09-27
+    checkpoints:
+      - start_time: "07:00"
+        end_time: "07:30"
+        place_en: Urabandai Lake Resort, Kitashiobara
+        place_ja: 北塩原村・裏磐梯レイクリゾート
+        prefecture: Fukushima
+      - start_time: "07:05"
+        end_time: "07:35"
+        place_en: Mount Bandai Eruption Memorial Museum, Kitashiobara
+        place_ja: 北塩原村・磐梯山噴火記念館
+        prefecture: Fukushima
+      - start_time: "07:15"
+        end_time: "08:15"
+        place_en: Nakatsugawa Gorge Rest House, Inawashiro
+        place_ja: 猪苗代町・中津川渓谷レストハウス
+        prefecture: Fukushima
+      - start_time: "08:05"
+        end_time: "09:05"
+        place_en: Jododaira, Fukushima City
+        place_ja: 福島市・浄土平
+        prefecture: Fukushima
+      - start_time: "08:45"
+        end_time: "09:30"
+        place_en: Link Circuit, Fukushima City
+        place_ja: 福島市・リンクサーキット
+        prefecture: Fukushima
+      - start_time: "08:55"
+        end_time: "09:40"
+        place_en: Fukushima Sky Park, Fukushima City
+        place_ja: 福島市・ふくしまスカイパーク
+        prefecture: Fukushima
+      - start_time: "09:15"
+        end_time: "10:00"
+        place_en: Iizaka Onsen, Fukushima City
+        place_ja: 福島市・飯坂温泉
+        prefecture: Fukushima
+      - start_time: "09:45"
+        end_time: "10:30"
+        place_en: Kamitozawa community hall, Shiroishi
+        place_ja: 白石市・上戸沢集会所
+        prefecture: Miyagi
+      - start_time: "10:00"
+        end_time: "11:20"
+        place_en: Shichikashuku Dam nature park car park, Shichikashuku
+        place_ja: 七ヶ宿町・七ケ宿ダム自然休養公園駐車場
+        prefecture: Miyagi
+      - start_time: "10:45"
+        end_time: "11:30"
+        place_en: Owaraji, Shichikashuku
+        place_ja: 七ヶ宿町・大わらじ
+        prefecture: Miyagi
+      - start_time: "11:55"
+        end_time: "12:40"
+        place_en: Onogawa Onsen, Yonezawa
+        place_ja: 米沢市・小野川温泉
+        prefecture: Yamagata
+      - start_time: "12:40"
+        end_time: "14:25"
+        place_en: Michi-no-Eki Kita-no-Sato, Kitakata
+        place_ja: 喜多方市・喜多の郷
+        prefecture: Fukushima
+      - start_time: "15:00"
+        end_time: "16:15"
+        place_en: Ouchi-juku post town, Shimogo
+        place_ja: 下郷町・大内宿
+        prefecture: Fukushima
+      - start_time: "17:30"
+        end_time: "18:45"
+        place_en: Nikko Kanaya Hotel and Chuzenji Kanaya Hotel, Nikko
+        place_ja: 日光市・日光金谷ホテル・中禅寺金谷ホテル
+        prefecture: Tochigi
+  - date: 2025-09-28
+    checkpoints:
+      - start_time: "08:00"
+        end_time: "08:30"
+        place_en: Nikko Kanaya Hotel and Chuzenji Kanaya Hotel, Nikko
+        place_ja: 日光市・日光金谷ホテル・中禅寺金谷ホテル
+        prefecture: Tochigi
+      - start_time: "08:55"
+        end_time: "09:40"
+        place_en: Michi-no-Eki Yusui-no-Sato Shioya, Shioya
+        place_ja: 塩谷町・道の駅湧水の郷しおや
+        prefecture: Tochigi
+      - start_time: "09:05"
+        end_time: "09:50"
+        place_en: Shinoi Ring, Utsunomiya
+        place_ja: 宇都宮市・SHINOI RING
+        prefecture: Tochigi
+      - start_time: "10:00"
+        end_time: "10:45"
+        place_en: Michi-no-Eki Kitsuregawa, Sakura
+        place_ja: さくら市・道の駅 きつれがわ
+        prefecture: Tochigi
+      - start_time: "10:45"
+        end_time: "11:30"
+        place_en: Michi-no-Eki Motegi, Motegi
+        place_ja: 茂木町・道の駅もてぎ
+        prefecture: Tochigi
+      - start_time: "11:20"
+        end_time: "12:05"
+        place_en: Kasama Inari Shrine, Kasama
+        place_ja: 笠間市・笠間稲荷神社
+        prefecture: Ibaraki
+      - start_time: "12:00"
+        end_time: "14:00"
+        place_en: Oarai Marina, Oarai
+        place_ja: 大洗町・大洗マリーナ
+        prefecture: Ibaraki
+      - start_time: "14:45"
+        end_time: "16:30"
+        place_en: Sawara old town, Katori
+        place_ja: 香取市・小江戸佐原
+        prefecture: Chiba
+      - start_time: "15:00"
+        end_time: "16:30"
+        place_en: NATS Japan Automobile College, Narita
+        place_ja: 成田市・日本自動車大学校
+        prefecture: Chiba
+      - start_time: "16:20"
+        end_time: "17:00"
+        place_en: ANA Crowne Plaza Narita, Narita
+        place_ja: 成田市・ANAクラウンプラザホテル成田
+        prefecture: Chiba
+  - date: 2025-09-29
+    checkpoints:
+      - start_time: "08:30"
+        end_time: "09:00"
+        place_en: ANA Crowne Plaza Narita, Narita
+        place_ja: 成田市・ANAクラウンプラザホテル成田
+        prefecture: Chiba
+      - start_time: "08:50"
+        end_time: "09:35"
+        place_en: Naritasan Shinshoji temple approach, Narita
+        place_ja: 成田市・成田山新勝寺門前広場
+        prefecture: Chiba
+      - start_time: "09:20"
+        end_time: "10:05"
+        place_en: Shibayama Niozon temple, Shibayama
+        place_ja: 芝山町・芝山仁王尊
+        prefecture: Chiba
+      - start_time: "10:00"
+        end_time: "10:45"
+        place_en: Town car park, Kujukuri
+        place_ja: 九十九里町・町営駐車場
+        prefecture: Chiba
+      - start_time: "10:30"
+        end_time: "11:15"
+        place_en: Tsurigasaki Beach, Ichinomiya
+        place_ja: 一宮町・釣ヶ崎海岸広場
+        prefecture: Chiba
+      - start_time: "11:15"
+        end_time: "12:45"
+        place_en: Tsuki-no-Sabaku Park, Onjuku
+        place_ja: 御宿町・月の砂漠公園
+        prefecture: Chiba
+      - start_time: "12:10"
+        end_time: "12:55"
+        place_en: Kuste arts centre, Katsuura
+        place_ja: 勝浦市・勝浦市芸術文化交流センターKüste
+        prefecture: Chiba
+      - start_time: "12:40"
+        end_time: "13:25"
+        place_en: Yorokeikoku Station, Kominato Railway, Ichihara
+        place_ja: 市原市・小湊鐵道 養老渓谷駅前
+        prefecture: Chiba
+      - start_time: "13:10"
+        end_time: "13:55"
+        place_en: Michi-no-Eki Kisarazu Umakuta-no-Sato, Kisarazu
+        place_ja: 木更津市・道の駅木更津うまくたの里
+        prefecture: Chiba
+      - start_time: "13:20"
+        end_time: "15:35"
+        place_en: Tokyo German Village, Sodegaura
+        place_ja: 袖ケ浦市・東京ドイツ村
+        prefecture: Chiba
+      - start_time: "15:30"
+        end_time: "17:00"
+        place_en: Valentine Street, Makuhari Bay Town, Chiba City (finish ceremony)
+        place_ja: 千葉市・幕張ベイタウン バレンタイン通り（ゴールセレモニー）
+        prefecture: Chiba
 list_as_of: 2025-09-09
 cars:
   - entry_no: "01"

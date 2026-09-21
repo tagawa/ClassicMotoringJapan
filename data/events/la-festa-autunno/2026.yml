@@ -7,21 +7,211 @@ source_url: https://www.lafesta-autunno.com/2026/schedule/
 last_verified: 2026-09-21
 sequence: 0
 route_en: >
-  The 29th running, over four days. Day 1, 2 October: away from Harajuku and
-  Omotesando between 11:05 and 11:35, then north to Nasunogahara Park and the
-  Tsukuruma circuit at Nasushiobara in Tochigi, on through Nishigo and Tenei in
-  Fukushima and along Lake Inawashiro to the night halt at Urabandai. Day 2, 3
-  October: round Lake Hibara and over into Yamagata for Yonezawa ski ground, back
-  to the Link circuit, Fukushima Sky Park and Iizaka Onsen at Fukushima City,
-  then Shiroishi and Shichikashuku in Miyagi, Onogawa Onsen, Kitakata and the
-  Ouchi-juku post town, finishing the day at the Kanaya hotels in Nikko. Day 3, 4
-  October: the Kirifuri ice arena, Shioya and Sakura in Tochigi, then Kasama
-  Inari shrine and Oarai marina in Ibaraki, and into Chiba for Sawara old town
-  and Narita. Day 4, 5 October: Shibayama, the Kujukuri coast at Kujukuri,
-  Ichinomiya and Onjuku, Katsuura, the Oyama rice terraces at Kamogawa and the
-  Magarigawa Club, then the finish at Makuhari Bay Town in Chiba City between
-  15:30 and 17:00. Tokyo and eight prefectures in all; Gunma and Saitama are
-  passed through without a checkpoint.
+  The 29th running. The organizer's checkpoint timetable is below. Gunma and
+  Saitama are crossed without a checkpoint, so the cars cover Tokyo and eight
+  prefectures in all. Windows shift with traffic on the day.
+route:
+  - date: 2026-10-02
+    checkpoints:
+      - start_time: "11:05"
+        end_time: "11:35"
+        place_en: Harajuku and Omotesando
+        place_ja: 原宿・表参道
+        prefecture: Tokyo
+      - start_time: "13:20"
+        end_time: "14:40"
+        place_en: Nasunogahara Park, Nasushiobara
+        place_ja: 那須塩原市・那須野が原公園
+        prefecture: Tochigi
+      - start_time: "14:25"
+        end_time: "15:10"
+        place_en: Tsukuruma Circuit, Nasushiobara
+        place_ja: 那須塩原市・つくるまサーキット
+        prefecture: Tochigi
+      - start_time: "15:20"
+        end_time: "16:05"
+        place_en: Marugoto Saigokan, Nishigo
+        place_ja: 西郷村・まるごと西郷館
+        prefecture: Fukushima
+      - start_time: "15:45"
+        end_time: "16:30"
+        place_en: Michi-no-Eki Hatorikokogen, Tenei
+        place_ja: 天栄村・道の駅 羽鳥湖高原
+        prefecture: Fukushima
+      - start_time: "16:40"
+        place_en: Lake Inawashiro shore
+        place_ja: 猪苗代湖畔
+        prefecture: Fukushima
+      - start_time: "17:10"
+        end_time: "17:55"
+        place_en: Urabandai Lake Resort, Kitashiobara
+        place_ja: 北塩原村・裏磐梯レイクリゾート
+        prefecture: Fukushima
+  - date: 2026-10-03
+    checkpoints:
+      - start_time: "07:00"
+        end_time: "07:30"
+        place_en: Urabandai Lake Resort, Kitashiobara
+        place_ja: 北塩原村・裏磐梯レイクリゾート
+        prefecture: Fukushima
+      - start_time: "07:10"
+        place_en: Lake Hibara shore
+        place_ja: 桧原湖畔
+        prefecture: Fukushima
+      - start_time: "08:30"
+        end_time: "09:15"
+        place_en: Yonezawa Ski Resort, Yonezawa
+        place_ja: 米沢市・米沢スキー場
+        prefecture: Yamagata
+      - start_time: "09:00"
+        end_time: "09:45"
+        place_en: Link Circuit, Fukushima City
+        place_ja: 福島市・リンクサーキット
+        prefecture: Fukushima
+      - start_time: "09:10"
+        end_time: "09:55"
+        place_en: Fukushima Sky Park, Fukushima City
+        place_ja: 福島市・ふくしまスカイパーク
+        prefecture: Fukushima
+      - start_time: "09:25"
+        end_time: "10:10"
+        place_en: Iizaka Onsen, Fukushima City
+        place_ja: 福島市・飯坂温泉
+        prefecture: Fukushima
+      - start_time: "10:00"
+        end_time: "10:45"
+        place_en: Kamitozawa community hall, Shiroishi
+        place_ja: 白石市・上戸沢集会所
+        prefecture: Miyagi
+      - start_time: "10:15"
+        end_time: "11:15"
+        place_en: Shichikashuku Dam nature park car park, Shichikashuku
+        place_ja: 七ヶ宿町・七ケ宿ダム自然休養公園駐車場
+        prefecture: Miyagi
+      - start_time: "10:50"
+        end_time: "11:35"
+        place_en: Owaraji, Shichikashuku
+        place_ja: 七ヶ宿町・大わらじ
+        prefecture: Miyagi
+      - start_time: "12:05"
+        end_time: "12:50"
+        place_en: Onogawa Onsen, Yonezawa
+        place_ja: 米沢市・小野川温泉
+        prefecture: Yamagata
+      - start_time: "12:45"
+        end_time: "14:25"
+        place_en: Michi-no-Eki Kita-no-Sato, Kitakata
+        place_ja: 喜多方市・喜多の郷
+        prefecture: Fukushima
+      - start_time: "15:00"
+        end_time: "16:15"
+        place_en: Ouchi-juku post town, Shimogo
+        place_ja: 下郷町・大内宿
+        prefecture: Fukushima
+      - start_time: "17:30"
+        end_time: "18:45"
+        place_en: Nikko Kanaya Hotel and Chuzenji Kanaya Hotel, Nikko
+        place_ja: 日光市・日光金谷ホテル・中禅寺金谷ホテル
+        prefecture: Tochigi
+  - date: 2026-10-04
+    checkpoints:
+      - start_time: "07:45"
+        end_time: "08:05"
+        place_en: Nikko Kanaya Hotel and Chuzenji Kanaya Hotel, Nikko
+        place_ja: 日光市・日光金谷ホテル・中禅寺金谷ホテル
+        prefecture: Tochigi
+      - start_time: "08:20"
+        end_time: "09:05"
+        place_en: Kirifuri Ice Arena, Nikko
+        place_ja: 日光市・栃木県立霧降アイスアリーナ
+        prefecture: Tochigi
+      - start_time: "08:55"
+        end_time: "09:40"
+        place_en: Michi-no-Eki Yusui-no-Sato Shioya, Shioya
+        place_ja: 塩谷町・道の駅 湧水の郷しおや
+        prefecture: Tochigi
+      - start_time: "09:40"
+        end_time: "10:25"
+        place_en: Michi-no-Eki Kitsuregawa, Sakura
+        place_ja: さくら市・道の駅 きつれがわ
+        prefecture: Tochigi
+      - start_time: "11:25"
+        end_time: "12:10"
+        place_en: Kasama Inari Shrine, Kasama
+        place_ja: 笠間市・笠間稲荷神社
+        prefecture: Ibaraki
+      - start_time: "12:10"
+        end_time: "14:05"
+        place_en: Oarai Marina, Oarai
+        place_ja: 大洗町・大洗マリーナ
+        prefecture: Ibaraki
+      - start_time: "14:50"
+        end_time: "15:35"
+        place_en: Sawara old town, Katori
+        place_ja: 香取市・小江戸佐原
+        prefecture: Chiba
+      - start_time: "15:05"
+        end_time: "16:35"
+        place_en: NATS Japan Automobile College, Narita
+        place_ja: 成田市・日本自動車大学校
+        prefecture: Chiba
+      - start_time: "16:20"
+        end_time: "17:05"
+        place_en: Naritasan Shinshoji road safety prayer hall, Narita
+        place_ja: 成田市・成田山新勝寺交通安全祈祷殿
+        prefecture: Chiba
+      - start_time: "16:30"
+        end_time: "17:00"
+        place_en: ANA Crowne Plaza Narita, Narita
+        place_ja: 成田市・ANAクラウンプラザホテル成田
+        prefecture: Chiba
+  - date: 2026-10-05
+    checkpoints:
+      - start_time: "07:45"
+        end_time: "08:15"
+        place_en: ANA Crowne Plaza Narita, Narita
+        place_ja: 成田市・ANAクラウンプラザホテル成田
+        prefecture: Chiba
+      - start_time: "08:25"
+        end_time: "09:10"
+        place_en: Shibayama Niozon temple, Shibayama
+        place_ja: 芝山町・芝山仁王尊
+        prefecture: Chiba
+      - start_time: "09:05"
+        end_time: "09:50"
+        place_en: Town car park, Kujukuri
+        place_ja: 九十九里町・町営駐車場
+        prefecture: Chiba
+      - start_time: "09:30"
+        end_time: "10:15"
+        place_en: Tsurigasaki Beach, Ichinomiya
+        place_ja: 一宮町・釣ヶ崎海岸広場
+        prefecture: Chiba
+      - start_time: "10:20"
+        end_time: "11:20"
+        place_en: Tsuki-no-Sabaku Park, Onjuku
+        place_ja: 御宿町・月の砂漠公園
+        prefecture: Chiba
+      - start_time: "10:45"
+        end_time: "11:30"
+        place_en: Kuste arts centre, Katsuura
+        place_ja: 勝浦市・勝浦市芸術文化交流センター Küste
+        prefecture: Chiba
+      - start_time: "12:05"
+        end_time: "12:50"
+        place_en: Oyama Senmaida rice terraces, Kamogawa
+        place_ja: 鴨川市・大山千枚田
+        prefecture: Chiba
+      - start_time: "12:45"
+        end_time: "14:30"
+        place_en: THE MAGARIGAWA CLUB, Minamiboso
+        place_ja: 南房総市・THE MAGARIGAWA CLUB
+        prefecture: Chiba
+      - start_time: "15:30"
+        end_time: "17:00"
+        place_en: Makuhari Bay Town, Chiba City
+        place_ja: 千葉市・幕張ベイタウン
+        prefecture: Chiba
 list_as_of: 2026-09-14
 cars:
   - entry_no: "01"
