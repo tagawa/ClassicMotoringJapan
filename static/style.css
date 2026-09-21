@@ -87,6 +87,9 @@ a:focus-visible, summary:focus-visible {
 .facts dt { font-weight: 600; }
 .facts dd { margin: 0; }
 
+/* Three letters is a small tap target, so give the link height without moving the text. */
+.map { display: inline-block; padding: 4px 0; }
+
 .table-wrap { overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; }
 th, td {
