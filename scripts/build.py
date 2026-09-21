@@ -431,6 +431,7 @@ def year_chart(rows: list[dict]) -> list[dict]:
         first, last = min(e["start"] for e in editions), max(e["start"] for e in editions)
         when = f"{first:%b}" if first.month == last.month else f"{first:%b} to {last:%b}"
         years.append({
+            "year": year,
             "label": f"{year}: {len(editions)} event{'' if len(editions) == 1 else 's'}, {when}",
             "bars": [{"left": round((e["start"].timetuple().tm_yday - 1) / days * 100, 2),
                       "width": round(max(((e["end"] - e["start"]).days + 1) / days * 100,
