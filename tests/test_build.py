@@ -535,6 +535,79 @@ class CombinedProseTests(unittest.TestCase):
         self.build_with(access_notes_en=build.PROSE_MAX_WORDS)
 
 
+class EditorialProseTests(unittest.TestCase):
+    """The pages are a reference, not a recommendation, so advice fails the build."""
+
+    # The clause that shipped on la-festa-autunno and prompted the rule.
+    SHIPPED = ("About two weeks beforehand the organizer publishes a timetable giving an "
+               "arrival window for every checkpoint, which is the practical way to plan a "
+               "day around it.")
+    CUT = ("About two weeks beforehand the organizer publishes a timetable giving an "
+           "arrival window for every checkpoint.")
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.data = self.tmp / "data"
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp)
+
+    def build_with_prose(self, text: str, field="summary_en"):
+        write_event(self.data, "meet", extra=f"{field}: {json.dumps(text)}\n")
+        write_instance(self.data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-18"))
+        build.build(self.data, self.tmp / "site")
+
+    def refusal(self, text: str, field="summary_en") -> str:
+        with self.assertRaises(build.ValidationError) as ctx:
+            self.build_with_prose(text, field)
+        return str(ctx.exception)
+
+    def test_the_clause_that_shipped_is_rejected(self):
+        message = self.refusal(self.SHIPPED)
+        self.assertIn("summary_en", message)
+        self.assertIn("the practical way to", message)
+
+    def test_the_same_sentence_without_the_clause_is_accepted(self):
+        # The gate has to fault the advice, not the sentence carrying it.
+        self.build_with_prose(self.CUT)
+
+    def test_the_message_says_what_to_do_about_it(self):
+        message = self.refusal(self.SHIPPED).lower()
+        self.assertIn("cut", message)
+        self.assertIn("fact", message)
+
+    def test_every_listed_phrase_is_actually_caught(self):
+        # An absence check proves nothing until the pattern is shown to produce a positive.
+        for phrase in build.EDITORIAL_PHRASES:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, self.refusal(f"The meeting is {phrase} something."))
+
+    def test_a_curly_apostrophe_is_caught_like_a_straight_one(self):
+        self.assertIn("don't miss", self.refusal("The swap meet, and don\u2019t miss the time trial."))
+
+    def test_a_phrase_broken_over_a_folded_line_is_still_caught(self):
+        self.assertIn("worth a look", self.refusal("The paddock is worth\n  a look."))
+
+    def test_editions_are_held_to_the_same_rule(self):
+        write_event(self.data, "meet")
+        write_instance(self.data, "meet", 2026, instance_yaml(
+            "meet", 2026, "2026-10-18", "2026-10-18",
+            extra=f"route_en: {json.dumps(self.SHIPPED)}\n"))
+        with self.assertRaises(build.ValidationError) as ctx:
+            build.build(self.data, self.tmp / "site")
+        self.assertIn("route_en", str(ctx.exception))
+
+    def test_facts_that_merely_look_like_advice_are_left_alone(self):
+        for text in (
+            "Cars must be built before 1968 and replicas are not accepted.",
+            "A Mustang and two Jaguars ran in 2025.",
+            "The best-preserved of the three is the 1927 car.",
+            "Entry is free for spectators and the car park is free with it.",
+        ):
+            with self.subTest(text=text):
+                self.build_with_prose(text)
+
+
 class ValidationTests(unittest.TestCase):
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp())
