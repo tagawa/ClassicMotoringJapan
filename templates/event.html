@@ -30,7 +30,7 @@
 <h2>Visiting</h2>
 <dl class="facts">
   <dt>Where</dt>
-  <dd>{{ ev.venue_en }}, {{ ev.prefecture }}{% if ev.street_address %}<br>{{ ev.street_address }}{% endif %}</dd>
+  <dd>{{ ev.venue_en }}, {{ ev.prefecture }}{% if ev.street_address %}<br>{{ ev.street_address }}{% endif %}{% if pin %}<br><a class="map" href="{{ pin.url }}">Map</a>{% endif %}</dd>
 {% if ev.nearest_station or ev.access_notes_en %}
   <dt>Getting there</dt>
   <dd>{% if ev.nearest_station %}Nearest station: {{ ev.nearest_station }}{% endif %}{% if ev.nearest_station and ev.access_notes_en %}<br>{% endif %}{{ ev.access_notes_en or "" }}</dd>

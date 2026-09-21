@@ -13,7 +13,7 @@
   <dt>When</dt>
   <dd>{{ r.when_full }}</dd>
   <dt>Where</dt>
-  <dd>{{ r.venue }}, {{ ev.prefecture }}</dd>
+  <dd>{{ r.venue }}, {{ ev.prefecture }}{% if r.pin %}<br><a class="map" href="{{ r.pin.url }}">Map</a>{% endif %}</dd>
   <dt>Cost</dt>
   <dd>{{ ev.spectator_fee_jpy | fee }}</dd>
 </dl>
