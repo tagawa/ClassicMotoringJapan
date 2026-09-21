@@ -94,7 +94,8 @@ RALLY_EXTRA = 'start_time: "08:00"\nend_time: "16:00"\nroute_en: Start Test Park
 
 def make_fixture(data: Path) -> None:
     write_event(data, "autumn-rally", name_en='"Autumn Rally, Shizuoka"',
-                name_ja="オータム・クラシックカー・ラリー・イン・静岡・ヒストリック・ツーリング・ミーティング")
+                name_ja="オータム・クラシックカー・ラリー・イン・静岡・ヒストリック・ツーリング・ミーティング",
+                extra="lat: 34.9756\nlon: 138.3828\n")
     write_instance(data, "autumn-rally", 2026,
                    instance_yaml("autumn-rally", 2026, "2026-10-18", "2026-10-19", extra=RALLY_EXTRA))
     write_event(data, "culture-day-show", fee=1500)
@@ -125,7 +126,7 @@ class BuildOutputTests(unittest.TestCase):
         cls.data, cls.out = cls.tmp / "data", cls.tmp / "site"
         make_fixture(cls.data)
         build.build(cls.data, cls.out)
-        cls.ics_raw = (cls.out / "events.ics").read_bytes().decode("utf-8")
+        cls.ics_raw = (cls.out / build.FEED_FILE).read_bytes().decode("utf-8")
         cls.ics = unfold(cls.ics_raw)
         cls.pages = {p.relative_to(cls.out).as_posix(): p.read_text(encoding="utf-8")
                      for p in cls.out.rglob("*.html")}
@@ -212,8 +213,46 @@ class BuildOutputTests(unittest.TestCase):
 
     def test_every_page_offers_a_live_subscription(self):
         for page, html in self.pages.items():
-            self.assertIn('href="webcal://classicmotoringjapan.com/events.ics"', html, page)
-            self.assertIn("https://classicmotoringjapan.com/events.ics", html, page)
+            self.assertIn('href="webcal://classicmotoringjapan.com/classic-car-events.ics"', html, page)
+            self.assertIn("https://classicmotoringjapan.com/classic-car-events.ics", html, page)
+
+    def test_the_feed_file_name_is_the_name_thunderbird_will_show(self):
+        # Thunderbird has never read X-WR-CALNAME (bugzilla 168176, open since 2002). It
+        # names a calendar after the last path segment, so the file name is the name.
+        self.assertTrue((self.out / "classic-car-events.ics").is_file())
+        self.assertFalse((self.out / "events.ics").exists())
+
+    def test_the_calendar_names_itself_for_clients_that_do_read_it(self):
+        self.assertIn("X-WR-CALNAME:Classic Motoring Japan", self.ics)
+        self.assertIn("NAME:Classic Motoring Japan", self.ics)
+
+    # Map links
+
+    def test_a_venue_with_coordinates_gets_a_map_link(self):
+        html = self.pages["events/autumn-rally/index.html"]
+        self.assertIn('href="https://maps.apple.com/?ll=34.9756,138.3828&amp;q=Test%20Park"', html)
+        self.assertIn(">Map</a>", html)
+
+    def test_the_edition_page_pins_the_same_venue(self):
+        html = self.pages["events/autumn-rally/2026/index.html"]
+        self.assertIn("https://maps.apple.com/?ll=34.9756,138.3828&amp;q=Test%20Park", html)
+
+    def test_a_venue_without_coordinates_shows_no_map_link(self):
+        for page in ("events/hill-climb/index.html", "events/culture-day-show/index.html",
+                     "index.html"):
+            self.assertNotIn("maps.apple.com", self.pages[page], page)
+
+    def test_the_calendar_entry_carries_the_pin(self):
+        self.assertIn("GEO:34.9756;138.3828", self.ics)
+        self.assertEqual(sum(line.startswith("GEO:") for line in self.ics), 1,
+                         "only the venue with coordinates should carry one")
+
+    def test_structured_data_carries_the_pin_only_where_there_is_one(self):
+        found = self.jsonld_by_name()
+        pinned = found["Autumn Rally, Shizuoka 2026"][0][1]["location"]
+        self.assertEqual(pinned["geo"], {"@type": "GeoCoordinates",
+                                         "latitude": 34.9756, "longitude": 138.3828})
+        self.assertNotIn("geo", found["Test Event 2026"][0][1]["location"])
 
     # Several editions in one year
 
@@ -692,6 +731,67 @@ class ValidationTests(unittest.TestCase):
                              "must match the file name", stem="2027-spring")
 
 
+class CoordinateTests(unittest.TestCase):
+    """A pin is data like any other: checked, or absent. Never approximated."""
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.data = self.tmp / "data"
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp)
+
+    def build_with(self, event_extra="", edition_extra=""):
+        write_event(self.data, "meet", extra=event_extra)
+        write_instance(self.data, "meet", 2026,
+                       instance_yaml("meet", 2026, "2026-10-18", "2026-10-18", extra=edition_extra))
+        build.build(self.data, self.tmp / "site")
+
+    def refusal(self, **kwargs) -> str:
+        with self.assertRaises(build.ValidationError) as ctx:
+            self.build_with(**kwargs)
+        return str(ctx.exception)
+
+    def page(self, rel: str) -> str:
+        return (self.tmp / "site" / rel).read_text(encoding="utf-8")
+
+    def test_an_event_with_no_coordinates_builds_and_says_nothing(self):
+        self.build_with()
+        self.assertNotIn("maps.apple.com", self.page("events/meet/index.html"))
+
+    def test_a_lone_latitude_is_refused(self):
+        message = self.refusal(event_extra="lat: 34.9756\n")
+        self.assertIn("lat", message)
+        self.assertIn("lon", message)
+
+    def test_a_lone_longitude_is_refused(self):
+        self.assertIn("lon", self.refusal(event_extra="lon: 138.3828\n"))
+
+    def test_a_swapped_pair_falls_outside_japan_and_is_refused(self):
+        self.assertIn("Japan", self.refusal(event_extra="lat: 138.3828\nlon: 34.9756\n"))
+
+    def test_text_where_a_number_belongs_is_refused(self):
+        self.assertIn("lat", self.refusal(event_extra='lat: "34.9756"\nlon: 138.3828\n'))
+
+    def test_a_whole_number_is_still_a_coordinate(self):
+        self.build_with(event_extra="lat: 35\nlon: 139\n")
+        self.assertIn("ll=35,139", self.page("events/meet/index.html"))
+
+    def test_an_edition_that_names_its_own_venue_does_not_inherit_the_pin(self):
+        # The coordinates were recorded at the event's venue, not at this one.
+        self.build_with(event_extra="lat: 34.9756\nlon: 138.3828\n",
+                        edition_extra="venue_en: Another Field\n" + CARS)
+        self.assertIn("maps.apple.com", self.page("events/meet/index.html"))
+        self.assertNotIn("maps.apple.com", self.page("events/meet/2026/index.html"))
+
+    def test_an_edition_can_carry_its_own_pin(self):
+        self.build_with(event_extra="lat: 34.9756\nlon: 138.3828\n",
+                        edition_extra="venue_en: Another Field\nlat: 35.1\nlon: 138.9\n" + CARS)
+        html = self.page("events/meet/2026/index.html")
+        self.assertIn("ll=35.1,138.9", html)
+        self.assertIn("q=Another%20Field", html)
+
+
 class OutputFolderTests(unittest.TestCase):
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp())
@@ -708,6 +808,14 @@ class OutputFolderTests(unittest.TestCase):
         with self.assertRaises(build.BuildError):
             build.build(self.data, precious)
         self.assertEqual((precious / "notes.txt").read_text(encoding="utf-8"), "keep me")
+
+    def test_rebuilds_over_a_build_that_used_an_older_feed_name(self):
+        out = self.tmp / "site"
+        out.mkdir()
+        (out / "index.html").write_text("old", encoding="utf-8")
+        (out / "events.ics").write_text("old", encoding="utf-8")
+        build.build(self.data, out)
+        self.assertFalse((out / "events.ics").exists())
 
     def test_rebuilds_over_a_previous_build(self):
         out = self.tmp / "site"
