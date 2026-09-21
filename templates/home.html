@@ -4,9 +4,10 @@
 <p class="lede">When and where to watch, how to get there, and what you'll see. Checked first-hand, written for visitors who don't read Japanese.</p>
 
 {% if years %}
+<div id="years">
 <ol class="chart years">
 {% for y in years %}
-  <li>
+  <li data-year="{{ y.year }}">
     <span class="chart-when">{{ y.label }}</span>
     <span class="chart-track" aria-hidden="true">
 {% for bar in y.bars %}
@@ -17,6 +18,7 @@
 {% endfor %}
 </ol>
 <p class="chart-axis quarters"><span>Jan</span><span>Apr</span><span>Jul</span><span>Oct</span></p>
+</div>
 {% endif %}
 
 <section id="upcoming" aria-labelledby="upcoming-h">
@@ -71,6 +73,17 @@
     });
     if (moved) document.getElementById("past").hidden = false;
     if (!document.querySelector("#upcoming-list > li")) document.getElementById("no-upcoming").hidden = false;
+    // The strip looks ahead: this year and the ones after it. The list below keeps the past.
+    var thisYear = todayInJapan.slice(0, 4);
+    var strip = document.getElementById("years");
+    var ahead = 0;
+    if (strip) {
+      strip.querySelectorAll("li[data-year]").forEach(function (li) {
+        if (li.dataset.year < thisYear) li.hidden = true;
+        else ahead += 1;
+      });
+      if (!ahead) strip.hidden = true;
+    }
   })();
 </script>
 {% endblock %}
