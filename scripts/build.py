@@ -49,7 +49,7 @@ EVENT_REQUIRED = {
 }
 EVENT_OPTIONAL = {
     "organizer": "str", "summary_en": "prose", "street_address": "str",
-    "nearest_station": "str", "access_notes_en": "prose", "typical_eras": "strlist",
+    "nearest_station": "prose", "access_notes_en": "prose", "typical_eras": "strlist",
     "typical_scale": "str", "spectator_notes_en": "prose", "photography_notes_en": "prose",
 }
 EDITION_REQUIRED = {
@@ -63,6 +63,9 @@ EDITION_OPTIONAL = {
 ROUTE_DAY_REQUIRED = {"date": "date", "checkpoints": "checkpoints"}
 CHECKPOINT_REQUIRED = {"start_time": "time", "place_en": "str", "prefecture": "str"}
 CHECKPOINT_OPTIONAL = {"end_time": "time", "place_ja": "str"}
+# Fields the templates render into a single block. The cap has to apply to what a
+# reader actually sees there, not to each field measured on its own.
+COMBINED_PROSE = (("nearest_station", "access_notes_en"),)
 CAR_REQUIRED = {"entry_no": "str", "year": "int", "make": "str", "model": "str"}
 CAR_OPTIONAL = {"colour": "str"}
 
@@ -160,6 +163,21 @@ def _load_yaml(path: Path, rel: str, errors: list[str]):
         return None
 
 
+def _check_combined_prose(ev: dict, rel: str, errors: list[str]) -> None:
+    for group in COMBINED_PROSE:
+        present = [(key, ev[key]) for key in group if isinstance(ev.get(key), str)]
+        if len(present) < 2:
+            continue
+        total = sum(len(value.split()) for _, value in present)
+        if total > PROSE_MAX_WORDS:
+            names = " and ".join(repr(key) for key, _ in present)
+            errors.append(
+                f"{rel}: {names} render as one block on the page and come to {total} words "
+                f"together (limit {PROSE_MAX_WORDS}). Shorten them, or break the detail out "
+                f"into bullet points, a table or a diagram"
+            )
+
+
 def _check_route(route, start, end, rel: str, errors: list[str]) -> None:
     """Days run in order inside the edition's dates, checkpoints in order inside a day."""
     if not isinstance(route, list):
@@ -209,6 +227,7 @@ def load_and_validate(data_dir: Path) -> tuple[dict, list]:
         if ev.get("slug") != path.stem:
             errors.append(f"{rel}: slug {ev.get('slug')!r} must match the file name {path.stem!r}")
             continue
+        _check_combined_prose(ev, rel, errors)
         events[path.stem] = ev
 
     for path in sorted(events_dir.glob("*/*.yml")):
