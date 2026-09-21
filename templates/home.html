@@ -3,6 +3,22 @@
 <h1>Classic car events in Japan</h1>
 <p class="lede">When and where to watch, how to get there, and what you'll see. Checked first-hand, written for visitors who don't read Japanese.</p>
 
+{% if years %}
+<ol class="chart years">
+{% for y in years %}
+  <li>
+    <span class="chart-when">{{ y.label }}</span>
+    <span class="chart-track" aria-hidden="true">
+{% for bar in y.bars %}
+      <i{% if bar.cancelled %} class="off"{% endif %} style="left: {{ bar.left }}%; width: {{ bar.width }}%"></i>
+{% endfor %}
+    </span>
+  </li>
+{% endfor %}
+</ol>
+<p class="chart-axis quarters"><span>Jan</span><span>Apr</span><span>Jul</span><span>Oct</span></p>
+{% endif %}
+
 <section id="upcoming" aria-labelledby="upcoming-h">
   <h2 id="upcoming-h">Upcoming</h2>
   <p id="no-upcoming" hidden>No upcoming dates are confirmed yet. New dates appear here and in the calendar feed as organizers announce them.</p>

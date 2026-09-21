@@ -9,16 +9,19 @@
 
 <h2>Dates</h2>
 {% if rows %}
+{% set show_details = rows | selectattr("has_page") | list %}
 <div class="table-wrap">
   <table>
-    <thead><tr><th scope="col">Edition</th><th scope="col">Dates</th><th scope="col">Status</th><th scope="col"><span class="visually-hidden">Details</span></th></tr></thead>
+    <thead><tr><th scope="col">Edition</th><th scope="col">Dates</th><th scope="col">Status</th>{% if show_details %}<th scope="col"><span class="visually-hidden">Details</span></th>{% endif %}</tr></thead>
     <tbody>
 {% for r in rows | reverse %}
       <tr>
         <td class="num">{{ r.label }}</td>
         <td>{{ r.when_full }}</td>
-        <td>{% if r.ed.status == "tentative" %}Not confirmed{% elif r.ed.status == "cancelled" %}Cancelled{% else %}Confirmed{% endif %}</td>
+        <td>{% if r.ed.status == "tentative" %}<span class="dot tentative" aria-hidden="true"></span>Not confirmed{% elif r.ed.status == "cancelled" %}<span class="dot cancelled" aria-hidden="true"></span>Cancelled{% else %}<span class="dot" aria-hidden="true"></span>Confirmed{% endif %}</td>
+{% if show_details %}
         <td>{% if r.has_page %}<a href="{{ root }}{{ r.path }}">{{ r.page_parts | join(" and ") | lower | capitalize }}</a>{% endif %}</td>
+{% endif %}
       </tr>
 {% endfor %}
     </tbody>
@@ -48,7 +51,7 @@
 {% endif %}
 {% if ev.typical_eras or ev.typical_scale %}
   <dt>What you'll see</dt>
-  <dd>{% if ev.typical_scale %}{{ ev.typical_scale }}{% endif %}{% if ev.typical_scale and ev.typical_eras %}, {% endif %}{% if ev.typical_eras %}{{ ev.typical_eras | join(", ") }}{% endif %}</dd>
+  <dd>{% if ev.typical_scale %}{{ ev.typical_scale }}{% endif %}{% if ev.typical_scale and ev.typical_eras %}<br>{% endif %}{% for era in ev.typical_eras or [] %}<span class="chip">{{ era }}</span>{% endfor %}</dd>
 {% endif %}
   <dt>Official site</dt>
   <dd><a href="{{ ev.official_url }}">{{ ev.organizer or ev.official_url }}</a> (Japanese)</dd>

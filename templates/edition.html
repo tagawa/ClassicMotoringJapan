@@ -26,11 +26,11 @@
 <p>{{ ed.route_en }}</p>
 {% endif %}
 {% if r.chart %}
-<ol class="daychart">
+<ol class="chart">
 {% for day in r.chart.days %}
   <li>
-    <span class="daychart-when">{{ day.when }}: {{ day.summary }}</span>
-    <span class="daychart-track" aria-hidden="true">
+    <span class="chart-when">{{ day.when }}: {{ day.summary }}</span>
+    <span class="chart-track" aria-hidden="true">
 {% for bar in day.bars %}
       <i style="left: {{ bar.left }}%; width: {{ bar.width }}%"></i>
 {% endfor %}
@@ -38,7 +38,7 @@
   </li>
 {% endfor %}
 </ol>
-<p class="daychart-axis"><span>{{ r.chart.start }}</span><span class="end">{{ r.chart.end }}</span></p>
+<p class="chart-axis"><span>{{ r.chart.start }}</span><span class="end">{{ r.chart.end }}</span></p>
 {% endif %}
 {% for day in ed.route or [] %}
 <h3>Day {{ loop.index }}: {{ day.date | weekday }}</h3>
@@ -62,6 +62,20 @@
 {% if ed.cars %}
 <h2>Entry list</h2>
 <p>Entry list as of {{ ed.list_as_of.isoformat() }}.{% if r.list_provisional %} Provisional: cars may withdraw or change.{% endif %}</p>
+{% if r.decades %}
+<ol class="chart decades">
+{% for row in r.decades.rows %}
+  <li>
+    <span class="chart-when">{{ row.label }}: {{ row.text }}</span>
+    <span class="chart-track" aria-hidden="true">
+{% if row.count %}
+      <i style="left: 0%; width: {{ row.width }}%"></i>
+{% endif %}
+    </span>
+  </li>
+{% endfor %}
+</ol>
+{% endif %}
 {% set show_colour = ed.cars | selectattr("colour", "defined") | list %}
 <div class="table-wrap">
   <table>
