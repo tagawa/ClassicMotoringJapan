@@ -19,9 +19,43 @@
 </dl>
 <p><a href="{{ root }}events/{{ ev.slug }}/">Access, viewing spots and photography notes</a></p>
 
-{% if ed.route_en %}
+{% if ed.route_en or ed.route %}
 <h2>Route</h2>
+{% if ed.route_en %}
 <p>{{ ed.route_en }}</p>
+{% endif %}
+{% if r.chart %}
+<ol class="daychart">
+{% for day in r.chart.days %}
+  <li>
+    <span class="daychart-when">{{ day.when }}: {{ day.summary }}</span>
+    <span class="daychart-track" aria-hidden="true">
+{% for bar in day.bars %}
+      <i style="left: {{ bar.left }}%; width: {{ bar.width }}%"></i>
+{% endfor %}
+    </span>
+  </li>
+{% endfor %}
+</ol>
+<p class="daychart-axis"><span>{{ r.chart.start }}</span><span class="end">{{ r.chart.end }}</span></p>
+{% endif %}
+{% for day in ed.route or [] %}
+<h3>Day {{ loop.index }}: {{ day.date | weekday }}</h3>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th scope="col">Time</th><th scope="col">Place</th><th scope="col">Prefecture</th></tr></thead>
+    <tbody>
+{% for point in day.checkpoints %}
+      <tr>
+        <td class="num">{{ point.start_time }}{% if point.end_time %}–{{ point.end_time }}{% endif %}</td>
+        <td>{{ point.place_en }}{% if point.place_ja %}<br><span class="ja" lang="ja">{{ point.place_ja }}</span>{% endif %}</td>
+        <td>{{ point.prefecture }}</td>
+      </tr>
+{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endfor %}
 {% endif %}
 
 {% if ed.cars %}

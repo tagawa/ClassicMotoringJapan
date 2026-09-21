@@ -17,7 +17,7 @@
         <td class="num">{{ r.label }}</td>
         <td>{{ r.when_full }}</td>
         <td>{% if r.ed.status == "tentative" %}Not confirmed{% elif r.ed.status == "cancelled" %}Cancelled{% else %}Confirmed{% endif %}</td>
-        <td>{% if r.has_page %}<a href="{{ root }}{{ r.path }}">{% if r.ed.route_en and r.ed.cars %}Route and entry list{% elif r.ed.route_en %}Route{% else %}Entry list{% endif %}</a>{% endif %}</td>
+        <td>{% if r.has_page %}<a href="{{ root }}{{ r.path }}">{{ r.page_parts | join(" and ") | lower | capitalize }}</a>{% endif %}</td>
       </tr>
 {% endfor %}
     </tbody>
