@@ -20,12 +20,14 @@ import build  # noqa: E402
 
 def write_event(data: Path, slug: str, name_en="Test Event", name_ja="テストイベント",
                 fee=0, extra="") -> None:
+    """name_ja=None writes no Japanese name, as for an event that has only a Latin one."""
     p = data / "events" / f"{slug}.yml"
     p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(
         f"slug: {slug}\n"
         f"name_en: {name_en}\n"
-        f"name_ja: {name_ja}\n"
+        + (f"name_ja: {name_ja}\n" if name_ja is not None else "")
+        + 
         f"official_url: https://example.com/{slug}/\n"
         f"prefecture: Shizuoka\n"
         f"venue_en: Test Park\n"
@@ -88,6 +90,15 @@ ROUTE = (
     "        prefecture: Shizuoka\n"
 )
 
+
+ROUTE_ONE_DAY = (
+    "route:\n"
+    "  - date: 2026-11-22\n"
+    "    checkpoints:\n"
+    '      - start_time: "10:00"\n'
+    "        place_en: Test Park\n"
+    "        prefecture: Osaka\n"
+)
 
 RALLY_EXTRA = 'start_time: "08:00"\nend_time: "16:00"\nroute_en: Start Test Park 08:00, finish Test Harbour 16:00.\n' + CARS
 
@@ -890,6 +901,58 @@ class DecadeStripTests(unittest.TestCase):
             build.build(data, tmp / "site")
             html = (tmp / "site" / "events" / "meet" / "2026" / "index.html").read_text(encoding="utf-8")
             self.assertNotIn("chart decades", html)
+        finally:
+            shutil.rmtree(tmp)
+
+
+class LatinOnlyNameTests(unittest.TestCase):
+    """Plenty of Japanese car events are named only in Latin script, so name_ja is optional.
+
+    An empty line in its place would print the name twice and tag Latin text lang="ja",
+    which tells a screen reader to read it with Japanese pronunciation rules.
+    """
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        data = self.tmp / "data"
+        write_event(data, "latin-fes", name_en="Latin Fes", name_ja=None)
+        write_instance(data, "latin-fes", 2026,
+                       instance_yaml("latin-fes", 2026, "2026-11-22", "2026-11-22", extra=ROUTE_ONE_DAY))
+        build.build(data, self.tmp / "site")
+        out = self.tmp / "site"
+        self.event_html = (out / "events" / "latin-fes" / "index.html").read_text(encoding="utf-8")
+        self.edition_html = (out / "events" / "latin-fes" / "2026" / "index.html").read_text(encoding="utf-8")
+        self.home_html = (out / "index.html").read_text(encoding="utf-8")
+        self.ics = unfold((out / build.FEED_FILE).read_bytes().decode("utf-8"))
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp)
+
+    def test_no_page_carries_an_empty_japanese_line(self):
+        for name, html in (("event", self.event_html), ("edition", self.edition_html),
+                           ("home", self.home_html)):
+            with self.subTest(page=name):
+                self.assertNotRegex(html, r'lang="ja"[^>]*>\s*<')
+
+    def test_the_name_is_not_printed_twice_in_the_body(self):
+        main = re.search(r"<main.*?</main>", self.event_html, re.S).group(0)
+        self.assertEqual(main.count("Latin Fes"), 1, main)
+
+    def test_the_calendar_description_does_not_open_with_a_blank_line(self):
+        line = next(l for l in self.ics if l.startswith("DESCRIPTION:"))
+        self.assertTrue(line.startswith("DESCRIPTION:https://"), line)
+
+    def test_a_japanese_name_is_still_shown_when_there_is_one(self):
+        self.assertIn('lang="ja">テストイベント', self.pages_with_ja())
+
+    def pages_with_ja(self) -> str:
+        tmp = Path(tempfile.mkdtemp())
+        try:
+            data = tmp / "data"
+            write_event(data, "meet")
+            write_instance(data, "meet", 2026, instance_yaml("meet", 2026, "2026-11-22", "2026-11-22"))
+            build.build(data, tmp / "site")
+            return (tmp / "site" / "events" / "meet" / "index.html").read_text(encoding="utf-8")
         finally:
             shutil.rmtree(tmp)
 
