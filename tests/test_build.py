@@ -298,6 +298,14 @@ class BuildOutputTests(unittest.TestCase):
         self.assertIn(">2026: 4 events, Apr to Nov<", html)
         self.assertIn(">2027: 1 event, Nov<", html)
 
+    def test_each_year_is_labelled_so_the_browser_can_drop_the_past_ones(self):
+        # The build never reads the clock, so which years are past is decided in the browser,
+        # the same way upcoming and past are. See tests/test_browser.py.
+        html = self.pages["index.html"]
+        self.assertIn('<li data-year="2026">', html)
+        self.assertIn('<li data-year="2027">', html)
+        self.assertIn('<div id="years">', html)
+
     def test_an_edition_sits_where_its_date_falls_in_the_year(self):
         # 12 Apr 2026 is day 102 of 365, so the bar starts 101 days in.
         self.assertIn("left: 27.67%", self.pages["index.html"])
