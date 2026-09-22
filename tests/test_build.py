@@ -473,6 +473,108 @@ class BuildOutputTests(unittest.TestCase):
             self.assertIn(f"<loc>{url}</loc>", sitemap)
 
 
+    # Agent discovery files. GitHub Pages serves static files and nothing else, so the
+    # checks that need response headers or content negotiation are out of reach; these
+    # are the ones a file on disk can answer.
+
+    def out_text(self, rel: str) -> str:
+        return (self.out / rel).read_text(encoding="utf-8")
+
+    def out_json(self, rel: str) -> dict:
+        return json.loads(self.out_text(rel))
+
+    def api_event(self, ident: str) -> dict:
+        return next(e for e in self.out_json("api/events.json")["events"] if e["id"] == ident)
+
+    def test_robots_txt_declares_content_signals_inside_the_wildcard_group(self):
+        group = self.out_text("robots.txt").split("\n\n", 1)[0].splitlines()
+        self.assertIn("User-agent: *", group)
+        self.assertIn("Content-Signal: search=yes, ai-input=yes, ai-train=no", group)
+
+    def test_events_json_carries_one_record_per_edition_in_date_order(self):
+        self.assertEqual([e["id"] for e in self.out_json("api/events.json")["events"]],
+                         ["hill-climb-2026-spring", "autumn-rally-2026", "hill-climb-2026-autumn",
+                          "culture-day-show-2026", "culture-day-show-2027"])
+
+    def test_events_json_dates_are_strings_a_parser_can_read(self):
+        rally = self.api_event("autumn-rally-2026")
+        self.assertEqual(rally["start"], "2026-10-18")
+        self.assertEqual(rally["end"], "2026-10-19")
+        self.assertEqual(rally["start_time"], "08:00")
+        self.assertEqual(rally["last_verified"], "2026-09-20")
+        self.assertEqual(rally["status"], "confirmed")
+
+    def test_events_json_keeps_a_free_event_distinct_from_one_with_no_fee_recorded(self):
+        self.assertEqual(self.api_event("autumn-rally-2026")["spectator_fee_jpy"], 0)
+        self.assertEqual(self.api_event("culture-day-show-2026")["spectator_fee_jpy"], 1500)
+
+    def test_events_json_repeats_the_entry_list_the_page_tabulates(self):
+        self.assertEqual(self.api_event("autumn-rally-2026")["cars"][1],
+                         {"entry_no": "037", "year": 1934, "make": "Alfa Romeo", "model": "6C 1750 GS"})
+        self.assertNotIn("cars", self.api_event("culture-day-show-2026"))
+
+    def test_events_json_carries_a_prose_route_where_that_is_all_the_source_gave(self):
+        rally = self.api_event("autumn-rally-2026")
+        self.assertEqual(rally["route_en"], "Start Test Park 08:00, finish Test Harbour 16:00.")
+        self.assertNotIn("route", rally)
+
+    def test_events_json_gives_coordinates_only_where_the_pages_have_a_map_link(self):
+        self.assertEqual(self.api_event("autumn-rally-2026")["lat"], 34.9756)
+        self.assertNotIn("lat", self.api_event("culture-day-show-2026"))
+
+    def test_events_json_points_at_the_page_a_reader_would_open(self):
+        for e in self.out_json("api/events.json")["events"]:
+            rel = e["url"].removeprefix(build.SITE_URL + "/") + "index.html"
+            self.assertIn(rel, self.pages, e["id"])
+
+    def test_llms_txt_links_every_event_page_and_both_feeds(self):
+        llms = self.out_text("llms.txt")
+        linked = [page for page in self.pages if page.startswith("events/")]
+        self.assertGreaterEqual(len(linked), 4)
+        for page in linked:
+            self.assertIn(f"{build.SITE_URL}/{page.removesuffix('index.html')})", llms, page)
+        self.assertIn(f"{build.SITE_URL}/api/events.json", llms)
+        self.assertIn(f"{build.SITE_URL}/{build.FEED_FILE}", llms)
+
+    def test_llms_txt_names_an_edition_without_repeating_its_year(self):
+        self.assertIn("): Shizuoka. Spring: 12 Apr 2026; Autumn: 25 Oct 2026.", self.out_text("llms.txt"))
+
+    def test_llms_txt_marks_an_edition_that_is_not_going_ahead(self):
+        self.assertIn("): Shizuoka. 3 Nov 2026; 3 Nov 2027 (cancelled).", self.out_text("llms.txt"))
+
+    def test_ard_manifest_matches_the_published_catalog_schema(self):
+        catalog = self.out_json(".well-known/ai-catalog.json")
+        self.assertEqual(set(catalog), {"specVersion", "host", "entries"})
+        self.assertEqual(catalog["specVersion"], "1.0")
+        self.assertEqual(catalog["host"]["displayName"], build.SITE_NAME)
+        self.assertEqual(len(catalog["entries"]), 3)
+        for entry in catalog["entries"]:
+            where = entry["identifier"]
+            self.assertRegex(where, r"^urn:air:classicmotoringjapan\.com(:[a-zA-Z0-9._-]+){2}$")
+            self.assertTrue(entry["displayName"], where)
+            self.assertRegex(entry["type"], r"^[a-z]+/[\w.+-]+$", where)
+            self.assertNotIn("data", entry, "an entry carries url or data, never both")
+            self.assertTrue(2 <= len(entry["representativeQueries"]) <= 5, where)
+
+    def test_api_catalog_is_a_linkset_anchored_on_the_feeds(self):
+        linkset = self.out_json(".well-known/api-catalog")["linkset"]
+        self.assertEqual([e["anchor"] for e in linkset],
+                         [f"{build.SITE_URL}/api/events.json", f"{build.SITE_URL}/{build.FEED_FILE}"])
+        for entry in linkset:
+            self.assertEqual(entry["service-doc"][0]["type"], "text/html")
+
+    def test_every_url_the_catalogs_advertise_is_a_file_the_build_wrote(self):
+        linkset = self.out_json(".well-known/api-catalog")["linkset"]
+        urls = [e["url"] for e in self.out_json(".well-known/ai-catalog.json")["entries"]]
+        urls += [e["anchor"] for e in linkset]
+        urls += [link["href"] for e in linkset for link in e["service-doc"]]
+        self.assertEqual(len(urls), 7, "an advertised link that was never collected proves nothing")
+        for url in urls:
+            rel = url.removeprefix(build.SITE_URL + "/")
+            rel = rel + "index.html" if rel == "" or rel.endswith("/") else rel
+            self.assertTrue((self.out / rel).is_file(), url)
+
+
 class EntryListProvisionalTests(unittest.TestCase):
     """An entry list published before the event only warns while we have not re-checked."""
 
@@ -522,6 +624,13 @@ class RouteTests(unittest.TestCase):
 
     def tearDown(self):
         shutil.rmtree(self.tmp)
+
+    def test_the_json_feed_repeats_the_route_the_page_tabulates(self):
+        feed = json.loads((self.tmp / "site/api/events.json").read_text(encoding="utf-8"))
+        route = feed["events"][0]["route"]
+        self.assertEqual([day["date"] for day in route], ["2026-10-18", "2026-10-19"])
+        self.assertEqual(route[0]["checkpoints"][1],
+                         {"start_time": "11:00", "place_en": "Test Harbour", "prefecture": "Shizuoka"})
 
     def test_a_route_alone_earns_the_edition_its_own_page(self):
         self.assertIn("<h1>Test Event 2026</h1>", self.html)
