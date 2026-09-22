@@ -32,6 +32,9 @@ SITE_URL = "https://classicmotoringjapan.com"
 SITE_LEDE = "When and where to watch, how to get there, and what cars you'll see."
 # Crawling is allowed; training on the text is not. Declared where a crawler already looks.
 CONTENT_SIGNAL = "search=yes, ai-input=yes, ai-train=no"
+# ARD renamed its manifest; the old path is still what scanners and older consumers read.
+ARD_PATH = ".well-known/ard.json"
+ARD_PREDECESSOR_PATH = ".well-known/ai-catalog.json"
 UID_DOMAIN = "classicmotoringjapan.com"
 # Thunderbird has never read X-WR-CALNAME (bugzilla 168176, open since 2002): it names a
 # subscribed calendar after the last path segment, so the file name has to read as a name.
@@ -731,7 +734,13 @@ def build_llms_txt(rows: list[dict], events: dict) -> str:
 
 
 def build_ard_catalog() -> str:
-    """Agentic Resource Discovery manifest: what this site publishes and what it answers."""
+    """Agentic Resource Discovery manifest: what this site publishes and what it answers.
+
+    Served at both ARD paths. /.well-known/ard.json is the name the current spec makes
+    normative and the only one a conformant consumer must fetch; ai-catalog.json is its
+    predecessor, which is what agent-readiness scanners and older consumers still read.
+    The document validates against both schemas unchanged, so it is written twice, not forked.
+    """
     host = SITE_URL.split("://", 1)[1]
     catalog = {
         "specVersion": "1.0",
@@ -811,6 +820,7 @@ def build(data_dir: Path, out_dir: Path,
     env.filters["weekday"] = fmt_weekday
     host = SITE_URL.split("://", 1)[1]
     common = {"site_name": SITE_NAME, "site_url": SITE_URL, "site_lede": SITE_LEDE,
+              "ard_path": ARD_PATH, "ard_predecessor_path": ARD_PREDECESSOR_PATH,
               "ics_url": f"{SITE_URL}/{FEED_FILE}", "webcal_url": f"webcal://{host}/{FEED_FILE}"}
 
     reset_out_dir(out_dir)
@@ -855,10 +865,13 @@ def build(data_dir: Path, out_dir: Path,
 
     write(FEED_FILE, build_ics(rows))
     write("robots.txt", f"User-agent: *\nContent-Signal: {CONTENT_SIGNAL}\nAllow: /\n\n"
-                        f"Sitemap: {SITE_URL}/sitemap.xml\n")
+                        f"Sitemap: {SITE_URL}/sitemap.xml\n"
+                        f"Agentmap: {SITE_URL}/{ARD_PATH}\n")
     write("api/events.json", build_api(rows))
     write("llms.txt", build_llms_txt(rows, events))
-    write(".well-known/ai-catalog.json", build_ard_catalog())
+    ard = build_ard_catalog()
+    write(ARD_PATH, ard)
+    write(ARD_PREDECESSOR_PATH, ard)
     write(".well-known/api-catalog", build_api_catalog())
 
     urls = "".join(f"  <url><loc>{xml_escape(u)}</loc><lastmod>{d.isoformat()}</lastmod></url>\n"
