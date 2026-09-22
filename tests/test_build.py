@@ -12,6 +12,7 @@ import tempfile
 import unittest
 import xml.etree.ElementTree as ET
 from pathlib import Path
+from urllib.parse import urljoin
 
 import yaml
 
@@ -543,6 +544,26 @@ class BuildOutputTests(unittest.TestCase):
 
     def test_llms_txt_marks_an_edition_that_is_not_going_ahead(self):
         self.assertIn("): Shizuoka. 3 Nov 2026; 3 Nov 2027 (cancelled).", self.out_text("llms.txt"))
+
+    def test_the_manifest_is_served_from_the_current_and_the_predecessor_path(self):
+        """ARD moved to /.well-known/ard.json; the scanner and older consumers still read
+        the predecessor path, and the document is the same either way."""
+        current = self.out_text(".well-known/ard.json")
+        self.assertEqual(current, self.out_text(".well-known/ai-catalog.json"))
+        self.assertEqual(json.loads(current)["specVersion"], "1.0")
+
+    def test_robots_txt_names_the_manifest_as_an_entry_source(self):
+        self.assertIn(f"Agentmap: {build.SITE_URL}/.well-known/ard.json",
+                      self.out_text("robots.txt"))
+
+    def test_every_page_advertises_the_manifest_under_both_relations(self):
+        want = {"ard": ".well-known/ard.json", "ai-catalog": ".well-known/ai-catalog.json"}
+        for page, html in self.pages.items():
+            for rel, target in want.items():
+                found = re.search(rf'<link rel="{rel}" href="([^"]*)"', html)
+                self.assertIsNotNone(found, f"{page}: no rel={rel} link")
+                self.assertEqual(urljoin(f"{build.SITE_URL}/{page}", found.group(1)),
+                                 f"{build.SITE_URL}/{target}", page)
 
     def test_ard_manifest_matches_the_published_catalog_schema(self):
         catalog = self.out_json(".well-known/ai-catalog.json")
