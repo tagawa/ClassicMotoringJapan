@@ -13,6 +13,8 @@ import unittest
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+import yaml
+
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 import build  # noqa: E402
@@ -573,6 +575,18 @@ class BuildOutputTests(unittest.TestCase):
             rel = url.removeprefix(build.SITE_URL + "/")
             rel = rel + "index.html" if rel == "" or rel.endswith("/") else rel
             self.assertTrue((self.out / rel).is_file(), url)
+
+
+class DeployWorkflowTests(unittest.TestCase):
+    """The build writes site/.well-known/; the workflow has to carry it as far as Pages."""
+
+    def test_the_artifact_step_keeps_dot_directories(self):
+        workflow = yaml.safe_load((ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8"))
+        steps = workflow["jobs"]["build"]["steps"]
+        step, = [s for s in steps if "upload-pages-artifact" in s.get("uses", "")]
+        self.assertIs(step["with"].get("include-hidden-files"), True,
+                      "v4 and v5 of the action exclude every dot-path unless told otherwise, "
+                      "which drops site/.well-known/ and 404s the agent catalogs")
 
 
 class EntryListProvisionalTests(unittest.TestCase):
