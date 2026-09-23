@@ -25,7 +25,7 @@ from xml.sax.saxutils import escape as xml_escape
 
 import yaml
 from jinja2 import Environment, FileSystemLoader, select_autoescape
-from markupsafe import Markup
+from markupsafe import Markup, escape
 
 SITE_NAME = "Classic Motoring Japan"
 SITE_URL = "https://classicmotoringjapan.com"
@@ -51,6 +51,9 @@ JAPAN_LAT = (24.0, 46.0)
 JAPAN_LON = (122.0, 154.0)
 TIME_RE = re.compile(r"^([01]\d|2[0-3]):[0-5]\d$")
 URL_RE = re.compile(r"^https?://\S+$")
+# The one piece of markup prose may carry. https only: the target is fixed at build time,
+# so there is no reason to link anywhere insecure, and nothing else can reach an href.
+LINK_RE = re.compile(r"\[([^\[\]]+)\]\((https://[^\s()]+)\)")
 # Long prose buries the facts inside it, and a skim-reader never finds them.
 PROSE_MAX_WORDS = 75
 # Advice, not facts. Cutting one of these loses nothing a visitor came for: the page
@@ -141,6 +144,31 @@ def _check_editorial(v: str, where: str, errors: list[str]) -> None:
         )
 
 
+def prose_text(v: str) -> str:
+    """Prose as a reader hears it: each link reduced to its text."""
+    return LINK_RE.sub(r"\1", v)
+
+
+def prose_html(v: str) -> Markup:
+    """Prose for a page: escaped throughout, with each link made an anchor."""
+    out, pos = [], 0
+    for m in LINK_RE.finditer(v):
+        out += [escape(v[pos:m.start()]),
+                Markup('<a href="{}">{}</a>').format(m.group(2), m.group(1))]
+        pos = m.end()
+    out.append(escape(v[pos:]))
+    return Markup("").join(out)
+
+
+def _check_links(v: str, where: str, errors: list[str]) -> None:
+    """A link that does not parse would reach the page as raw brackets, so refuse it."""
+    if re.search(r"<a\b", v, re.I):
+        errors.append(f"{where}: HTML is shown as literal text. Write a link as [text](https://...)")
+    elif re.search(r"[\[\]]", prose_text(v)):
+        errors.append(f"{where}: a link must be written exactly as [text](https://...), "
+                      f"with no space between ] and ( and an https:// address")
+
+
 def _check_value(kind: str, v, where: str, errors: list[str]) -> None:
     if kind == "str":
         if not isinstance(v, str) or not v.strip():
@@ -185,6 +213,9 @@ def _check_value(kind: str, v, where: str, errors: list[str]) -> None:
         if not isinstance(v, str) or not v.strip():
             errors.append(f"{where}: must be non-empty text, got {v!r}")
         else:
+            _check_links(v, where, errors)
+            # Measured on what a reader sees, so a long URL costs nothing.
+            v = prose_text(v)
             if len(v.split()) > PROSE_MAX_WORDS:
                 errors.append(
                     f"{where}: {len(v.split())} words is too long to skim (limit {PROSE_MAX_WORDS}). "
@@ -238,7 +269,7 @@ def _check_combined_prose(ev: dict, rel: str, errors: list[str]) -> None:
         present = [(key, ev[key]) for key in group if isinstance(ev.get(key), str)]
         if len(present) < 2:
             continue
-        total = sum(len(value.split()) for _, value in present)
+        total = sum(len(prose_text(value).split()) for _, value in present)
         if total > PROSE_MAX_WORDS:
             names = " and ".join(repr(key) for key, _ in present)
             errors.append(
@@ -607,7 +638,7 @@ def build_jsonld(r: dict) -> Markup:
     if ev["spectator_fee_jpy"] is not None:
         data["isAccessibleForFree"] = ev["spectator_fee_jpy"] == 0
     if ev.get("summary_en"):
-        data["description"] = ev["summary_en"].strip()
+        data["description"] = prose_text(ev["summary_en"]).strip()
     if ev.get("organizer"):
         data["organizer"] = {"@type": "Organization", "name": ev["organizer"], "url": ev["official_url"]}
     text = json.dumps(data, ensure_ascii=False, indent=2).replace("</", "<\\/")
@@ -708,7 +739,7 @@ def build_api(rows: list[dict]) -> str:
             "cars_as_of": ed.get("list_as_of"),
             "cars": ed.get("cars"),
             "route": ed.get("route"),
-            "route_en": ed.get("route_en"),
+            "route_en": prose_text(ed["route_en"]) if "route_en" in ed else None,
         }
         records.append({k: v for k, v in rec.items() if v is not None})
     feed = {"name": SITE_NAME, "url": f"{SITE_URL}/", "description": SITE_LEDE,
@@ -828,6 +859,7 @@ def build(data_dir: Path, out_dir: Path,
                       autoescape=select_autoescape(["html"]),
                       trim_blocks=True, lstrip_blocks=True, keep_trailing_newline=True)
     env.filters["fee"] = fmt_fee
+    env.filters["prose"] = prose_html
     env.filters["weekday"] = fmt_weekday
     host = SITE_URL.split("://", 1)[1]
     common = {"site_name": SITE_NAME, "site_url": SITE_URL, "site_lede": SITE_LEDE,
