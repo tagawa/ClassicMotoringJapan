@@ -905,6 +905,90 @@ class EditorialProseTests(unittest.TestCase):
                 self.build_with_prose(text)
 
 
+class ProseLinkTests(unittest.TestCase):
+    """Prose may carry [text](https://...) links: anchors on the page, plain text elsewhere."""
+
+    LINKED = "It fills a car park inside [Fuji Speedway](https://en.fujispeedway.jp/) on the day."
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.data = self.tmp / "data"
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp)
+
+    def build_with_prose(self, text: str, field="summary_en") -> str:
+        write_event(self.data, "meet", extra=f"{field}: {json.dumps(text)}\n")
+        write_instance(self.data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-18"))
+        build.build(self.data, self.tmp / "site")
+        return (self.tmp / "site" / "events" / "meet" / "index.html").read_text(encoding="utf-8")
+
+    def refusal(self, text: str) -> str:
+        with self.assertRaises(build.ValidationError) as ctx:
+            self.build_with_prose(text)
+        return str(ctx.exception)
+
+    def test_a_link_renders_as_an_anchor(self):
+        html = self.build_with_prose(self.LINKED)
+        self.assertIn('inside <a href="https://en.fujispeedway.jp/">Fuji Speedway</a> on the day', html)
+        self.assertNotIn("](", html)
+
+    def test_every_prose_field_on_the_event_page_renders_links(self):
+        for field in ("summary_en", "nearest_station", "access_notes_en",
+                      "spectator_notes_en", "photography_notes_en"):
+            with self.subTest(field=field):
+                html = self.build_with_prose(self.LINKED, field)
+                self.assertIn('<a href="https://en.fujispeedway.jp/">Fuji Speedway</a>', html)
+                shutil.rmtree(self.data)
+
+    def test_route_en_renders_links(self):
+        write_event(self.data, "meet")
+        write_instance(self.data, "meet", 2026, instance_yaml(
+            "meet", 2026, "2026-10-18", "2026-10-18", extra=f"route_en: {json.dumps(self.LINKED)}\n"))
+        build.build(self.data, self.tmp / "site")
+        html = (self.tmp / "site" / "events" / "meet" / "2026" / "index.html").read_text(encoding="utf-8")
+        self.assertIn('<a href="https://en.fujispeedway.jp/">Fuji Speedway</a>', html)
+        api = json.loads((self.tmp / "site" / "api" / "events.json").read_text(encoding="utf-8"))
+        self.assertEqual(api["events"][0]["route_en"],
+                         "It fills a car park inside Fuji Speedway on the day.")
+
+    def test_the_rest_of_the_prose_is_still_escaped(self):
+        html = self.build_with_prose('Bring <b>cash</b> & see [A & B](https://example.com/?a=1&b="2").')
+        self.assertIn("Bring &lt;b&gt;cash&lt;/b&gt; &amp; see", html)
+        self.assertIn('<a href="https://example.com/?a=1&amp;b=&#34;2&#34;">A &amp; B</a>', html)
+
+    def test_jsonld_gets_the_link_text_only(self):
+        html = self.build_with_prose(self.LINKED)
+        block, = jsonld_blocks(html)
+        self.assertEqual(block["description"], "It fills a car park inside Fuji Speedway on the day.")
+
+    def test_urls_do_not_count_towards_the_word_cap(self):
+        words = " ".join(["word"] * (build.PROSE_MAX_WORDS - 2))
+        self.build_with_prose(f"{words} [Fuji Speedway](https://en.fujispeedway.jp/a-very/long/path)")
+
+    def test_advice_inside_link_text_is_still_caught(self):
+        self.assertIn("worth a look", self.refusal("The [museum is worth a look](https://example.com/)."))
+
+    def test_a_plain_http_link_is_rejected(self):
+        message = self.refusal("See [the circuit](http://example.com/).")
+        self.assertIn("summary_en", message)
+        self.assertIn("https://", message)
+
+    def test_a_javascript_link_is_rejected(self):
+        self.assertIn("summary_en", self.refusal("See [the circuit](javascript:alert(1))."))
+
+    def test_a_malformed_link_is_rejected(self):
+        for text in ("See [the circuit] (https://example.com/).",
+                     "See [the circuit](https://example.com/.",
+                     "See the circuit](https://example.com/)."):
+            with self.subTest(text=text):
+                self.assertIn("summary_en", self.refusal(text))
+
+    def test_an_html_link_is_rejected_with_the_markdown_form_named(self):
+        message = self.refusal('See <a href="https://example.com/">the circuit</a>.')
+        self.assertIn("[text](https://", message)
+
+
 class ValidationTests(unittest.TestCase):
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp())
