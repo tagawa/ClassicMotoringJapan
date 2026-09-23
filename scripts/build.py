@@ -151,7 +151,13 @@ def _check_value(kind: str, v, where: str, errors: list[str]) -> None:
     elif kind == "date":
         if type(v) is not dt.date:
             errors.append(f"{where}: must be an unquoted date like 2026-10-18, got {v!r}")
-    elif kind in ("int", "count", "fee"):
+    elif kind == "fee":
+        # null is its own state: the organizer has not announced the admission. It is not
+        # 0, which is a positive claim that watching costs nothing.
+        if v is not None and (not _is_int(v) or v < 0):
+            errors.append(f"{where}: must be a whole number of 0 or more, or null where the "
+                          f"organizer has not announced the admission, got {v!r}")
+    elif kind in ("int", "count"):
         if not _is_int(v) or (kind != "int" and v < 0):
             errors.append(f"{where}: must be a whole number{' of 0 or more' if kind != 'int' else ''}, got {v!r}")
     elif kind == "status":
@@ -476,7 +482,10 @@ def fmt_weekday(d: dt.date) -> str:
     return f"{d:%A} {d.day} {d:%B}"
 
 
-def fmt_fee(fee: int) -> str:
+def fmt_fee(fee: int | None) -> str:
+    # Self-describing, because the home page prints it with no label beside it.
+    if fee is None:
+        return "Admission not announced"
     return "Free to watch" if fee == 0 else f"\u00a5{fee:,}"
 
 
@@ -593,8 +602,10 @@ def build_jsonld(r: dict) -> Markup:
         "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
         "location": place,
         "url": r["abs_url"],
-        "isAccessibleForFree": ev["spectator_fee_jpy"] == 0,
     }
+    # An unannounced admission is not a free one, and false would be a claim of its own.
+    if ev["spectator_fee_jpy"] is not None:
+        data["isAccessibleForFree"] = ev["spectator_fee_jpy"] == 0
     if ev.get("summary_en"):
         data["description"] = ev["summary_en"].strip()
     if ev.get("organizer"):
