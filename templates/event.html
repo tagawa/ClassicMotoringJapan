@@ -4,7 +4,7 @@
 <h1>{{ ev.name_en }}</h1>
 {% if ev.name_ja %}<p class="ja" lang="ja">{{ ev.name_ja }}</p>{% endif %}
 {% if ev.summary_en %}
-<p class="lede">{{ ev.summary_en }}</p>
+<p class="lede">{{ ev.summary_en | prose }}</p>
 {% endif %}
 
 <h2>Dates</h2>
@@ -37,17 +37,17 @@
   <dd>{{ ev.venue_en }}, {{ ev.prefecture }}{% if ev.street_address %}<br>{{ ev.street_address }}{% endif %}{{ map_link(pin) }}</dd>
 {% if ev.nearest_station or ev.access_notes_en %}
   <dt>Getting there</dt>
-  <dd>{% if ev.nearest_station %}Nearest station: {{ ev.nearest_station }}{% endif %}{% if ev.nearest_station and ev.access_notes_en %}<br>{% endif %}{{ ev.access_notes_en or "" }}</dd>
+  <dd>{% if ev.nearest_station %}Nearest station: {{ ev.nearest_station | prose }}{% endif %}{% if ev.nearest_station and ev.access_notes_en %}<br>{% endif %}{{ (ev.access_notes_en or "") | prose }}</dd>
 {% endif %}
   <dt>Cost</dt>
   <dd>{{ ev.spectator_fee_jpy | fee }}</dd>
 {% if ev.spectator_notes_en %}
   <dt>Watching</dt>
-  <dd>{{ ev.spectator_notes_en }}</dd>
+  <dd>{{ ev.spectator_notes_en | prose }}</dd>
 {% endif %}
 {% if ev.photography_notes_en %}
   <dt>Photography</dt>
-  <dd>{{ ev.photography_notes_en }}</dd>
+  <dd>{{ ev.photography_notes_en | prose }}</dd>
 {% endif %}
 {% if ev.typical_eras or ev.typical_scale %}
   <dt>What you'll see</dt>

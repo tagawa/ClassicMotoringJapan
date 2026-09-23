@@ -23,7 +23,7 @@
 {% if ed.route_en or ed.route %}
 <h2>Route</h2>
 {% if ed.route_en %}
-<p>{{ ed.route_en }}</p>
+<p>{{ ed.route_en | prose }}</p>
 {% endif %}
 {% if r.chart %}
 <ol class="chart">
