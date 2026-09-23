@@ -23,7 +23,10 @@ import build  # noqa: E402
 
 def write_event(data: Path, slug: str, name_en="Test Event", name_ja="テストイベント",
                 fee=0, extra="") -> None:
-    """name_ja=None writes no Japanese name, as for an event that has only a Latin one."""
+    """name_ja=None writes no Japanese name, as for an event that has only a Latin one.
+
+    fee=None writes null, the state of an event whose admission is not announced yet.
+    """
     p = data / "events" / f"{slug}.yml"
     p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(
@@ -34,7 +37,7 @@ def write_event(data: Path, slug: str, name_en="Test Event", name_ja="テスト�
         f"official_url: https://example.com/{slug}/\n"
         f"prefecture: Shizuoka\n"
         f"venue_en: Test Park\n"
-        f"spectator_fee_jpy: {fee}\n"
+        f"spectator_fee_jpy: {'null' if fee is None else fee}\n"
         f"last_verified: 2026-09-20\n" + extra,
         encoding="utf-8",
     )
@@ -927,6 +930,16 @@ class ValidationTests(unittest.TestCase):
     def test_repo_sample_data_builds(self):
         build.build(ROOT / "data", self.tmp / "sample-site")
 
+    def test_a_fee_that_is_neither_a_number_nor_null_is_rejected(self):
+        write_event(self.data, "meet", fee='"free"')
+        write_instance(self.data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-18"))
+        self.assert_build_fails("spectator_fee_jpy")
+
+    def test_a_negative_fee_is_rejected(self):
+        write_event(self.data, "meet", fee=-500)
+        write_instance(self.data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-18"))
+        self.assert_build_fails("spectator_fee_jpy")
+
     def test_unquoted_time_is_rejected_with_the_fix(self):
         self.assert_rejected(
             instance_yaml("meet", 2026, "2026-10-18", "2026-10-18",
@@ -1099,6 +1112,43 @@ class LatinOnlyNameTests(unittest.TestCase):
             return (tmp / "site" / "events" / "meet" / "index.html").read_text(encoding="utf-8")
         finally:
             shutil.rmtree(tmp)
+
+
+class UnannouncedFeeTests(unittest.TestCase):
+    """An admission the organizer has not published yet is absent, not zero.
+
+    Writing 0 would tell a visitor the day is free and a guess would be worse, so the
+    field takes null and every surface says only that the number is not known.
+    """
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        data = self.tmp / "data"
+        write_event(data, "fee-pending", name_en="Fee Pending", fee=None)
+        write_instance(data, "fee-pending", 2026,
+                       instance_yaml("fee-pending", 2026, "2026-11-03", "2026-11-03"))
+        build.build(data, self.tmp / "site")
+        self.out = self.tmp / "site"
+        self.event_html = (self.out / "events/fee-pending/index.html").read_text(encoding="utf-8")
+        self.home_html = (self.out / "index.html").read_text(encoding="utf-8")
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp)
+
+    def test_the_pages_say_the_admission_is_unannounced_rather_than_free(self):
+        for name, html in (("event", self.event_html), ("home", self.home_html)):
+            with self.subTest(page=name):
+                self.assertIn("Admission not announced", html)
+                self.assertNotIn("Free to watch", html)
+
+    def test_the_json_feed_leaves_the_fee_out_rather_than_calling_it_zero(self):
+        feed = json.loads((self.out / "api/events.json").read_text(encoding="utf-8"))
+        self.assertNotIn("spectator_fee_jpy", feed["events"][0])
+
+    def test_the_structured_data_claims_neither_free_nor_paid(self):
+        block = json.loads(re.search(r'<script type="application/ld\+json">(.*?)</script>',
+                                     self.event_html, re.S).group(1))
+        self.assertNotIn("isAccessibleForFree", block)
 
 
 class DisplayListTests(unittest.TestCase):
