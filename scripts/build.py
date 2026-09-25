@@ -906,6 +906,11 @@ def build(data_dir: Path, out_dir: Path,
                 ev=ev, r=r, ed=ed, jsonld=[r["jsonld"]]))
             sitemap.append((r["abs_url"], ed["last_verified"]))
 
+    # Pages serves this for a missing path at any depth, so links must be root-absolute.
+    write("404.html", env.get_template("404.html").render(
+        **common, root="/", canonical=None, title=f"Page not found | {SITE_NAME}",
+        events=sorted(events.values(), key=lambda e: e["name_en"].casefold()), jsonld=[]))
+
     write(FEED_FILE, build_ics(rows))
     write("robots.txt", f"User-agent: *\nContent-Signal: {CONTENT_SIGNAL}\nAllow: /\n\n"
                         f"Sitemap: {SITE_URL}/sitemap.xml\n"
