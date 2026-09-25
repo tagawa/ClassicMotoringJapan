@@ -887,6 +887,8 @@ COLOUR_TOKENS = {
 }
 FONT_SIZES = {"32px", "24px", "20px", "16px"}
 SPACING = {"4px", "8px", "16px", "24px", "32px", "48px"}
+# 16:9, the one ratio a video box is held at. Geometry, not spacing, so it is not a token.
+VIDEO_RATIO = "56.25%"
 RADII = {"8px"}
 # An 8px radius turns the outline round a short link into a pill.
 FOCUS_RADII = {"4px"}
@@ -913,7 +915,8 @@ def token_violations(css: str) -> list[str]:
             elif prop == "font-size":
                 bad = [w for w in words if w not in FONT_SIZES | KEYWORDS]
             elif SPACING_PROPS.match(prop):
-                bad = [w for w in words if w not in SPACING | KEYWORDS]
+                allowed = SPACING | {VIDEO_RATIO} if selector.strip() == ".video-frame" else SPACING
+                bad = [w for w in words if w not in allowed | KEYWORDS]
             elif prop == "border-radius":
                 allowed = RADII | FOCUS_RADII if ":focus" in selector else RADII
                 bad = [w for w in words if w not in allowed | KEYWORDS]
@@ -1087,6 +1090,91 @@ class RouteChartRenderingTests(unittest.TestCase):
     def test_the_axis_ends_are_labelled(self):
         self.assertIn(">08:00<", self.html)
         self.assertIn(">12:00<", self.html)
+
+
+VIDEOS = (
+    "videos:\n"
+    "  - youtube_id: t3UUnZ7g5P0\n"
+    "    label_en: Day 1\n"
+    "  - youtube_id: fIJCC_4IcE0\n"
+    "    label_en: Day 2\n"
+)
+
+
+class VideoTests(unittest.TestCase):
+    """A past edition embeds its videos; later editions link back to the latest of them."""
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.data = self.tmp / "data"
+        write_event(self.data, "meet")
+        write_instance(self.data, "meet", 2024, instance_yaml("meet", 2024, "2024-10-18", "2024-10-18",
+                                                              extra=VIDEOS.replace("t3UUnZ7g5P0", "AAAAAAAAAAA")))
+        write_instance(self.data, "meet", 2025, instance_yaml("meet", 2025, "2025-10-18", "2025-10-18",
+                                                              extra=VIDEOS))
+        write_instance(self.data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-19",
+                                                              extra=ROUTE))
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp)
+
+    def page(self, stem) -> str:
+        build.build(self.data, self.tmp / "site")
+        return (self.tmp / f"site/events/meet/{stem}/index.html").read_text(encoding="utf-8")
+
+    def test_videos_alone_earn_the_edition_its_own_page(self):
+        self.assertIn("<h1>Test Event 2025</h1>", self.page(2025))
+
+    def test_every_embed_uses_the_no_cookie_domain(self):
+        srcs = re.findall(r'<iframe[^>]*\ssrc="([^"]+)"', self.page(2025))
+        self.assertEqual(srcs, ["https://www.youtube-nocookie.com/embed/t3UUnZ7g5P0",
+                                "https://www.youtube-nocookie.com/embed/fIJCC_4IcE0"])
+
+    def test_every_embed_is_titled_and_lazy(self):
+        frames = re.findall(r"<iframe[^>]*>", self.page(2025))
+        self.assertEqual(len(frames), 2)
+        self.assertIn('title="Test Event 2025, Day 1"', frames[0])
+        for frame in frames:
+            self.assertIn('loading="lazy"', frame)
+
+    def test_each_video_links_to_youtube_by_its_label(self):
+        self.assertIn('<a href="https://www.youtube.com/watch?v=fIJCC_4IcE0">Day 2 on YouTube</a>',
+                      self.page(2025))
+
+    def test_a_later_edition_links_to_the_latest_earlier_videos(self):
+        self.assertIn('<a href="../../../events/meet/2025/#videos">Videos of the 2025 edition</a>',
+                      self.page(2026))
+
+    def test_an_edition_with_videos_links_to_the_one_before(self):
+        self.assertIn("Videos of the 2024 edition", self.page(2025))
+        self.assertNotIn("Videos of the", self.page(2024))
+
+    def test_the_event_page_names_videos_among_the_edition_contents(self):
+        build.build(self.data, self.tmp / "site")
+        html = (self.tmp / "site/events/meet/index.html").read_text(encoding="utf-8")
+        self.assertIn('href="../../events/meet/2025/">Videos</a>', html)
+
+    def test_the_json_feed_carries_the_videos(self):
+        build.build(self.data, self.tmp / "site")
+        feed = json.loads((self.tmp / "site/api/events.json").read_text(encoding="utf-8"))
+        by_year = {e["year"]: e for e in feed["events"]}
+        self.assertEqual(by_year[2025]["videos"][1], {"youtube_id": "fIJCC_4IcE0", "label_en": "Day 2"})
+        self.assertNotIn("videos", by_year[2026])
+
+    def test_a_full_url_in_place_of_the_id_is_rejected(self):
+        write_instance(self.data, "meet", 2025, instance_yaml(
+            "meet", 2025, "2025-10-18", "2025-10-18",
+            extra=VIDEOS.replace("t3UUnZ7g5P0", "https://www.youtube.com/watch?v=t3UUnZ7g5P0")))
+        with self.assertRaises(build.ValidationError) as ctx:
+            build.build(self.data, self.tmp / "site")
+        self.assertIn("videos item 1: youtube_id", str(ctx.exception))
+
+    def test_a_video_without_a_label_is_rejected(self):
+        write_instance(self.data, "meet", 2025, instance_yaml(
+            "meet", 2025, "2025-10-18", "2025-10-18", extra=VIDEOS.replace("    label_en: Day 1\n", "")))
+        with self.assertRaises(build.ValidationError) as ctx:
+            build.build(self.data, self.tmp / "site")
+        self.assertIn("videos item 1: missing required field 'label_en'", str(ctx.exception))
 
 
 class ProseLengthTests(unittest.TestCase):

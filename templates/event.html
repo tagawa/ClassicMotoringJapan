@@ -20,7 +20,7 @@
         <td>{{ r.when_full }}</td>
         <td>{% if r.ed.status == "tentative" %}<span class="dot tentative" aria-hidden="true"></span>Not confirmed{% elif r.ed.status == "cancelled" %}<span class="dot cancelled" aria-hidden="true"></span>Cancelled{% else %}<span class="dot" aria-hidden="true"></span>Confirmed{% endif %}</td>
 {% if show_details %}
-        <td>{% if r.has_page %}<a href="{{ root }}{{ r.path }}">{{ r.page_parts | join(" and ") | lower | capitalize }}</a>{% endif %}</td>
+        <td>{% if r.has_page %}<a href="{{ root }}{{ r.path }}">{{ r.parts_phrase }}</a>{% endif %}</td>
 {% endif %}
       </tr>
 {% endfor %}

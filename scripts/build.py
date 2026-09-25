@@ -53,6 +53,10 @@ EDITION_FILE_RE = re.compile(r"^(?P<year>\d{4})(?:-(?P<edition>[a-z0-9]+(?:-[a-z
 JAPAN_LAT = (24.0, 46.0)
 JAPAN_LON = (122.0, 154.0)
 TIME_RE = re.compile(r"^([01]\d|2[0-3]):[0-5]\d$")
+YOUTUBE_ID_RE = re.compile(r"^[A-Za-z0-9_-]{11}$")
+# The privacy-enhanced domain: YouTube sets no cookies until the visitor presses play.
+VIDEO_EMBED_URL = "https://www.youtube-nocookie.com/embed/"
+VIDEO_WATCH_URL = "https://www.youtube.com/watch?v="
 URL_RE = re.compile(r"^https?://\S+$")
 # The one piece of markup prose may carry. https only: the target is fixed at build time,
 # so there is no reason to link anywhere insecure, and nothing else can reach an href.
@@ -101,11 +105,13 @@ EDITION_REQUIRED = {
 EDITION_OPTIONAL = {
     "start_time": "time", "end_time": "time", "venue_en": "str", "street_address": "str",
     "route_en": "prose", "route": "route", "list_as_of": "date", "cars": "cars",
-    "lat": "lat", "lon": "lon",
+    "lat": "lat", "lon": "lon", "videos": "videos",
 }
 ROUTE_DAY_REQUIRED = {"date": "date", "checkpoints": "checkpoints"}
 CHECKPOINT_REQUIRED = {"start_time": "time", "place_en": "str", "prefecture": "str"}
 CHECKPOINT_OPTIONAL = {"end_time": "time", "place_ja": "str"}
+# The ID alone, not a URL, so the embed domain is chosen once, in VIDEO_EMBED_URL.
+VIDEO_REQUIRED = {"youtube_id": "youtube_id", "label_en": "str"}
 # Fields the templates render into a single block. The cap has to apply to what a
 # reader actually sees there, not to each field measured on its own.
 COMBINED_PROSE = (("nearest_station", "access_notes_en"),)
@@ -226,7 +232,11 @@ def _check_value(kind: str, v, where: str, errors: list[str]) -> None:
                     f"or a diagram, or move the detail into structured fields such as `route` or `cars`"
                 )
             _check_editorial(v, where, errors)
-    elif kind in ("cars", "route", "checkpoints"):
+    elif kind == "youtube_id":
+        if not isinstance(v, str) or not YOUTUBE_ID_RE.match(v):
+            errors.append(f"{where}: must be the 11-character video ID, the part of the address "
+                          f"after watch?v=, got {v!r}")
+    elif kind in ("cars", "route", "checkpoints", "videos"):
         if not isinstance(v, list) or not v:
             errors.append(f"{where}: must be a non-empty list")
 
@@ -394,6 +404,9 @@ def load_and_validate(data_dir: Path) -> tuple[dict, list]:
                     errors.append(f"{rel}: give {key} on every car or on none "
                                   f"({filled} of {len(cars)} have one)")
         _check_route(ed.get("route"), start, end, rel, errors)
+        if isinstance(ed.get("videos"), list):
+            for i, video in enumerate(ed["videos"], 1):
+                _check_fields(video, VIDEO_REQUIRED, {}, f"{rel}: videos item {i}", errors)
         editions.append({"data": ed, "id": path.stem, "edition": name["edition"]})
 
     if errors:
@@ -680,8 +693,7 @@ def event_description(ev: dict) -> str:
 def edition_description(r: dict) -> str:
     """Status first, so a cancelled edition's snippet cannot read like a normal listing."""
     status = {"cancelled": "Cancelled. ", "tentative": "Dates not confirmed. "}.get(r["ed"]["status"], "")
-    parts = " and ".join(r["page_parts"]).lower().capitalize()
-    return f"{status}{parts} for {r['full_name']}: {r['when']}, {r['venue']}, {r['ev']['prefecture']}."
+    return f"{status}{r['parts_phrase']} for {r['full_name']}: {r['when']}, {r['venue']}, {r['ev']['prefecture']}."
 
 
 # Build
@@ -701,8 +713,12 @@ def make_rows(events: dict, editions: list) -> list[dict]:
                                    if any(c["key"] == "entry_no" for c in columns)
                                    else ("Cars on display", "the line-up may change"))
         page_parts = [part for part, present in (("Route", ed.get("route") or ed.get("route_en")),
-                                                 (cars_label, ed.get("cars"))) if present]
+                                                 (cars_label, ed.get("cars")),
+                                                 ("Videos", ed.get("videos"))) if present]
         has_page = bool(page_parts)
+        # "Route, entry list and videos": one wording for the title, the link and the snippet.
+        parts_phrase = " and ".join(filter(None, [", ".join(page_parts[:-1]), *page_parts[-1:]]))
+        parts_phrase = parts_phrase.lower().capitalize()
         path = f"events/{slug}/{ed_id}/" if has_page else f"events/{slug}/"
         is_timed = "start_time" in ed
         r = {
@@ -710,7 +726,7 @@ def make_rows(events: dict, editions: list) -> list[dict]:
             "edition": edition, "display_name": display_name,
             "full_name": f"{display_name} {year}",
             "label": f"{edition} {year}" if edition else str(year),
-            "has_page": has_page, "page_parts": page_parts, "path": path, "abs_url": f"{SITE_URL}/{path}",
+            "has_page": has_page, "page_parts": page_parts, "parts_phrase": parts_phrase, "path": path, "abs_url": f"{SITE_URL}/{path}",
             "uid": f"{slug}-{ed_id}@{UID_DOMAIN}",
             "is_timed": is_timed,
             "venue": ed.get("venue_en") or ev["venue_en"],
@@ -720,6 +736,9 @@ def make_rows(events: dict, editions: list) -> list[dict]:
             # re-checked the source after the event ended, what we show is the last word.
             "chart": route_chart(ed.get("route")),
             "decades": decade_chart(ed.get("cars")),
+            "videos": [{"label": v["label_en"], "title": f"{display_name} {year}, {v['label_en']}",
+                        "embed": VIDEO_EMBED_URL + v["youtube_id"], "watch": VIDEO_WATCH_URL + v["youtube_id"]}
+                       for v in ed.get("videos") or []],
             "car_columns": columns, "cars_label": cars_label, "cars_caveat": cars_caveat,
             "list_provisional": ("list_as_of" in ed and ed["list_as_of"] < ed["end"]
                                  and ed["last_verified"] <= ed["end"]),
@@ -737,6 +756,13 @@ def make_rows(events: dict, editions: list) -> list[dict]:
         r["jsonld"] = build_jsonld(r)
         rows.append(r)
     rows.sort(key=lambda r: (r["ed"]["start"], r["slug"], r["id"]))
+    # Each edition points back to the latest earlier one with videos. Earlier by date,
+    # not by today, because the build never reads the clock.
+    latest_with_videos: dict[str, dict] = {}
+    for r in rows:
+        r["previous_videos"] = latest_with_videos.get(r["slug"])
+        if r["videos"]:
+            latest_with_videos[r["slug"]] = r
     return rows
 
 
@@ -779,6 +805,7 @@ def build_api(rows: list[dict]) -> str:
             "cars": ed.get("cars"),
             "route": ed.get("route"),
             "route_en": prose_text(ed["route_en"]) if "route_en" in ed else None,
+            "videos": ed.get("videos"),
         }
         records.append({k: v for k, v in rec.items() if v is not None})
     feed = {"name": SITE_NAME, "url": f"{SITE_URL}/", "description": SITE_LEDE,
@@ -804,8 +831,7 @@ def build_llms_txt(rows: list[dict], events: dict) -> str:
                      f"{ev['prefecture']}. {'; '.join(dates)}.")
         for r in ev_rows:
             if r["has_page"]:
-                lines.append(f"  - [{r['full_name']}]({r['abs_url']}): "
-                             f"{' and '.join(p.lower() for p in r['page_parts'])}.")
+                lines.append(f"  - [{r['full_name']}]({r['abs_url']}): {r['parts_phrase'].lower()}.")
     lines += ["", "## Site", "",
               f"- [About]({SITE_URL}/about/): where the facts come from, how they are checked, "
               "and where to report an error.",
@@ -944,7 +970,7 @@ def build(data_dir: Path, out_dir: Path,
             ed = r["ed"]
             write(f"{r['path']}index.html", env.get_template("edition.html").render(
                 **common, root="../../../", canonical=r["abs_url"],
-                title=f"{r['full_name']}: {' and '.join(r['page_parts'])} | {SITE_NAME}",
+                title=f"{r['full_name']}: {r['parts_phrase']} | {SITE_NAME}",
                 description=edition_description(r),
                 ev=ev, r=r, ed=ed, jsonld=[r["jsonld"], build_breadcrumbs(r)]))
             sitemap.append((r["abs_url"], ed["last_verified"]))

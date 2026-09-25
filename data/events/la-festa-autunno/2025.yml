@@ -452,3 +452,12 @@ cars:
     year: 1967
     make: MG
     model: MGB-GT
+videos:
+  - youtube_id: t3UUnZ7g5P0
+    label_en: Day 1
+  - youtube_id: fIJCC_4IcE0
+    label_en: Day 2
+  - youtube_id: FfR7q_MMjBE
+    label_en: Day 3
+  - youtube_id: pUne08Gamr4
+    label_en: Day 4

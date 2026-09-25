@@ -26,6 +26,9 @@
   <dd>{{ ev.spectator_fee_jpy | fee }}</dd>
 </dl>
 <p><a href="{{ root }}events/{{ ev.slug }}/">Access, viewing spots and photography notes</a></p>
+{% if r.previous_videos %}
+<p><a href="{{ root }}{{ r.previous_videos.path }}#videos">Videos of the {{ r.previous_videos.label }} edition</a></p>
+{% endif %}
 
 {% if ed.route_en or ed.route %}
 <h2>Route</h2>
@@ -93,6 +96,16 @@
     </tbody>
   </table>
 </div>
+{% endif %}
+
+{% if r.videos %}
+<h2 id="videos">Videos</h2>
+{% for video in r.videos %}
+<figure class="video">
+  <div class="video-frame"><iframe src="{{ video.embed }}" title="{{ video.title }}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
+  <figcaption><a href="{{ video.watch }}">{{ video.label }} on YouTube</a></figcaption>
+</figure>
+{% endfor %}
 {% endif %}
 {% endblock %}
 
