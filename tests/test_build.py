@@ -844,8 +844,8 @@ class AboutPageTests(unittest.TestCase):
         self.assertEqual(self.html.count("<h1>"), 1)
         self.assertIn("<title>About | Classic Motoring Japan</title>", self.html)
 
-    def test_states_how_the_facts_are_checked(self):
-        self.assertIn("not scraped or machine-translated", self.html)
+    def test_says_the_site_is_not_the_official_channel(self):
+        # Wording is left free; the one claim a visitor must not miss is pinned.
         self.assertIn("Not affiliated with any event or organiser.", self.html)
 
     def test_says_where_to_report_an_error(self):
