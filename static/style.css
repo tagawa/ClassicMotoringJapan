@@ -32,10 +32,10 @@ h3 { font-size: 20px; line-height: 1.3; margin: 32px 0 8px; }
 .lede { font-size: 20px; margin: 0 0 24px; }
 .ja { color: #5C5C5C; margin: 0 0 24px; }
 
-a { color: #165E83; }
+a { color: #8C1C24; }
 code { overflow-wrap: anywhere; }
 a:focus-visible, summary:focus-visible {
-  outline: 2px solid #165E83;
+  outline: 2px solid #8C1C24;
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -106,11 +106,12 @@ a:focus-visible, summary:focus-visible {
   height: 8px;
   margin-right: 8px;
   border-radius: 8px;
-  background: #165E83;
+  background: #8C1C24;
   vertical-align: 1px;
 }
 .dot.tentative { background: #5E4700; }
-.dot.cancelled { background: #8E2A1B; }
+/* A cross, not a dot: it shares the dot's red family, so the shape carries the difference. */
+.cross { margin-right: 8px; vertical-align: 1px; color: #8E2A1B; }
 
 .table-wrap { overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; }
@@ -157,7 +158,7 @@ summary { cursor: pointer; font-weight: 600; }
   background: #E0E0E0;
   border-radius: 8px;
 }
-.chart-track i { position: absolute; top: 0; height: 8px; background: #165E83; border-radius: 8px; }
+.chart-track i { position: absolute; top: 0; height: 8px; background: #8C1C24; border-radius: 8px; }
 .chart-axis { margin: 0 0 24px; color: #5C5C5C; overflow: hidden; }
 .chart-axis .end { float: right; }
 /* Four evenly spaced labels, so a bar in August can be placed by eye. The spans must
@@ -189,8 +190,8 @@ summary { cursor: pointer; font-weight: 600; }
   .brand .roof { fill: #D0636A; }
   .ja { color: #A8A8A8; }
   .breadcrumbs { color: #A8A8A8; }
-  a { color: #8CC4E0; }
-  a:focus-visible, summary:focus-visible { outline-color: #8CC4E0; }
+  a { color: #D0636A; }
+  a:focus-visible, summary:focus-visible { outline-color: #D0636A; }
   .events > li { border-top-color: #333333; }
   .events > li:last-child { border-bottom-color: #333333; }
   .events .meta { color: #A8A8A8; }
@@ -201,11 +202,11 @@ summary { cursor: pointer; font-weight: 600; }
   th, td { border-bottom-color: #333333; }
   .site-footer { border-top-color: #333333; color: #A8A8A8; }
   .chart-track { background: #333333; }
-  .chart-track i { background: #8CC4E0; }
+  .chart-track i { background: #D0636A; }
   .chart-axis { color: #A8A8A8; }
   .chart-track i.off { background: #A8A8A8; }
   .chip { border-color: #333333; }
-  .dot { background: #8CC4E0; }
+  .dot { background: #D0636A; }
   .dot.tentative { background: #F3D98B; }
-  .dot.cancelled { background: #F2A493; }
+  .cross { color: #F2A493; }
 }
