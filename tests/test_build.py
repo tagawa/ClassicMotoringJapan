@@ -388,7 +388,16 @@ class BuildOutputTests(unittest.TestCase):
     def test_status_keeps_its_word_and_gains_a_dot(self):
         html = self.pages["events/culture-day-show/index.html"]
         self.assertIn('<span class="dot" aria-hidden="true"></span>Confirmed', html)
-        self.assertIn('<span class="dot cancelled" aria-hidden="true"></span>Cancelled', html)
+
+    def test_cancelled_is_a_cross_so_its_shape_differs_from_the_confirmed_dot(self):
+        # Both are red, so shape is what tells them apart, even in greyscale.
+        html = self.pages["events/culture-day-show/index.html"]
+        self.assertNotIn("dot cancelled", html)
+        svg = re.search(r'<svg class="cross"[^>]*>.*?</svg>(?=Cancelled)', html, re.S).group(0)
+        for attr in ('aria-hidden="true"', 'focusable="false"', 'stroke="currentColor"',
+                     'width="8"', 'height="8"'):
+            self.assertIn(attr, svg)
+        self.assertNotIn("#", svg, "a baked-in colour would ignore dark mode")
 
     def test_the_details_column_goes_when_no_edition_has_a_page(self):
         no_pages = self.pages["events/culture-day-show/index.html"]
@@ -909,7 +918,7 @@ class BritishSpellingTests(unittest.TestCase):
 # that is enforced, because the spec is never uploaded and a test cannot read it.
 COLOUR_TOKENS = {
     "#1C1C1C", "#EBEBEB", "#FFFFFF", "#141414", "#5C5C5C", "#A8A8A8", "#E0E0E0", "#333333",
-    "#165E83", "#8CC4E0", "#FFF4D6", "#5E4700", "#3A300F", "#F3D98B", "#FBE9E5", "#8E2A1B",
+    "#FFF4D6", "#5E4700", "#3A300F", "#F3D98B", "#FBE9E5", "#8E2A1B",
     "#3A1C16", "#F2A493", "#8C1C24", "#D0636A",
 }
 FONT_SIZES = {"32px", "24px", "20px", "16px"}
@@ -960,12 +969,10 @@ class StylesheetTokenTests(unittest.TestCase):
         css = (ROOT / "static/style.css").read_text(encoding="utf-8")
         self.assertEqual(token_violations(css), [])
 
-    def test_the_brand_red_is_the_logo_swoosh_in_both_themes_and_nothing_else(self):
-        # Links stay blue so red keeps meaning "cancelled".
+    def test_the_brand_red_is_the_link_colour_in_both_themes(self):
         css = (ROOT / "static/style.css").read_text(encoding="utf-8")
-        for colour in ("#8C1C24", "#D0636A"):
-            rules = [r.strip() for r in re.findall(r"[^{}]*\{[^}]*" + colour, css)]
-            self.assertEqual(rules, [".brand .roof { fill: " + colour], colour)
+        self.assertRegex(css, r"(?m)^a \{ color: #8C1C24; \}")
+        self.assertRegex(css, r"(?m)^  a \{ color: #D0636A; \}")
 
     def test_the_check_catches_an_off_scale_value(self):
         # A zero from a check that cannot fire proves nothing, so show it firing.
