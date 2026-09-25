@@ -1142,8 +1142,16 @@ class VideoTests(unittest.TestCase):
                       self.page(2025))
 
     def test_a_later_edition_links_to_the_latest_earlier_videos(self):
-        self.assertIn('<a href="../../../events/meet/2025/#videos">Videos of the 2025 edition</a>',
-                      self.page(2026))
+        link = re.search(r'<a href="../../../events/meet/2025/#videos">(.*?)</a>', self.page(2026)).group(1)
+        self.assertTrue(link.endswith("</svg>Videos of the 2025 edition"), link)
+
+    def test_the_videos_link_is_drawn_with_a_play_glyph_like_the_map_pin(self):
+        link = re.search(r'<a href="[^"]*#videos">(.*?)</a>', self.page(2026)).group(1)
+        svg = link[link.index("<svg"):link.index("</svg>")]
+        for attr in ('class="icon"', 'aria-hidden="true"', 'focusable="false"',
+                     'width="16"', 'height="16"', 'currentColor'):
+            self.assertIn(attr, svg)
+        self.assertNotIn("#", svg, "a baked-in colour would ignore dark mode")
 
     def test_an_edition_with_videos_links_to_the_one_before(self):
         self.assertIn("Videos of the 2024 edition", self.page(2025))
