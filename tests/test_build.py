@@ -307,6 +307,33 @@ class BuildOutputTests(unittest.TestCase):
             self.assertIn('width="16"', svg)
             self.assertIn('height="16"', svg)
 
+    def header_logos(self) -> list[str]:
+        found = [re.search(r'<a class="brand".*?</a>', html, re.S).group(0)
+                 for html in self.pages.values()]
+        self.assertTrue(found)
+        return [link[link.index("<svg"):link.index("</svg>")] for link in found]
+
+    def test_the_header_logo_is_named_for_screen_readers(self):
+        for svg in self.header_logos():
+            self.assertIn('role="img"', svg)
+            self.assertIn('aria-label="Classic Motoring Japan"', svg)
+
+    def test_the_header_logo_takes_its_colours_from_the_stylesheet(self):
+        # The swoosh gets a lighter red in dark mode and the wordmark follows the ink.
+        for svg in self.header_logos():
+            self.assertNotIn("#", svg, "a baked-in colour would ignore dark mode")
+            self.assertIn('class="roof"', svg)
+            self.assertIn('fill="currentColor"', svg)
+
+    def test_the_header_logo_carries_no_background_or_metadata(self):
+        for svg in self.header_logos():
+            self.assertNotIn("<rect", svg)
+            self.assertNotIn("<metadata", svg)
+
+    def test_the_header_logo_is_sized_in_the_markup_so_it_survives_a_missing_stylesheet(self):
+        for svg in self.header_logos():
+            self.assertRegex(svg, r'<svg[^>]* width="\d+" height="\d+"')
+
     def test_the_calendar_entry_carries_the_pin(self):
         self.assertIn("GEO:34.9756;138.3828", self.ics)
         self.assertEqual(sum(line.startswith("GEO:") for line in self.ics), 1,
@@ -883,7 +910,7 @@ class BritishSpellingTests(unittest.TestCase):
 COLOUR_TOKENS = {
     "#1C1C1C", "#EBEBEB", "#FFFFFF", "#141414", "#5C5C5C", "#A8A8A8", "#E0E0E0", "#333333",
     "#165E83", "#8CC4E0", "#FFF4D6", "#5E4700", "#3A300F", "#F3D98B", "#FBE9E5", "#8E2A1B",
-    "#3A1C16", "#F2A493",
+    "#3A1C16", "#F2A493", "#8C1C24", "#D0636A",
 }
 FONT_SIZES = {"32px", "24px", "20px", "16px"}
 SPACING = {"4px", "8px", "16px", "24px", "32px", "48px"}
@@ -932,6 +959,13 @@ class StylesheetTokenTests(unittest.TestCase):
     def test_the_stylesheet_uses_only_token_values(self):
         css = (ROOT / "static/style.css").read_text(encoding="utf-8")
         self.assertEqual(token_violations(css), [])
+
+    def test_the_brand_red_is_the_logo_swoosh_in_both_themes_and_nothing_else(self):
+        # Links stay blue so red keeps meaning "cancelled".
+        css = (ROOT / "static/style.css").read_text(encoding="utf-8")
+        for colour in ("#8C1C24", "#D0636A"):
+            rules = [r.strip() for r in re.findall(r"[^{}]*\{[^}]*" + colour, css)]
+            self.assertEqual(rules, [".brand .roof { fill: " + colour], colour)
 
     def test_the_check_catches_an_off_scale_value(self):
         # A zero from a check that cannot fire proves nothing, so show it firing.
