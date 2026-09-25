@@ -1177,6 +1177,55 @@ class VideoTests(unittest.TestCase):
         self.assertIn("videos item 1: missing required field 'label_en'", str(ctx.exception))
 
 
+class PastEditionTests(unittest.TestCase):
+    """Videos exist only once an edition has run, so they mark the page as a look back."""
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.data = self.tmp / "data"
+        write_event(self.data, "meet")
+        write_instance(self.data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-19",
+                                                              extra=ROUTE + CARS + VIDEOS))
+        write_instance(self.data, "meet", 2027, instance_yaml("meet", 2027, "2027-10-18", "2027-10-19",
+                                                              extra=ROUTE.replace("2026-10-1", "2027-10-1")
+                                                              + CARS))
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp)
+
+    def page(self, stem) -> str:
+        build.build(self.data, self.tmp / "site")
+        return (self.tmp / f"site/events/meet/{stem}/index.html").read_text(encoding="utf-8")
+
+    def test_an_edition_with_videos_leads_with_them_then_the_cars(self):
+        self.assertEqual(re.findall(r"<h2[^>]*>(.*?)</h2>", self.page(2026)), ["Videos", "Entry list", "Route"])
+
+    def test_an_edition_without_videos_keeps_the_route_first(self):
+        self.assertEqual(re.findall(r"<h2[^>]*>(.*?)</h2>", self.page(2027)), ["Route", "Entry list"])
+
+    def test_the_title_names_the_sections_in_page_order(self):
+        self.assertIn("<title>Test Event 2026: Videos, entry list and route |", self.page(2026))
+
+    def test_an_edition_links_forward_to_the_next_one(self):
+        self.assertIn('<a href="../../../events/meet/2027/">Next edition: 18–19 Oct 2027</a>',
+                      self.page(2026))
+
+    def test_the_latest_edition_has_no_forward_link(self):
+        self.assertNotIn("Next edition", self.page(2027))
+
+    def test_a_next_edition_without_a_page_links_to_the_event_page(self):
+        write_instance(self.data, "meet", 2027, instance_yaml("meet", 2027, "2027-10-17", "2027-10-17"))
+        self.assertIn('<a href="../../../events/meet/">Next edition: 17 Oct 2027</a>', self.page(2026))
+
+    def test_the_forward_link_carries_the_next_edition_status(self):
+        write_instance(self.data, "meet", 2027, instance_yaml("meet", 2027, "2027-10-17", "2027-10-17",
+                                                              status="tentative"))
+        self.assertIn("Next edition: 17 Oct 2027</a> (dates not confirmed)", self.page(2026))
+        write_instance(self.data, "meet", 2027, instance_yaml("meet", 2027, "2027-10-17", "2027-10-17",
+                                                              status="cancelled"))
+        self.assertIn("Next edition: 17 Oct 2027</a> (cancelled)", self.page(2026))
+
+
 class ProseLengthTests(unittest.TestCase):
     """Long prose hides its own facts, so the build refuses it."""
 
