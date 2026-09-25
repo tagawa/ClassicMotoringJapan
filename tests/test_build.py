@@ -158,8 +158,10 @@ class BuildOutputTests(unittest.TestCase):
         build.build(cls.data, cls.out)
         cls.ics_raw = (cls.out / build.FEED_FILE).read_bytes().decode("utf-8")
         cls.ics = unfold(cls.ics_raw)
+        # The 404 page is not a page of the site (no sitemap entry, served at any depth),
+        # so the "every page" checks leave it out and NotFoundPageTests covers it.
         cls.pages = {p.relative_to(cls.out).as_posix(): p.read_text(encoding="utf-8")
-                     for p in cls.out.rglob("*.html")}
+                     for p in cls.out.rglob("*.html") if p.name != "404.html"}
 
     @classmethod
     def tearDownClass(cls):
@@ -599,6 +601,47 @@ class BuildOutputTests(unittest.TestCase):
             rel = url.removeprefix(build.SITE_URL + "/")
             rel = rel + "index.html" if rel == "" or rel.endswith("/") else rel
             self.assertTrue((self.out / rel).is_file(), url)
+
+
+class NotFoundPageTests(unittest.TestCase):
+    """Pages serves /404.html for any missing path, at whatever depth was asked for."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = Path(tempfile.mkdtemp())
+        cls.out = cls.tmp / "site"
+        make_fixture(cls.tmp / "data")
+        build.build(cls.tmp / "data", cls.out)
+        cls.html = (cls.out / "404.html").read_text(encoding="utf-8")
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.tmp)
+
+    def test_every_internal_link_is_root_absolute(self):
+        # A relative link would resolve against the broken URL and 404 in turn.
+        links = re.findall(r'(?:href|src)="([^"]*)"', self.html)
+        internal = [u for u in links if not re.match(r"(https?:|webcal:)", u)]
+        self.assertTrue(internal)
+        for url in internal:
+            self.assertTrue(url.startswith("/") and not url.startswith("//"), url)
+
+    def test_links_every_event_page(self):
+        slugs = sorted(p.name for p in (self.out / "events").iterdir() if p.is_dir())
+        self.assertTrue(slugs)
+        for slug in slugs:
+            self.assertIn(f'href="/events/{slug}/"', self.html)
+
+    def test_is_kept_out_of_search_results(self):
+        self.assertIn('<meta name="robots" content="noindex">', self.html)
+        self.assertNotIn('rel="canonical"', self.html)
+        self.assertNotIn("application/ld+json", self.html)
+        self.assertNotIn("404", (self.out / "sitemap.xml").read_text(encoding="utf-8"))
+
+    def test_records_a_fathom_event(self):
+        # Fathom event names cannot be renamed once created: a new name starts a new count.
+        self.assertIn("fathom.trackEvent('404 page shown')", self.html)
+        self.assertIn("if (window.fathom)", self.html)
 
 
 class DeployWorkflowTests(unittest.TestCase):
