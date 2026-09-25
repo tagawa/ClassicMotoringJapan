@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block head %}
+<meta name="robots" content="noindex">
+{% endblock %}
+{% block main %}
+<h1>Page not found</h1>
+<p class="lede">There is no page at this address. It may have moved when an event's dates changed, or the link may contain a typo.</p>
+
+<section aria-labelledby="events-h">
+  <h2 id="events-h">Events on this site</h2>
+  <ul>
+{% for ev in events %}
+    <li><a href="{{ root }}events/{{ ev.slug }}/">{{ ev.name_en }}</a></li>
+{% endfor %}
+  </ul>
+  <p><a href="{{ root }}">All dates, upcoming and past</a></p>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Fathom's script is deferred, so it only exists once the page has loaded.
+  window.addEventListener("load", function () {
+    if (window.fathom) window.fathom.trackEvent('404 page shown');
+  });
+</script>
+{% endblock %}

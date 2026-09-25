@@ -4,7 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ title }}</title>
+{% if canonical %}
 <link rel="canonical" href="{{ canonical }}">
+{% endif %}
+{% block head %}{% endblock %}
 <link rel="stylesheet" href="{{ root }}static/style.css">
 <link rel="icon" href="{{ root }}favicon.ico" sizes="32x32">
 <link rel="icon" href="{{ root }}static/favicon.svg" type="image/svg+xml">
