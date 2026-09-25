@@ -712,9 +712,13 @@ def make_rows(events: dict, editions: list) -> list[dict]:
         cars_label, cars_caveat = (("Entry list", "cars may withdraw or change")
                                    if any(c["key"] == "entry_no" for c in columns)
                                    else ("Cars on display", "the line-up may change"))
-        page_parts = [part for part, present in (("Route", ed.get("route") or ed.get("route_en")),
-                                                 (cars_label, ed.get("cars")),
-                                                 ("Videos", ed.get("videos"))) if present]
+        present = {"route": ed.get("route") or ed.get("route_en"), "cars": ed.get("cars"),
+                   "videos": ed.get("videos")}
+        # A video exists only once an edition has run, so its presence marks the page as a
+        # look back, with no clock involved: what it was like first, the timetable last.
+        order = ("videos", "cars", "route") if present["videos"] else ("route", "cars", "videos")
+        sections = [name for name in order if present[name]]
+        page_parts = [{"route": "Route", "cars": cars_label, "videos": "Videos"}[name] for name in sections]
         has_page = bool(page_parts)
         # "Route, entry list and videos": one wording for the title, the link and the snippet.
         parts_phrase = " and ".join(filter(None, [", ".join(page_parts[:-1]), *page_parts[-1:]]))
@@ -726,7 +730,7 @@ def make_rows(events: dict, editions: list) -> list[dict]:
             "edition": edition, "display_name": display_name,
             "full_name": f"{display_name} {year}",
             "label": f"{edition} {year}" if edition else str(year),
-            "has_page": has_page, "page_parts": page_parts, "parts_phrase": parts_phrase, "path": path, "abs_url": f"{SITE_URL}/{path}",
+            "has_page": has_page, "sections": sections, "page_parts": page_parts, "parts_phrase": parts_phrase, "path": path, "abs_url": f"{SITE_URL}/{path}",
             "uid": f"{slug}-{ed_id}@{UID_DOMAIN}",
             "is_timed": is_timed,
             "venue": ed.get("venue_en") or ev["venue_en"],
@@ -763,6 +767,9 @@ def make_rows(events: dict, editions: list) -> list[dict]:
         r["previous_videos"] = latest_with_videos.get(r["slug"])
         if r["videos"]:
             latest_with_videos[r["slug"]] = r
+    # And forward to the next edition, so a page found by search leads on to the dates to keep.
+    for r in rows:
+        r["next"] = next((n for n in rows if n["slug"] == r["slug"] and n["ed"]["start"] > r["ed"]["start"]), None)
     return rows
 
 
