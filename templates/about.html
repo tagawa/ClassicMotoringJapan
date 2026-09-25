@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block main %}
+<h1>About</h1>
+<p class="lede">Classic Motoring Japan lists classic car events in Japan in English: when they run, where to watch, what admission costs, how to get there, and which cars will be there.</p>
+
+<h2>Where the facts come from</h2>
+<ul>
+  <li>Organisers announce their events in Japanese.</li>
+  <li>Every date and detail here is translated from the organiser's own site, flyer or announcement by someone who reads Japanese, not scraped or machine-translated.</li>
+  <li>Each page shows the date it was last checked against that source, and links to it.</li>
+  <li>Dates an organiser has not confirmed are marked Not confirmed. Cancelled editions stay listed, marked Cancelled.</li>
+  <li>Lists of cars are the organiser's, as of the date shown on the list.</li>
+</ul>
+
+<h2>What is not here</h2>
+<ul>
+  <li>Every classic car event in Japan: only those with an official source to check against.</li>
+  <li>Personal data: lists of cars name the car, never the driver or owner.</li>
+  <li>Tickets or bookings.</li>
+</ul>
+<p>Not affiliated with any event or organiser.</p>
+
+<h2>Reporting an error</h2>
+<p>Wrong dates and details can be reported as a <a href="{{ issues_url }}">GitHub issue</a>, which needs a free GitHub account.</p>
+
+<h2>The same data in other formats</h2>
+<ul>
+  <li><a href="{{ root }}{{ feed_file }}">Calendar feed</a> (iCalendar)</li>
+  <li><a href="{{ root }}api/events.json">Every edition as JSON</a></li>
+  <li><a href="{{ root }}llms.txt">llms.txt</a>, a plain-text index for language models</li>
+</ul>
+{% endblock %}

@@ -11,6 +11,7 @@ import sys
 import tempfile
 import unittest
 import xml.etree.ElementTree as ET
+from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urljoin
 
@@ -168,10 +169,12 @@ class BuildOutputTests(unittest.TestCase):
         shutil.rmtree(cls.tmp)
 
     def jsonld_by_name(self) -> dict:
+        """Event blocks only: a page's breadcrumb trail is structured data too, but not an edition."""
         found = {}
         for page, html in self.pages.items():
             for block in jsonld_blocks(html):
-                found.setdefault(block["name"], []).append((page, block))
+                if block["@type"] == "Event":
+                    found.setdefault(block["name"], []).append((page, block))
         return found
 
     # Done check 1: structured data (offline proxy for the Rich Results Test)
@@ -466,7 +469,10 @@ class BuildOutputTests(unittest.TestCase):
         self.assertIn("\u00a51,500", self.pages["events/culture-day-show/index.html"])
 
     def test_every_page_shows_last_verified(self):
+        # The About page describes the site and holds no event data to have checked.
         for page, html in self.pages.items():
+            if page == "about/index.html":
+                continue
             self.assertRegex(html, r"(Last verified|Most recent check:) 2026-09-20", page)
 
     def test_internal_links_are_relative(self):
@@ -654,6 +660,285 @@ class DeployWorkflowTests(unittest.TestCase):
         self.assertIs(step["with"].get("include-hidden-files"), True,
                       "v4 and v5 of the action exclude every dot-path unless told otherwise, "
                       "which drops site/.well-known/ and 404s the agent catalogs")
+
+
+class HeadParser(HTMLParser):
+    """The head's meta and link tags, with attribute values unescaped as a browser reads them."""
+
+    def __init__(self, html: str):
+        super().__init__()
+        self.meta, self.canonical, self.title, self._in_title = {}, None, "", False
+        self.feed(html)
+
+    def handle_starttag(self, tag, attrs):
+        a = dict(attrs)
+        if tag == "meta" and ("name" in a or "property" in a):
+            self.meta[a.get("name") or a["property"]] = a["content"]
+        elif tag == "link" and a.get("rel") == "canonical":
+            self.canonical = a["href"]
+        self._in_title = tag == "title"
+
+    def handle_endtag(self, tag):
+        self._in_title = False
+
+    def handle_data(self, data):
+        if self._in_title:
+            self.title += data
+
+
+def make_description_fixture(data: Path) -> None:
+    write_event(data, "tour", name_en="Test Tour",
+                extra="summary_en: >\n  A tour past [Test Park](https://example.com/park/) and the\n"
+                      "  harbour. It has run every year since 1990.\n")
+    write_instance(data, "tour", 2026,
+                   instance_yaml("tour", 2026, "2026-10-18", "2026-10-19", extra=ROUTE))
+    write_instance(data, "tour", 2027,
+                   instance_yaml("tour", 2027, "2027-10-17", "2027-10-18", status="cancelled", extra=CARS))
+    # Quotes and an ampersand, which have to survive the trip into an attribute value.
+    write_event(data, "show", name_en="'Test \"Show\" & Meet'", fee=1000)
+    write_instance(data, "show", 2026,
+                   instance_yaml("show", 2026, "2026-11-03", "2026-11-03", status="tentative",
+                                 extra=display_cars_yaml([("Toyota", "2000GT")])))
+
+
+class PageDescriptionTests(unittest.TestCase):
+    """What a search snippet or a shared link says about each page, before anyone opens it."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = Path(tempfile.mkdtemp())
+        cls.out = cls.tmp / "site"
+        make_description_fixture(cls.tmp / "data")
+        build.build(cls.tmp / "data", cls.out)
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.tmp)
+
+    def head(self, rel: str) -> HeadParser:
+        return HeadParser((self.out / rel).read_text(encoding="utf-8"))
+
+    def description(self, rel: str) -> str:
+        return self.head(rel).meta["description"]
+
+    def test_the_home_page_is_described_by_the_site_lede(self):
+        self.assertEqual(self.description("index.html"), build.SITE_LEDE)
+
+    def test_an_event_page_is_described_by_the_first_sentence_of_its_summary(self):
+        # A snippet shows about 155 characters, and a summary can run to 75 words.
+        self.assertEqual(self.description("events/tour/index.html"), "A tour past Test Park and the harbour.")
+
+    def test_an_event_without_a_summary_is_described_by_what_its_page_holds(self):
+        self.assertEqual(self.description("events/show/index.html"),
+                         'Dates, venue and admission for Test "Show" & Meet in Shizuoka.')
+
+    def test_an_edition_is_described_by_what_its_page_holds(self):
+        self.assertEqual(self.description("events/tour/2026/index.html"),
+                         "Route for Test Tour 2026: 18–19 Oct 2026, Test Park, Shizuoka.")
+
+    def test_a_cancelled_edition_says_so_before_anything_else(self):
+        # A snippet that read like a normal listing would tell a searcher it is still on.
+        self.assertEqual(self.description("events/tour/2027/index.html"),
+                         "Cancelled. Entry list for Test Tour 2027: 17–18 Oct 2027, Test Park, Shizuoka.")
+
+    def test_an_unconfirmed_show_says_so_and_names_its_list_as_the_page_does(self):
+        self.assertEqual(self.description("events/show/2026/index.html"),
+                         'Dates not confirmed. Cars on display for Test "Show" & Meet 2026: '
+                         "3 Nov 2026, Test Park, Shizuoka.")
+
+    def test_link_previews_repeat_the_title_description_and_canonical_address(self):
+        pages = ["index.html", "about/index.html", "events/tour/index.html", "events/tour/2026/index.html"]
+        for rel in pages:
+            head = self.head(rel)
+            self.assertEqual(head.meta["og:title"], head.title, rel)
+            self.assertEqual(head.meta["og:description"], head.meta["description"], rel)
+            self.assertEqual(head.meta["og:url"], head.canonical, rel)
+            self.assertEqual(head.canonical, f"{build.SITE_URL}/{rel.removesuffix('index.html')}", rel)
+            self.assertEqual(head.meta["og:type"], "website", rel)
+            self.assertEqual(head.meta["og:site_name"], build.SITE_NAME, rel)
+
+    def test_the_site_has_no_images_so_no_preview_image_is_claimed(self):
+        for rel in ("index.html", "events/tour/2026/index.html"):
+            self.assertNotIn("og:image", self.head(rel).meta, rel)
+
+    def test_the_404_page_describes_nothing(self):
+        head = self.head("404.html")
+        self.assertNotIn("description", head.meta)
+        self.assertFalse([key for key in head.meta if key.startswith("og:")])
+
+
+class BreadcrumbTests(unittest.TestCase):
+    """An edition page sits under its event page; the trail shows it, and says so to search engines."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = Path(tempfile.mkdtemp())
+        cls.out = cls.tmp / "site"
+        make_fixture(cls.tmp / "data")
+        build.build(cls.tmp / "data", cls.out)
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.tmp)
+
+    PAGE = "events/hill-climb/2026-autumn/index.html"
+
+    def html(self, rel: str) -> str:
+        return (self.out / rel).read_text(encoding="utf-8")
+
+    def trail(self) -> str:
+        found = re.search(r'<nav class="breadcrumbs" aria-label="Breadcrumb">(.*?)</nav>', self.html(self.PAGE), re.S)
+        self.assertIsNotNone(found, "edition page has no breadcrumb trail")
+        return found.group(1)
+
+    def test_the_trail_comes_before_the_heading(self):
+        html = self.html(self.PAGE)
+        self.assertLess(html.index('class="breadcrumbs"'), html.index("<h1>"))
+
+    def test_the_trail_links_home_and_the_event_and_names_the_current_page_unlinked(self):
+        trail = self.trail()
+        links = re.findall(r'<a href="([^"]*)">([^<]*)</a>', trail)
+        resolved = [(urljoin(f"{build.SITE_URL}/{self.PAGE}", href), text) for href, text in links]
+        self.assertEqual(resolved, [(f"{build.SITE_URL}/", "Home"),
+                                    (f"{build.SITE_URL}/events/hill-climb/", "Hill Climb")])
+        self.assertIn('<span aria-current="page">Autumn 2026</span>', trail)
+
+    def test_separators_are_hidden_from_screen_readers(self):
+        trail = self.trail()
+        self.assertEqual(trail.count('<span class="sep" aria-hidden="true">›</span>'), 2)
+
+    def test_structured_data_matches_the_visible_trail(self):
+        # Google expects breadcrumb markup to describe what the page shows.
+        blocks = [b for b in jsonld_blocks(self.html(self.PAGE)) if b["@type"] == "BreadcrumbList"]
+        self.assertEqual(len(blocks), 1)
+        items = blocks[0]["itemListElement"]
+        self.assertEqual([(i["position"], i["name"], i.get("item")) for i in items], [
+            (1, "Home", f"{build.SITE_URL}/"),
+            (2, "Hill Climb", f"{build.SITE_URL}/events/hill-climb/"),
+            (3, "Autumn 2026", None),
+        ])
+
+    def test_pages_whose_trail_would_only_say_home_have_none(self):
+        for rel in ("index.html", "events/hill-climb/index.html", "about/index.html"):
+            html = self.html(rel)
+            self.assertNotIn("breadcrumbs", html, rel)
+            self.assertNotIn("BreadcrumbList", html, rel)
+
+
+class AboutPageTests(unittest.TestCase):
+    """Where the facts come from, what the site is not, and where to report a mistake."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = Path(tempfile.mkdtemp())
+        cls.out = cls.tmp / "site"
+        make_fixture(cls.tmp / "data")
+        build.build(cls.tmp / "data", cls.out)
+        cls.html = (cls.out / "about/index.html").read_text(encoding="utf-8")
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.tmp)
+
+    def test_has_one_heading_and_a_brand_suffixed_title(self):
+        self.assertEqual(self.html.count("<h1>"), 1)
+        self.assertIn("<title>About | Classic Motoring Japan</title>", self.html)
+
+    def test_states_how_the_facts_are_checked(self):
+        self.assertIn("not scraped or machine-translated", self.html)
+        self.assertIn("Not affiliated with any event or organiser.", self.html)
+
+    def test_says_where_to_report_an_error(self):
+        self.assertIn('href="https://github.com/tagawa/ClassicMotoringJapan/issues"', self.html)
+
+    def test_every_page_links_to_it(self):
+        pages = [p for p in self.out.rglob("*.html") if p.name != "404.html"]
+        self.assertGreater(len(pages), 4)
+        for p in pages:
+            rel = p.relative_to(self.out).as_posix()
+            hrefs = re.findall(r'href="([^"]*about/)"', p.read_text(encoding="utf-8"))
+            self.assertIn(f"{build.SITE_URL}/about/",
+                          [urljoin(f"{build.SITE_URL}/{rel}", h) for h in hrefs], rel)
+
+    def test_the_404_page_links_to_it_from_the_root(self):
+        self.assertIn('href="/about/"', (self.out / "404.html").read_text(encoding="utf-8"))
+
+    def test_is_listed_in_the_sitemap_and_llms_txt(self):
+        self.assertIn(f"<loc>{build.SITE_URL}/about/</loc>", (self.out / "sitemap.xml").read_text(encoding="utf-8"))
+        self.assertIn(f"({build.SITE_URL}/about/)", (self.out / "llms.txt").read_text(encoding="utf-8"))
+
+
+class BritishSpellingTests(unittest.TestCase):
+    """Page text uses British spelling; `organizer` survives only as a data field name."""
+
+    def test_templates_say_organiser(self):
+        for path in sorted((ROOT / "templates").glob("*.html")):
+            # Template code names the data field; only the text around it is read by visitors.
+            text = re.sub(r"\{\{.*?\}\}|\{%.*?%\}", "", path.read_text(encoding="utf-8"))
+            self.assertNotRegex(text, r"(?i)organiz", path.name)
+
+
+# Values the stylesheet may use. The spec's token table explains them; this is the copy
+# that is enforced, because the spec is never uploaded and a test cannot read it.
+COLOUR_TOKENS = {
+    "#1C1C1C", "#EBEBEB", "#FFFFFF", "#141414", "#5C5C5C", "#A8A8A8", "#E0E0E0", "#333333",
+    "#165E83", "#8CC4E0", "#FFF4D6", "#5E4700", "#3A300F", "#F3D98B", "#FBE9E5", "#8E2A1B",
+    "#3A1C16", "#F2A493",
+}
+FONT_SIZES = {"32px", "24px", "20px", "16px"}
+SPACING = {"4px", "8px", "16px", "24px", "32px", "48px"}
+RADII = {"8px"}
+# An 8px radius turns the outline round a short link into a pill.
+FOCUS_RADII = {"4px"}
+KEYWORDS = {"0", "auto", "inherit", "transparent", "currentcolor"}
+COLOUR_PROPS = re.compile(r"^(color|background(-color)?|border(-(top|right|bottom|left))?-color|outline-color|fill)$")
+SPACING_PROPS = re.compile(r"^(margin|padding)(-(top|right|bottom|left))?$|^gap$")
+
+
+def token_violations(css: str) -> list[str]:
+    found = []
+    css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+    for hexval in re.findall(r"#[0-9A-Fa-f]{3,6}\b", css):
+        if hexval.upper() not in COLOUR_TOKENS:
+            found.append(f"colour {hexval}")
+    # Inner rules only: [^{}] cannot cross into an @media block's own braces.
+    for selector, body in re.findall(r"([^{}]+)\{([^{}]*)\}", css):
+        for decl in body.split(";"):
+            if ":" not in decl:
+                continue
+            prop, value = (s.strip() for s in decl.split(":", 1))
+            words = value.lower().split()
+            if COLOUR_PROPS.match(prop):
+                bad = [w for w in words if w not in KEYWORDS and not w.startswith("#")]
+            elif prop == "font-size":
+                bad = [w for w in words if w not in FONT_SIZES | KEYWORDS]
+            elif SPACING_PROPS.match(prop):
+                bad = [w for w in words if w not in SPACING | KEYWORDS]
+            elif prop == "border-radius":
+                allowed = RADII | FOCUS_RADII if ":focus" in selector else RADII
+                bad = [w for w in words if w not in allowed | KEYWORDS]
+            else:
+                continue
+            found += [f"{selector.strip()} {{ {prop}: {w} }}" for w in bad]
+    return found
+
+
+class StylesheetTokenTests(unittest.TestCase):
+    """Every colour, size and space in the stylesheet comes from the documented set."""
+
+    def test_the_stylesheet_uses_only_token_values(self):
+        css = (ROOT / "static/style.css").read_text(encoding="utf-8")
+        self.assertEqual(token_violations(css), [])
+
+    def test_the_check_catches_an_off_scale_value(self):
+        # A zero from a check that cannot fire proves nothing, so show it firing.
+        css = ("a { margin: 13px 8px; color: #123456; font-size: 15px; border-radius: 4px; }\n"
+               "a:focus-visible { border-radius: 4px; }\n"
+               "b { padding: 0 auto; color: currentColor; background: #fff4d6; }")
+        self.assertEqual(token_violations(css), [
+            "colour #123456",
+            "a { margin: 13px }", "a { font-size: 15px }", "a { border-radius: 4px }",
+        ])
 
 
 class EntryListProvisionalTests(unittest.TestCase):

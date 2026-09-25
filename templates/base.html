@@ -7,6 +7,14 @@
 {% if canonical %}
 <link rel="canonical" href="{{ canonical }}">
 {% endif %}
+{% if description %}
+<meta name="description" content="{{ description }}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="{{ site_name }}">
+<meta property="og:title" content="{{ title }}">
+<meta property="og:description" content="{{ description }}">
+<meta property="og:url" content="{{ canonical }}">
+{% endif %}
 {% block head %}{% endblock %}
 <link rel="stylesheet" href="{{ root }}static/style.css">
 <link rel="icon" href="{{ root }}favicon.ico" sizes="32x32">
@@ -55,6 +63,7 @@
 {% block footer %}{% endblock %}
   <p><a href="{{ webcal_url }}">Subscribe to all events in Apple Calendar or Outlook</a>. Dates update automatically.</p>
   <p>Google Calendar: under Other calendars, choose From URL and paste <code>{{ ics_url }}</code></p>
+  <p><a href="{{ root }}about/">About this site</a></p>
 </footer>
 {% block scripts %}{% endblock %}
 </body>

@@ -30,6 +30,9 @@ from markupsafe import Markup, escape
 SITE_NAME = "Classic Motoring Japan"
 SITE_URL = "https://classicmotoringjapan.com"
 SITE_LEDE = "When and where to watch, how to get there, and what cars you'll see."
+ABOUT_DESCRIPTION = ("How Classic Motoring Japan's event listings are translated from, and checked "
+                     "against, each organiser's own announcements.")
+ISSUES_URL = "https://github.com/tagawa/ClassicMotoringJapan/issues"
 # Crawling is allowed; training on the text is not. Declared where a crawler already looks.
 CONTENT_SIGNAL = "search=yes, ai-input=yes, ai-train=no"
 # ARD renamed its manifest; the old path is still what scanners and older consumers read.
@@ -641,8 +644,44 @@ def build_jsonld(r: dict) -> Markup:
         data["description"] = prose_text(ev["summary_en"]).strip()
     if ev.get("organizer"):
         data["organizer"] = {"@type": "Organization", "name": ev["organizer"], "url": ev["official_url"]}
-    text = json.dumps(data, ensure_ascii=False, indent=2).replace("</", "<\\/")
-    return Markup(text)
+    return jsonld_markup(data)
+
+
+def jsonld_markup(data: dict) -> Markup:
+    # "</" would close the script element early, whatever the JSON around it says.
+    return Markup(json.dumps(data, ensure_ascii=False, indent=2).replace("</", "<\\/"))
+
+
+def build_breadcrumbs(r: dict) -> Markup:
+    """The edition page's trail. The last entry is the page itself, so it carries no link."""
+    items = [("Home", f"{SITE_URL}/"),
+             (r["ev"]["name_en"], f"{SITE_URL}/events/{r['slug']}/"),
+             (r["label"], None)]
+    return jsonld_markup({
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [{"@type": "ListItem", "position": n, "name": name, **({"item": url} if url else {})}
+                            for n, (name, url) in enumerate(items, 1)],
+    })
+
+
+# Descriptions: what a search snippet or a shared link says before the page is opened
+
+SENTENCE_END_RE = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9])")
+
+
+def event_description(ev: dict) -> str:
+    """The summary's first sentence, since a snippet shows about 155 characters."""
+    if ev.get("summary_en"):
+        return SENTENCE_END_RE.split(" ".join(prose_text(ev["summary_en"]).split()), 1)[0]
+    return f"Dates, venue and admission for {ev['name_en']} in {ev['prefecture']}."
+
+
+def edition_description(r: dict) -> str:
+    """Status first, so a cancelled edition's snippet cannot read like a normal listing."""
+    status = {"cancelled": "Cancelled. ", "tentative": "Dates not confirmed. "}.get(r["ed"]["status"], "")
+    parts = " and ".join(r["page_parts"]).lower().capitalize()
+    return f"{status}{parts} for {r['full_name']}: {r['when']}, {r['venue']}, {r['ev']['prefecture']}."
 
 
 # Build
@@ -767,7 +806,10 @@ def build_llms_txt(rows: list[dict], events: dict) -> str:
             if r["has_page"]:
                 lines.append(f"  - [{r['full_name']}]({r['abs_url']}): "
                              f"{' and '.join(p.lower() for p in r['page_parts'])}.")
-    lines += ["", "## Data", "",
+    lines += ["", "## Site", "",
+              f"- [About]({SITE_URL}/about/): where the facts come from, how they are checked, "
+              "and where to report an error.",
+              "", "## Data", "",
               f"- [Events as JSON]({SITE_URL}/api/events.json): every edition above, with venue, "
               "dates, admission, coordinates, entry list and route.",
               f"- [Calendar feed]({SITE_URL}/{FEED_FILE}): the same editions as iCalendar.",
@@ -864,7 +906,7 @@ def build(data_dir: Path, out_dir: Path,
     host = SITE_URL.split("://", 1)[1]
     common = {"site_name": SITE_NAME, "site_url": SITE_URL, "site_lede": SITE_LEDE,
               "ard_path": ARD_PATH, "ard_predecessor_path": ARD_PREDECESSOR_PATH,
-              "ics_url": f"{SITE_URL}/{FEED_FILE}", "webcal_url": f"webcal://{host}/{FEED_FILE}"}
+              "issues_url": ISSUES_URL, "feed_file": FEED_FILE, "ics_url": f"{SITE_URL}/{FEED_FILE}", "webcal_url": f"webcal://{host}/{FEED_FILE}"}
 
     reset_out_dir(out_dir)
     # Every other static file is served from static/, but browsers ask for /favicon.ico
@@ -884,7 +926,7 @@ def build(data_dir: Path, out_dir: Path,
 
     write("index.html", env.get_template("home.html").render(
         **common, root="", canonical=f"{SITE_URL}/", title=f"{title} | {SITE_NAME}",
-        rows=rows, years=year_chart(rows), latest=latest, jsonld=[]))
+        description=SITE_LEDE, rows=rows, years=year_chart(rows), latest=latest, jsonld=[]))
 
     sitemap = [(f"{SITE_URL}/", latest)]
     for slug, ev in sorted(events.items()):
@@ -892,7 +934,7 @@ def build(data_dir: Path, out_dir: Path,
         verified = max([ev["last_verified"]] + [r["ed"]["last_verified"] for r in ev_rows])
         write(f"events/{slug}/index.html", env.get_template("event.html").render(
             **common, root="../../", canonical=f"{SITE_URL}/events/{slug}/",
-            title=f"{ev['name_en']}: Visitor Guide | {SITE_NAME}",
+            title=f"{ev['name_en']}: Visitor Guide | {SITE_NAME}", description=event_description(ev),
             ev=ev, rows=ev_rows, verified=verified, pin=venue_pin(ev),
             jsonld=[r["jsonld"] for r in ev_rows if not r["has_page"]]))
         sitemap.append((f"{SITE_URL}/events/{slug}/", verified))
@@ -903,8 +945,15 @@ def build(data_dir: Path, out_dir: Path,
             write(f"{r['path']}index.html", env.get_template("edition.html").render(
                 **common, root="../../../", canonical=r["abs_url"],
                 title=f"{r['full_name']}: {' and '.join(r['page_parts'])} | {SITE_NAME}",
-                ev=ev, r=r, ed=ed, jsonld=[r["jsonld"]]))
+                description=edition_description(r),
+                ev=ev, r=r, ed=ed, jsonld=[r["jsonld"], build_breadcrumbs(r)]))
             sitemap.append((r["abs_url"], ed["last_verified"]))
+
+    write("about/index.html", env.get_template("about.html").render(
+        **common, root="../", canonical=f"{SITE_URL}/about/", title=f"About | {SITE_NAME}",
+        description=ABOUT_DESCRIPTION, jsonld=[]))
+    # The page describes the site, not the data, so no verified date stands behind it.
+    sitemap.append((f"{SITE_URL}/about/", None))
 
     # Pages serves this for a missing path at any depth, so links must be root-absolute.
     write("404.html", env.get_template("404.html").render(
@@ -922,8 +971,9 @@ def build(data_dir: Path, out_dir: Path,
     write(ARD_PREDECESSOR_PATH, ard)
     write(".well-known/api-catalog", build_api_catalog())
 
-    urls = "".join(f"  <url><loc>{xml_escape(u)}</loc><lastmod>{d.isoformat()}</lastmod></url>\n"
-                   for u, d in sorted(sitemap) if d)
+    urls = "".join(f"  <url><loc>{xml_escape(u)}</loc>"
+                   + (f"<lastmod>{d.isoformat()}</lastmod>" if d else "") + "</url>\n"
+                   for u, d in sorted(sitemap, key=lambda entry: entry[0]))
     write("sitemap.xml", '<?xml version="1.0" encoding="UTF-8"?>\n'
           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + urls + "</urlset>\n")
 

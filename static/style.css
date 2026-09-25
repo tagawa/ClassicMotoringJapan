@@ -46,6 +46,12 @@ a:focus-visible, summary:focus-visible {
   border-radius: 4px;
 }
 
+/* Inline items, so a long event name wraps like a sentence instead of stacking the trail. */
+.breadcrumbs { color: #5C5C5C; }
+.breadcrumbs ol { list-style: none; margin: 0 0 16px; padding: 0; }
+.breadcrumbs li { display: inline; }
+.breadcrumbs .sep { margin: 0 8px; }
+
 .events { list-style: none; margin: 0; padding: 0; }
 .events > li {
   display: grid;
@@ -181,6 +187,7 @@ summary { cursor: pointer; font-weight: 600; }
   .brand { color: #EBEBEB; }
   .brand .carve { fill: #141414; }
   .ja { color: #A8A8A8; }
+  .breadcrumbs { color: #A8A8A8; }
   a { color: #8CC4E0; }
   a:focus-visible, summary:focus-visible { outline-color: #8CC4E0; }
   .events > li { border-top-color: #333333; }

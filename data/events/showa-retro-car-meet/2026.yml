@@ -8,7 +8,7 @@ end_time: "15:00"
 source_url: https://retrocar.yaesu-net.co.jp/2026_soga/?p=outline
 last_verified: 2026-09-22
 sequence: 0
-# The organizer lists these in two classes, retro and neo-classic. The table has no
+# The organiser lists these in two classes, retro and neo-classic. The table has no
 # class column, so they are grouped by marque here, which is what Make implies.
 list_as_of: 2026-09-22
 cars:

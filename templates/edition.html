@@ -1,11 +1,18 @@
 {% extends "base.html" %}
 {% from "icons.html" import map_link %}
 {% block main %}
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="{{ root }}">Home</a></li>
+    <li><span class="sep" aria-hidden="true">›</span><a href="{{ root }}events/{{ ev.slug }}/">{{ ev.name_en }}</a></li>
+    <li><span class="sep" aria-hidden="true">›</span><span aria-current="page">{{ r.label }}</span></li>
+  </ol>
+</nav>
 <h1>{{ r.full_name }}</h1>
 {% if ev.name_ja %}<p class="ja" lang="ja">{{ ev.name_ja }}</p>{% endif %}
 
 {% if ed.status == "tentative" %}
-<p class="note">These dates are not confirmed yet. Check the <a href="{{ ed.source_url }}">organizer's announcement</a> before booking travel.</p>
+<p class="note">These dates are not confirmed yet. Check the <a href="{{ ed.source_url }}">organiser's announcement</a> before booking travel.</p>
 {% elif ed.status == "cancelled" %}
 <p class="note cancelled">This edition is cancelled.</p>
 {% endif %}
@@ -90,5 +97,5 @@
 {% endblock %}
 
 {% block footer %}
-  <p>Last verified {{ ed.last_verified.isoformat() }}. Source: <a href="{{ ed.source_url }}">organizer's announcement</a>.</p>
+  <p>Last verified {{ ed.last_verified.isoformat() }}. Source: <a href="{{ ed.source_url }}">organiser's announcement</a>.</p>
 {% endblock %}
