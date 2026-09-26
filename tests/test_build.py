@@ -1198,6 +1198,51 @@ class VideoTests(unittest.TestCase):
         self.assertIn("Videos of the 2024 edition", self.page(2025))
         self.assertNotIn("Videos of the", self.page(2024))
 
+    def test_an_edition_without_videos_embeds_the_first_earlier_one(self):
+        srcs = re.findall(r'<iframe[^>]*\ssrc="([^"]+)"', self.page(2026))
+        self.assertEqual(srcs, ["https://www.youtube-nocookie.com/embed/t3UUnZ7g5P0"])
+
+    def test_the_borrowed_video_comes_last_under_a_heading_naming_its_edition(self):
+        html = self.page(2026)
+        heading = html.index(">From the 2025 edition</h2>")
+        self.assertGreater(heading, html.index("<h2>Route</h2>"))
+        self.assertGreater(html.index("<iframe"), heading)
+
+    def test_the_borrowed_video_is_titled_lazy_and_linked_like_an_own_one(self):
+        html = self.page(2026)
+        frame = re.search(r"<iframe[^>]*>", html).group(0)
+        self.assertIn('title="Test Event 2025, Day 1"', frame)
+        self.assertIn('loading="lazy"', frame)
+        self.assertIn('<a href="https://www.youtube.com/watch?v=t3UUnZ7g5P0">Day 1 on YouTube</a>', html)
+
+    def test_an_edition_with_its_own_videos_borrows_none(self):
+        html = self.page(2025)
+        self.assertNotIn("From the", html)
+        self.assertNotIn("AAAAAAAAAAA", html)
+
+    def test_the_borrowed_video_is_not_a_section_of_the_edition(self):
+        html = self.page(2026)
+        self.assertNotIn('id="videos"', html)
+        title = re.search(r"<title>(.*?)</title>", html).group(1)
+        self.assertNotIn("video", title.lower())
+        event_page = (self.tmp / "site/events/meet/index.html").read_text(encoding="utf-8")
+        self.assertIn('href="../../events/meet/2026/">Route</a>', event_page)
+
+    def test_a_borrowed_video_alone_does_not_earn_an_edition_page(self):
+        write_instance(self.data, "meet", 2027, instance_yaml("meet", 2027, "2027-10-18", "2027-10-18"))
+        build.build(self.data, self.tmp / "site")
+        self.assertFalse((self.tmp / "site/events/meet/2027").exists())
+
+    def test_a_twice_yearly_event_names_the_season_as_well_as_the_year(self):
+        write_instance(self.data, "meet", "2026-spring", instance_yaml(
+            "meet", 2026, "2026-04-18", "2026-04-18", extra=VIDEOS))
+        write_instance(self.data, "meet", "2026-autumn", instance_yaml(
+            "meet", 2026, "2026-10-18", "2026-10-19", extra=ROUTE))
+        (self.data / "events/meet/2026.yml").unlink()
+        html = self.page("2026-autumn")
+        self.assertIn("Videos of the Spring 2026 edition", html)
+        self.assertIn(">From the Spring 2026 edition</h2>", html)
+
     def test_the_event_page_names_videos_among_the_edition_contents(self):
         build.build(self.data, self.tmp / "site")
         html = (self.tmp / "site/events/meet/index.html").read_text(encoding="utf-8")
@@ -1250,7 +1295,8 @@ class PastEditionTests(unittest.TestCase):
         self.assertEqual(re.findall(r"<h2[^>]*>(.*?)</h2>", self.page(2026)), ["Videos", "Entry list", "Route"])
 
     def test_an_edition_without_videos_keeps_the_route_first(self):
-        self.assertEqual(re.findall(r"<h2[^>]*>(.*?)</h2>", self.page(2027)), ["Route", "Entry list"])
+        self.assertEqual(re.findall(r"<h2[^>]*>(.*?)</h2>", self.page(2027)),
+                         ["Route", "Entry list", "From the 2026 edition"])
 
     def test_the_title_names_the_sections_in_page_order(self):
         self.assertIn("<title>Test Event 2026: Videos, entry list and route |", self.page(2026))
