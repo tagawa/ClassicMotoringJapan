@@ -8,3 +8,8 @@ end_time: "15:00"
 source_url: https://revivalmiura.com/?page_id=1539
 last_verified: 2026-09-25
 sequence: 0
+videos:
+  - youtube_id: EN5D_DChxQ8
+    label_en: Part 1 (video by conzaghi)
+  - youtube_id: kyxgckGvYVA
+    label_en: Part 2 (video by conzaghi)
