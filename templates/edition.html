@@ -1,5 +1,11 @@
 {% extends "base.html" %}
 {% from "icons.html" import map_link, video_icon %}
+{% macro video_figure(video) -%}
+<figure class="video">
+  <div class="video-frame"><iframe src="{{ video.embed }}" title="{{ video.title }}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
+  <figcaption><a href="{{ video.watch }}">{{ video.label }} on YouTube</a></figcaption>
+</figure>
+{%- endmacro %}
 {% block main %}
 <nav class="breadcrumbs" aria-label="Breadcrumb">
   <ol>
@@ -103,13 +109,15 @@
 {% elif section == "videos" %}
 <h2 id="videos">Videos</h2>
 {% for video in r.videos %}
-<figure class="video">
-  <div class="video-frame"><iframe src="{{ video.embed }}" title="{{ video.title }}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
-  <figcaption><a href="{{ video.watch }}">{{ video.label }} on YouTube</a></figcaption>
-</figure>
+{{ video_figure(video) }}
 {% endfor %}
 {% endif %}
 {% endfor %}
+{# Not a section: it shows what the event is like, not what this edition has. #}
+{% if r.previous_videos and not r.videos %}
+<h2>From the {{ r.previous_videos.label }} edition</h2>
+{{ video_figure(r.previous_videos.videos[0]) }}
+{% endif %}
 {% endblock %}
 
 {% block footer %}
