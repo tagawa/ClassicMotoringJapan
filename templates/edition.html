@@ -18,7 +18,7 @@
 {% if ev.name_ja %}<p class="ja" lang="ja">{{ ev.name_ja }}</p>{% endif %}
 
 {% if ed.status == "tentative" %}
-<p class="note">These dates are not confirmed yet. Check the <a href="{{ ed.source_url }}">organiser's announcement</a> before booking travel.</p>
+<p class="note">The <a href="{{ ed.source_url }}">organiser's announcement</a> does not confirm these dates yet.</p>
 {% elif ed.status == "cancelled" %}
 <p class="note cancelled">This edition is cancelled.</p>
 {% endif %}
@@ -34,7 +34,9 @@
 {% if r.next %}
 <p><a href="{{ root }}{{ r.next.path }}">Next edition: {{ r.next.when }}</a>{% if r.next.ed.status == "tentative" %} (dates not confirmed){% elif r.next.ed.status == "cancelled" %} (cancelled){% endif %}</p>
 {% endif %}
-<p><a href="{{ root }}events/{{ ev.slug }}/">Access, viewing spots and photography notes</a></p>
+{% if r.event_notes %}
+<p><a href="{{ root }}events/{{ ev.slug }}/">{{ r.event_notes }}</a></p>
+{% endif %}
 {% if r.previous_videos %}
 <p><a href="{{ root }}{{ r.previous_videos.path }}#videos">{{ video_icon() }}Videos of the {{ r.previous_videos.label }} edition</a></p>
 {% endif %}

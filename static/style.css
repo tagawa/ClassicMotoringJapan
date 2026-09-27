@@ -135,6 +135,8 @@ summary { cursor: pointer; font-weight: 600; }
   color: #5C5C5C;
 }
 .site-footer p { margin: 0 0 8px; }
+.site-footer details { margin: 0 0 8px; }
+.site-footer summary { font-weight: normal; }
 
 .visually-hidden {
   position: absolute;

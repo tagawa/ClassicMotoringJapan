@@ -1321,6 +1321,73 @@ class PastEditionTests(unittest.TestCase):
         self.assertIn("Next edition: 17 Oct 2027</a> (cancelled)", self.page(2026))
 
 
+class EventNotesLinkTests(unittest.TestCase):
+    """The edition page's link to the event page names only the notes that page has."""
+
+    def page(self, extra: str) -> str:
+        tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, tmp)
+        write_event(tmp / "data", "meet", extra=extra)
+        write_instance(tmp / "data", "meet", 2026,
+                       instance_yaml("meet", 2026, "2026-10-18", "2026-10-18", extra=CARS))
+        build.build(tmp / "data", tmp / "site")
+        return (tmp / "site/events/meet/2026/index.html").read_text(encoding="utf-8")
+
+    def test_every_kind_of_note_is_named(self):
+        html = self.page("nearest_station: Test\nspectator_notes_en: Free.\nphotography_notes_en: Allowed.\n")
+        self.assertIn('<a href="../../../events/meet/">Access, spectator and photography notes</a>', html)
+
+    def test_access_notes_alone_count_as_access(self):
+        self.assertIn(">Access notes</a>", self.page("access_notes_en: Walk.\n"))
+
+    def test_notes_the_event_lacks_are_not_promised(self):
+        html = self.page("spectator_notes_en: Free.\n")
+        self.assertIn('<a href="../../../events/meet/">Spectator notes</a>', html)
+        self.assertNotIn("photography", html.lower())
+        self.assertNotIn("viewing spots", html)
+
+    def test_no_link_when_the_event_has_no_notes(self):
+        # The breadcrumb still leads there.
+        self.assertNotIn(" notes</a>", self.page(""))
+
+
+class SiteCopyTests(unittest.TestCase):
+    """Fixed wording that states facts, not advice, and keeps visitors' pages free of machine furniture."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = Path(tempfile.mkdtemp())
+        cls.out = cls.tmp / "site"
+        make_fixture(cls.tmp / "data")
+        write_instance(cls.tmp / "data", "hill-climb", "2027-spring",
+                       instance_yaml("hill-climb", 2027, "2027-04-11", "2027-04-11", status="tentative",
+                                     extra=CARS))
+        build.build(cls.tmp / "data", cls.out)
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.tmp)
+
+    def html(self, rel: str) -> str:
+        return (self.out / rel).read_text(encoding="utf-8")
+
+    def test_a_tentative_edition_says_so_without_advising(self):
+        html = self.html("events/hill-climb/2027-spring/index.html")
+        self.assertIn('The <a href="https://example.com/hill-climb/2027/">organiser\'s announcement</a> '
+                      "does not confirm these dates yet.", html)
+        self.assertNotIn("booking", html)
+
+    def test_the_about_page_does_not_list_the_language_model_index(self):
+        self.assertNotIn("llms.txt", self.html("about/index.html"))
+
+    def test_google_calendar_steps_are_folded_away(self):
+        self.assertRegex(self.html("index.html"),
+                         r"(?s)<details>\s*<summary>Google Calendar</summary>.*Other calendars.*</details>")
+
+    def test_the_404_page_does_not_guess_why(self):
+        self.assertNotIn("typo", self.html("404.html"))
+
+
 class ProseLengthTests(unittest.TestCase):
     """Long prose hides its own facts, so the build refuses it."""
 

@@ -699,6 +699,20 @@ def edition_description(r: dict) -> str:
     return f"{status}{r['parts_phrase']} for {r['full_name']}: {r['when']}, {r['venue']}, {r['ev']['prefecture']}."
 
 
+def list_phrase(parts: list[str]) -> str:
+    """["Route", "Entry list", "Videos"] -> "Route, entry list and videos"."""
+    return " and ".join(filter(None, [", ".join(parts[:-1]), *parts[-1:]])).lower().capitalize()
+
+
+def event_notes_phrase(ev: dict) -> str | None:
+    """The event page's notes, named for the edition page's link to them. None if it has none."""
+    kinds = [kind for kind, present in (
+        ("access", ev.get("nearest_station") or ev.get("access_notes_en")),
+        ("spectator", ev.get("spectator_notes_en")),
+        ("photography", ev.get("photography_notes_en"))) if present]
+    return f"{list_phrase(kinds)} notes" if kinds else None
+
+
 # Build
 
 def make_rows(events: dict, editions: list) -> list[dict]:
@@ -725,8 +739,7 @@ def make_rows(events: dict, editions: list) -> list[dict]:
         page_parts = [{"route": "Route", "cars": cars_label, "videos": "Videos"}[name] for name in sections]
         has_page = bool(page_parts)
         # "Route, entry list and videos": one wording for the title, the link and the snippet.
-        parts_phrase = " and ".join(filter(None, [", ".join(page_parts[:-1]), *page_parts[-1:]]))
-        parts_phrase = parts_phrase.lower().capitalize()
+        parts_phrase = list_phrase(page_parts)
         path = f"events/{slug}/{ed_id}/" if has_page else f"events/{slug}/"
         is_timed = "start_time" in ed
         r = {
@@ -734,7 +747,7 @@ def make_rows(events: dict, editions: list) -> list[dict]:
             "edition": edition, "display_name": display_name,
             "full_name": f"{display_name} {year}",
             "label": f"{edition} {year}" if edition else str(year),
-            "has_page": has_page, "sections": sections, "page_parts": page_parts, "parts_phrase": parts_phrase, "path": path, "abs_url": f"{SITE_URL}/{path}",
+            "has_page": has_page, "sections": sections, "page_parts": page_parts, "parts_phrase": parts_phrase, "event_notes": event_notes_phrase(ev), "path": path, "abs_url": f"{SITE_URL}/{path}",
             "uid": f"{slug}-{ed_id}@{UID_DOMAIN}",
             "is_timed": is_timed,
             "venue": ed.get("venue_en") or ev["venue_en"],
