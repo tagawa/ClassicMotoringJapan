@@ -717,8 +717,9 @@ def make_rows(events: dict, editions: list) -> list[dict]:
                                    else ("Cars on display", "the line-up may change"))
         present = {"route": ed.get("route") or ed.get("route_en"), "cars": ed.get("cars"),
                    "videos": ed.get("videos")}
-        # A video exists only once an edition has run, so its presence marks the page as a
-        # look back, with no clock involved: what it was like first, the timetable last.
+        # A video mostly exists only once an edition has run, so its presence marks the page
+        # as a look back, with no clock involved: what it was like first, the timetable last.
+        # An organiser's pre-event guide is the exception, and leading with it suits it too.
         order = ("videos", "cars", "route") if present["videos"] else ("route", "cars", "videos")
         sections = [name for name in order if present[name]]
         page_parts = [{"route": "Route", "cars": cars_label, "videos": "Videos"}[name] for name in sections]
