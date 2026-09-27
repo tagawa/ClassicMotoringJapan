@@ -10,6 +10,10 @@ source_url: https://minkara.carview.co.jp/userid/2251740/blog/48532111/
 last_verified: 2026-09-27
 sequence: 0
 videos:
-  # Filmed on the first day: every car on both floors, then cars leaving after 17:30.
-  - youtube_id: 3zEQD4J_c7Y
-    label_en: Day 1 (video by SKYLINE E-HCR32)
+  # A visitor's walk round with spoken commentary. The channel gives no Latin-script
+  # name, so みーちゃん ドライブ is romanised here.
+  - youtube_id: teGMAIeD5qQ
+    label_en: Walk round, commentary in Japanese (video by Mii-chan Drive)
+  # Starts at the station and walks to the car park, then round the show.
+  - youtube_id: KtfBdsZtBmg
+    label_en: From the station to the show, commentary in Japanese (video by NickyRockCh)
