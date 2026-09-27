@@ -1,0 +1,25 @@
+slug: fujioka-oldies
+name_en: Fujioka Oldies
+name_ja: 藤岡オールディーズ
+organizer: Fujioka オールディーズ実行委員会 (Fujioka Oldies Executive Committee)
+official_url: https://www.instagram.com/f.oldies0612/
+summary_en: >
+  A one-day street show in central Fujioka, Gunma. The Chuo-dori shopping
+  street is closed to traffic between the 4-chome and 7-chome traffic lights,
+  and American cars, vintage cars, custom cars and motorcycles line it. Food,
+  goods and craft stalls and a live music stage run alongside. First held in
+  2024; more than 50 cars came in 2025.
+prefecture: Gunma
+venue_en: Chuo-dori shopping street, Fujioka
+# No street address: the venue is a stretch of road. The pin is the midpoint of the
+# two traffic signals as OpenStreetMap places them.
+lat: 36.2474
+lon: 139.0794
+nearest_station: Gunma-Fujioka (JR Hachiko line)
+access_notes_en: >
+  The 4-chome end of the closed stretch is about 500 m from the station.
+typical_scale: More than 50 cars
+spectator_fee_jpy: 0
+spectator_notes_en: >
+  Free to watch. The street is closed to traffic from 08:00 to 17:00.
+last_verified: 2026-09-27

@@ -1,0 +1,15 @@
+slug: fujioka-oldies
+year: 2025
+status: confirmed
+start: 2025-11-02
+end: 2025-11-02
+start_time: "10:00"
+end_time: "16:00"
+# The second running. The first was on 2024-11-03, on the same street.
+source_url: https://fujioka-oldies2025.studio.site/
+last_verified: 2026-09-27
+sequence: 0
+videos:
+  # Tagged 【公式】 and made for the organiser, but uploaded to another channel.
+  - youtube_id: l8v3sAKQ7V4
+    label_en: Event film (video by Yukinocchi Channel)
