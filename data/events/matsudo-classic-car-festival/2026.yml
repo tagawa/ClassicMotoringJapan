@@ -1,0 +1,12 @@
+slug: matsudo-classic-car-festival
+year: 2026
+status: confirmed
+start: 2026-10-03
+end: 2026-10-04
+# Open 11:00 to 17:00 each day. Times are left off because the build would render
+# them as one span from Saturday morning to Sunday evening.
+# The 22nd running. Dates and the car park closure are on the city's Matsudo Festival
+# page; the show itself is on the organiser's flyer, which has no web address.
+source_url: https://www.city.matsudo.chiba.jp/shisei/oshirase/matsudomatsuri.html
+last_verified: 2026-09-27
+sequence: 0
