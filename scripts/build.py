@@ -39,6 +39,9 @@ CONTENT_SIGNAL = "search=yes, ai-input=yes, ai-train=no"
 ARD_PATH = ".well-known/ard.json"
 ARD_PREDECESSOR_PATH = ".well-known/ai-catalog.json"
 UID_DOMAIN = "classicmotoringjapan.com"
+# Public by design: search engines fetch /<key>.txt to confirm a ping came from this site.
+# Changing it only means the next deploy resubmits every page (see scripts/indexnow.py).
+INDEXNOW_KEY = "f257bb565b29833c5531031252154d80"
 # Thunderbird has never read X-WR-CALNAME (bugzilla 168176, open since 2002): it names a
 # subscribed calendar after the last path segment, so the file name has to read as a name.
 FEED_FILE = "classic-car-events.ics"
@@ -1003,6 +1006,7 @@ def build(data_dir: Path, out_dir: Path,
     write(ARD_PATH, ard)
     write(ARD_PREDECESSOR_PATH, ard)
     write(".well-known/api-catalog", build_api_catalog())
+    write(f"{INDEXNOW_KEY}.txt", INDEXNOW_KEY)
 
     urls = "".join(f"  <url><loc>{xml_escape(u)}</loc>"
                    + (f"<lastmod>{d.isoformat()}</lastmod>" if d else "") + "</url>\n"
