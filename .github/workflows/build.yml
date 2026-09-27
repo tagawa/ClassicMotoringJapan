@@ -17,6 +17,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      indexnow-urls: ${{ steps.indexnow.outputs.urls }}
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
@@ -25,6 +27,11 @@ jobs:
       - run: pip install -r requirements.txt
       - run: python -m unittest discover -s tests -v
       - run: python scripts/build.py
+      # Compares the new build with the live site, so it has to run before deploy.
+      # A failure here must never block the deploy.
+      - id: indexnow
+        continue-on-error: true
+        run: echo "urls=$(python scripts/indexnow.py changed)" >> "$GITHUB_OUTPUT"
       - uses: actions/configure-pages@v5
       # v4 and v5 strip every dot-path from the artifact, which silently drops
       # site/.well-known/ and 404s the agent catalogs. v5 can be told not to.
@@ -42,3 +49,18 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  # After deploy, so the key file and the new pages are live when search engines fetch them.
+  indexnow:
+    needs: [build, deploy]
+    if: needs.build.outputs.indexnow-urls != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: python scripts/indexnow.py submit
+        env:
+          URLS: ${{ needs.build.outputs.indexnow-urls }}
