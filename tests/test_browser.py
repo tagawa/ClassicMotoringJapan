@@ -1,7 +1,7 @@
-"""Done check 4: past events move under "Past" on page load, judged by Japan's date.
+"""Past events move under "Past" on page load, judged by Japan's date.
 
-Needs Playwright with Chromium (see the README's one-time setup).
-Skipped automatically when Playwright isn't installed.
+Needs Playwright with Chromium. Skipped when Playwright isn't installed, which is
+the normal case here and on GitHub (see the README's local checks).
 """
 import shutil
 import sys

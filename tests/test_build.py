@@ -1,7 +1,7 @@
 """Tests for scripts/build.py. Run: .venv/bin/python -m unittest discover -s tests -v
 
-Done checks 1 and 2 need a final manual pass (Google Rich Results Test, calendar subscription on a phone).
-These tests cover everything that can be checked offline, so the manual pass should be a formality.
+The structured-data and calendar tests are offline proxies for Google's Rich Results Test and a
+phone subscribed to the feed, so a manual pass with either should be a formality.
 """
 import datetime as dt
 import json
@@ -177,7 +177,7 @@ class BuildOutputTests(unittest.TestCase):
                     found.setdefault(block["name"], []).append((page, block))
         return found
 
-    # Done check 1: structured data (offline proxy for the Rich Results Test)
+    # Structured data (offline proxy for the Rich Results Test)
 
     def test_timed_event_jsonld_uses_japan_offset(self):
         (page, block), = self.jsonld_by_name()["Autumn Rally, Shizuoka 2026"]
@@ -218,7 +218,7 @@ class BuildOutputTests(unittest.TestCase):
         self.assertTrue(found["Autumn Rally, Shizuoka 2026"][0][1]["isAccessibleForFree"])
         self.assertFalse(found["Test Event 2026"][0][1]["isAccessibleForFree"])
 
-    # Done check 2: calendar feed (offline proxy for the phone subscription)
+    # Calendar feed (offline proxy for the phone subscription)
 
     def test_ics_uses_crlf_and_folds_at_75_octets(self):
         self.assertTrue(self.ics_raw.endswith("\r\n"))
@@ -425,7 +425,7 @@ class BuildOutputTests(unittest.TestCase):
         self.assertIn(">Hill Climb Spring</a>", html)
         self.assertIn(">Hill Climb Autumn</a>", html)
 
-    # Done check 4 (static half): every row carries its end date for the browser script
+    # Every row carries its end date for the browser script (tests/test_browser.py has the other half)
 
     def test_home_rows_carry_end_dates_in_date_order(self):
         ends = re.findall(r'data-end="(\d{4}-\d{2}-\d{2})"', self.pages["index.html"])
@@ -886,6 +886,9 @@ class AboutPageTests(unittest.TestCase):
 
     def test_says_where_to_report_an_error(self):
         self.assertIn('href="https://github.com/tagawa/ClassicMotoringJapan/issues"', self.html)
+
+    def test_links_to_the_sites_own_youtube_channel(self):
+        self.assertIn('href="https://www.youtube.com/@ClassicMotoringJapan"', self.html)
 
     def test_every_page_links_to_it(self):
         pages = [p for p in self.out.rglob("*.html") if p.name != "404.html"]
