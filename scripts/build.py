@@ -33,6 +33,7 @@ SITE_LEDE = "When and where to watch, how to get there, and what cars you'll see
 ABOUT_DESCRIPTION = ("How Classic Motoring Japan's event listings are translated from, and checked "
                      "against, each organiser's own announcements.")
 ISSUES_URL = "https://github.com/tagawa/ClassicMotoringJapan/issues"
+YOUTUBE_CHANNEL_URL = "https://www.youtube.com/@ClassicMotoringJapan"
 # Crawling is allowed; training on the text is not. Declared where a crawler already looks.
 CONTENT_SIGNAL = "search=yes, ai-input=yes, ai-train=no"
 # ARD renamed its manifest; the old path is still what scanners and older consumers read.
@@ -956,7 +957,7 @@ def build(data_dir: Path, out_dir: Path,
     host = SITE_URL.split("://", 1)[1]
     common = {"site_name": SITE_NAME, "site_url": SITE_URL, "site_lede": SITE_LEDE,
               "ard_path": ARD_PATH, "ard_predecessor_path": ARD_PREDECESSOR_PATH,
-              "issues_url": ISSUES_URL, "feed_file": FEED_FILE, "ics_url": f"{SITE_URL}/{FEED_FILE}", "webcal_url": f"webcal://{host}/{FEED_FILE}"}
+              "issues_url": ISSUES_URL, "youtube_channel_url": YOUTUBE_CHANNEL_URL, "feed_file": FEED_FILE, "ics_url": f"{SITE_URL}/{FEED_FILE}", "webcal_url": f"webcal://{host}/{FEED_FILE}"}
 
     reset_out_dir(out_dir)
     # Every other static file is served from static/, but browsers ask for /favicon.ico
