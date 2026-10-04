@@ -1,0 +1,28 @@
+slug: toyota-museum-classic-car-festival
+name_en: Toyota Automobile Museum Classic Car Festival
+name_ja: トヨタ博物館 クラシックカー・フェスティバル
+organizer: Toyota Automobile Museum
+official_url: https://toyota-automobile-museum.jp/
+summary_en: >
+  The Toyota Automobile Museum's own festival, held since 1990, the year after the
+  museum opened. Around 120 privately owned cars, Japanese and imported, leave the
+  museum in Nagakute on a parade along public roads and finish at Aichi Expo
+  Memorial Park, where they stay on display for the rest of the day. The 2026
+  edition takes cars built in 1996 or earlier; motorcycles are not eligible.
+prefecture: Aichi
+venue_en: Aichi Expo Memorial Park (Morikoro Park), Nagakute
+street_address: 1533-1 Ibaragabasama-otsu, Nagakute, Aichi (愛知県長久手市茨ケ廻間乙1533-1)
+# The Large Lawn (大芝生広場), where the 2025 parade finished and the cars were shown.
+# The street address is the park's, which GSI places at its western edge, about 850 m away.
+lat: 35.1752
+lon: 137.0911
+nearest_station: Ai-Chikyuhaku-Kinen-Koen (Linimo)
+access_notes_en: >
+  The Large Lawn is about 10 minutes' walk from the station. The parade starts at
+  the museum, about 5 minutes' walk from Geidai-dori, two Linimo stops west.
+typical_scale: 100 to 120 cars
+spectator_fee_jpy: null
+spectator_notes_en: >
+  Free in 2023 and 2025. In 2025 the museum ran a free park-and-ride car park for
+  300 cars south of the museum, with Linimo trains on to the park.
+last_verified: 2026-10-04

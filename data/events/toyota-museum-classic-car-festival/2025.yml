@@ -1,0 +1,22 @@
+slug: toyota-museum-classic-car-festival
+year: 2025
+status: confirmed
+start: 2025-04-20
+end: 2025-04-20
+start_time: "09:00"
+end_time: "16:00"
+# The 35th running, moved to April for the 20th anniversary of Expo 2005. The one
+# before it was on 2023-10-22; there was none in 2024.
+source_url: https://toyota-automobile-museum.jp/event/detail/8392.html
+last_verified: 2026-10-04
+sequence: 0
+venue_en: Large Lawn, Aichi Expo Memorial Park (Morikoro Park), Nagakute
+# The page says the parade ran 08:30 to 10:45 and its map says 08:45; 08:30 is the
+# departure ceremony, so both can be true.
+route_en: >
+  A departure ceremony at the museum at 08:30, then about 120 cars on a 14 km
+  parade through Nagakute to the Large Lawn, finishing by 10:45. The museum and six
+  Japanese makers showed 13 cars of their own at the park.
+videos:
+  - youtube_id: Fw2F3icAYTI
+    label_en: Parade and highlights from the park
