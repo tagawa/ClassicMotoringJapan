@@ -1,0 +1,14 @@
+slug: kawajima-car-festival
+year: 2025
+status: confirmed
+start: 2025-10-19
+end: 2025-10-19
+# The 5th running, with about 350 cars on display. The opening ceremony was at
+# 09:45; rain from 14:10 let entrants leave early.
+source_url: https://minkara.carview.co.jp/userid/2251740/blog/48721621/
+last_verified: 2026-10-04
+sequence: 0
+videos:
+  # The channel gives no Latin-script name, so ろーちゃんねる is romanised here.
+  - youtube_id: wg9ukMeFhco
+    label_en: Clips from the day (video by Ro Channel)

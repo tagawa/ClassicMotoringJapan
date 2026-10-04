@@ -1,0 +1,13 @@
+slug: tokorozawa-classic-car-festival
+year: 2025
+status: confirmed
+start: 2025-10-19
+end: 2025-10-19
+# The 26th running, with the most entries so far. Rain from midday moved the prize
+# giving indoors. The source is the host driving school's own film of the day.
+source_url: https://www.youtube.com/watch?v=KOigJJUHddY
+last_verified: 2026-10-04
+sequence: 0
+videos:
+  - youtube_id: KOigJJUHddY
+    label_en: Event film, ending with the entry cars lined up (video by Tokorozawa Jidosha Gakko)

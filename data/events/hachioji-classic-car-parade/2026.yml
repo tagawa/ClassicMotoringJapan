@@ -1,0 +1,18 @@
+slug: hachioji-classic-car-parade
+year: 2026
+status: confirmed
+start: 2026-11-22
+end: 2026-11-22
+start_time: "12:00"
+end_time: "13:00"
+# The 47th festival. The site's timetable, which still mentions "the 16th" and so
+# looks carried over from 2025, has the cars leaving the city hall at 11:50, the
+# lead car at the Tama Goryo junction at 12:20 and the last at 13:00.
+source_url: https://classiccar802.moo.jp/
+last_verified: 2026-10-04
+sequence: 0
+route_en: >
+  From the city hall car park to Oiwake junction, then westbound on Koshu-kaido
+  to the junction at the entrance to the Musashi Imperial Graveyard (武蔵野陵入口),
+  where the parade disperses. The 2026 running order and route map are not
+  published yet.

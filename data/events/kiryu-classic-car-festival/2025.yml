@@ -1,0 +1,19 @@
+slug: kiryu-classic-car-festival
+year: 2025
+status: confirmed
+start: 2025-11-02
+end: 2025-11-02
+start_time: "10:00"
+end_time: "15:00"
+# The 18th running, and the largest so far: about 200 cars on display, about 100 on
+# the rally and the committee's own, some 340 in all. Hino lent a Contessa 900 Sprint
+# and a Hino Renault 4CV for the special display. The source is the organiser's
+# press release, issued through the Kiryu Chamber of Commerce.
+source_url: https://san-tatsu.jp/pressrelease/472243/
+last_verified: 2026-10-04
+sequence: 0
+videos:
+  - youtube_id: hAt1kn1q0Yk
+    label_en: Cars on display and the opening ceremony (video by nobo dake)
+  - youtube_id: u8aXCh_XQ2Y
+    label_en: Rally start (video by nobo dake)
