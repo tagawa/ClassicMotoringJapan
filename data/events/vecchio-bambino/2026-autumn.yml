@@ -1,0 +1,345 @@
+slug: vecchio-bambino
+year: 2026
+status: confirmed
+start: 2026-10-03
+end: 2026-10-04
+source_url: https://vecchiobambino.com/schedule/
+last_verified: 2026-10-05
+sequence: 0
+videos:
+  - youtube_id: h9QdtjnC08I
+    label_en: The start at Okayama Gokoku Shrine (video by Okatabi Channel)
+route_en: >
+  The 28th running. Cars gathered at the shrine from 07:00 and set off from
+  08:30. Saturday's leg ran through Akaiwa, Bizen, Setouchi, Wake and Mimasaka to
+  an overnight stop at Yubara Onsen; Sunday's went through Kagamino, Hiruzen and
+  Misaki back to Okayama. Times are for the lead car, with the last car up to 45
+  minutes behind.
+route:
+  - date: 2026-10-03
+    checkpoints:
+      - start_time: "07:00"
+        end_time: "08:30"
+        place_en: Okayama Gokoku Shrine, Okayama
+        place_ja: 岡山市・岡山縣護國神社
+        prefecture: Okayama
+      - start_time: "09:20"
+        place_en: Sanyo Fureai Park (Sanyo Gymnasium), Akaiwa
+        place_ja: 赤磐市・山陽ふれあい公園（山陽体育館）
+        prefecture: Okayama
+      - start_time: "09:50"
+        place_en: Takatori Shoyu soy sauce brewery, Bizen
+        place_ja: 備前市・鷹取醤油
+        prefecture: Okayama
+      - start_time: "10:20"
+        place_en: Ushimado Teremok, Setouchi
+        place_ja: 瀬戸内市・牛窓テレモーク
+        prefecture: Okayama
+      - start_time: "10:25"
+        place_en: Hotel Limani, Setouchi
+        place_ja: 瀬戸内市・ホテルリマーニ
+        prefecture: Okayama
+      - start_time: "10:50"
+        place_en: Michi-no-Eki Kuroiyama Green Park, Setouchi
+        place_ja: 瀬戸内市・道の駅 黒井山グリーンパーク
+        prefecture: Okayama
+      - start_time: "11:30"
+        place_en: Bizen Hinase Bridge (Kakui and Kashira islands), Bizen
+        place_ja: 備前市・備前♡日生大橋（鹿久居島・頭島）
+        prefecture: Okayama
+      - start_time: "11:40"
+        place_en: Villa Stella Resort, Bizen
+        place_ja: 備前市・ヴィラステラリゾート
+        prefecture: Okayama
+      - start_time: "12:20"
+        place_en: Wakemaro Park and Wake Ukaidani Onsen, Wake
+        place_ja: 和気町・わけまろパーク 和気鵜飼谷温泉
+        prefecture: Okayama
+      - start_time: "14:40"
+        place_en: Hattoji Furusato-mura, Bizen
+        place_ja: 備前市・八塔寺ふるさと村
+        prefecture: Okayama
+      - start_time: "16:00"
+        place_en: Fureai-dori, Yunogo Onsen, Mimasaka
+        place_ja: 美作市・湯郷温泉 ふれあい通り
+        prefecture: Okayama
+      - start_time: "17:00"
+        place_en: Yubara Onsen, Maniwa (finish)
+        place_ja: 真庭市・湯原温泉郷
+        prefecture: Okayama
+  - date: 2026-10-04
+    checkpoints:
+      - start_time: "08:30"
+        place_en: Yubara Onsen, Maniwa (start)
+        place_ja: 真庭市・湯原温泉郷
+        prefecture: Okayama
+      - start_time: "09:30"
+        place_en: Yamada Bee Farm honeybee farm, Kagamino
+        place_ja: 鏡野町・山田養蜂場 みつばち農園
+        prefecture: Okayama
+      - start_time: "10:00"
+        place_en: Hanabijin-no-Sato, Okutsu Onsen, Kagamino
+        place_ja: 鏡野町・奥津温泉 花美人の里
+        prefecture: Okayama
+      - start_time: "10:50"
+        place_en: Hiruzen Kogen Sports Park (Kaze no Palette Hiruzen), Maniwa
+        place_ja: 真庭市・蒜山高原スポーツ公園（風のパレット HIRUZEN）
+        prefecture: Okayama
+      - start_time: "11:30"
+        place_en: Hiruzen Kogen Center Joyful Park, Maniwa
+        place_ja: 真庭市・ヒルゼン高原センター ジョイフルパーク
+        prefecture: Okayama
+      - start_time: "13:30"
+        place_en: Makiba no Yakata, Misaki
+        place_ja: 美咲町・まきばの館
+        prefecture: Okayama
+      - start_time: "15:00"
+        place_en: Takebe Hachiman Onsen, Okayama
+        place_ja: 岡山市・たけべ八幡温泉
+        prefecture: Okayama
+      - start_time: "16:00"
+        place_en: Okayama Plaza Hotel, Okayama (finish)
+        place_ja: 岡山市・岡山プラザホテル
+        prefecture: Okayama
+list_as_of: 2026-09-14
+cars:
+  - entry_no: "1"
+    year: 1936
+    make: Lagonda
+    model: LG45 Rapide
+  - entry_no: "2"
+    year: 1950
+    make: Jaguar
+    model: XK120
+  - entry_no: "3"
+    year: 1950
+    make: Fiat
+    model: 500C Topolino Trasformabile
+  - entry_no: "4"
+    year: 1951
+    make: MG
+    model: TD
+  - entry_no: "5"
+    year: 1951
+    make: MG
+    model: TD
+  - entry_no: "6"
+    year: 1952
+    make: MG
+    model: TD
+  - entry_no: "7"
+    year: 1954
+    make: Arnolt
+    model: Bristol
+  - entry_no: "8"
+    year: 1954
+    make: Jaguar
+    model: XK120 SE Roadster
+  - entry_no: "9"
+    year: 1955
+    make: Triumph
+    model: TR2
+  - entry_no: "10"
+    year: 1957
+    make: Triumph
+    model: TR3
+  - entry_no: "11"
+    year: 1957
+    make: Triumph
+    model: TR3A
+  - entry_no: "12"
+    year: 1957
+    make: Austin-Healey
+    model: 100/6
+  - entry_no: "13"
+    year: 1959
+    make: Fiat
+    model: "1200"
+  - entry_no: "14"
+    year: 1959
+    make: MG
+    model: MGA Twin Cam
+  - entry_no: "15"
+    year: 1960
+    make: Triumph
+    model: TR3A
+  - entry_no: "16"
+    year: 1960
+    make: Citroën
+    model: ID19
+  - entry_no: "17"
+    year: 1961
+    make: Austin-Healey
+    model: Sprite Mk II
+  - entry_no: "18"
+    year: 1962
+    make: Jaguar
+    model: E-Type Series 1 Roadster
+  - entry_no: "19"
+    year: 1964
+    make: Porsche
+    model: 356C SC95
+  - entry_no: "20"
+    year: 1965
+    make: Lancia
+    model: Flaminia Coupé GTL 2.8 Touring
+  - entry_no: "21"
+    year: 1966
+    make: Alfa Romeo
+    model: Spider 1600 Duetto
+  - entry_no: "22"
+    year: 1966
+    make: Lotus
+    model: Elan S2
+  - entry_no: "23"
+    year: 1967
+    make: Mercedes-Benz
+    model: "(model not given)"
+  - entry_no: "24"
+    year: 1969
+    make: Mercedes-Benz
+    model: W111 280SE Coupé V8 3.5L
+  - entry_no: "25"
+    year: 1969
+    make: Mercedes-Benz
+    model: 280SE Coupé
+  - entry_no: "26"
+    year: 1969
+    make: Porsche
+    model: "912"
+  - entry_no: "27"
+    year: 1969
+    make: Maserati
+    model: Mexico
+  - entry_no: "28"
+    year: 1969
+    make: Lancia
+    model: Fulvia Coupé 1.3HF
+  - entry_no: "29"
+    year: 1969
+    make: Alfa Romeo
+    model: 1300GT Junior
+  - entry_no: "30"
+    year: 1970
+    make: Alfa Romeo
+    model: Giulia 1750GTV
+  - entry_no: "31"
+    year: 1971
+    make: Alfa Romeo
+    model: 1300 Junior Zagato
+  - entry_no: "32"
+    year: 1970
+    make: Fiat
+    model: "500"
+  - entry_no: "33"
+    year: 1974
+    make: Lancia
+    model: Fulvia Coupé
+  - entry_no: "34"
+    year: 1975
+    make: Triumph
+    model: Spitfire 1500
+  - entry_no: "35"
+    year: 1978
+    make: MG
+    model: MGB
+  - entry_no: "36"
+    year: 1987
+    make: Caterham
+    model: Super Seven
+  - entry_no: "37"
+    year: 1988
+    make: Ferrari
+    model: 328GTS
+  - entry_no: "38"
+    year: 1989
+    make: Ferrari
+    model: 328GTS
+  - entry_no: "39"
+    year: 1955
+    make: Ford
+    model: Thunderbird
+  - entry_no: "40"
+    year: 1958
+    make: Chevrolet
+    model: Corvette C1
+  - entry_no: "41"
+    year: 1959
+    make: Chevrolet
+    model: Corvette
+  - entry_no: "42"
+    year: 1959
+    make: Chevrolet
+    model: Corvette C1
+  - entry_no: "43"
+    year: 1977
+    make: Chevrolet
+    model: Camaro
+  - entry_no: "44"
+    year: 1971
+    make: Fiat
+    model: "500"
+  - entry_no: "45"
+    year: 1993
+    make: Nissan
+    model: Skyline GT-R BNR32
+  - entry_no: "46"
+    year: 1969
+    make: Suzuki
+    model: Fronte 800
+  - entry_no: "47"
+    year: 1973
+    make: Nissan
+    model: Fairlady 240ZG
+  - entry_no: "48"
+    year: 1975
+    make: Nissan
+    model: Skyline 2000GT-X
+  - entry_no: "49"
+    year: 1973
+    make: Toyota
+    model: Corolla Van
+  - entry_no: "50"
+    year: 1985
+    make: Toyota
+    model: Corolla Levin AE86
+  - entry_no: "51"
+    year: 1985
+    make: Toyota
+    model: Sprinter Trueno AE86
+  - entry_no: "52"
+    year: 1989
+    make: BMW
+    model: E30
+  - entry_no: "53"
+    year: 1991
+    make: Volkswagen
+    model: Cabrio
+  - entry_no: "54"
+    year: 1991
+    make: Honda
+    model: NSX
+  - entry_no: "55"
+    year: 1995
+    make: Porsche
+    model: 911 Carrera RS
+  - entry_no: "56"
+    year: 1993
+    make: Westfield
+    model: SC
+  - entry_no: "57"
+    year: 1993
+    make: TVR
+    model: Griffith 430
+  - entry_no: "58"
+    year: 2007
+    make: BMW Alpina
+    model: B6 (E64) Cabrio
+  - entry_no: "59"
+    year: 2021
+    make: Ferrari
+    model: Portofino
+  - entry_no: "60"
+    year: 2026
+    make: Ferrari
+    model: 296 GTS Spider

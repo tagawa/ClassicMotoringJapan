@@ -1,0 +1,394 @@
+slug: vecchio-bambino
+year: 2026
+status: confirmed
+start: 2026-04-04
+end: 2026-04-05
+source_url: https://vecchiobambino.com/2026_1/schedule/
+last_verified: 2026-10-05
+sequence: 0
+route_en: >
+  The 27th running. Saturday's leg left Okayama Gokoku Shrine for Tsuyama,
+  Hiruzen, Shinjo and Fukiya, finishing at Brazilian Park Washuzan Highland in
+  Kurashiki; the organiser's archived timetable gives no times for it. Sunday's
+  times are for the lead car, with the last car up to 45 minutes behind.
+route:
+  - date: 2026-04-05
+    checkpoints:
+      - start_time: "08:00"
+        place_en: Brazilian Park Washuzan Highland, Kurashiki (start)
+        place_ja: 倉敷市・ブラジリアンパーク鷲羽山ハイランド
+        prefecture: Okayama
+      - start_time: "09:00"
+        place_en: Bikan historical quarter, Kurashiki
+        place_ja: 倉敷市・倉敷美観地区
+        prefecture: Okayama
+      - start_time: "09:35"
+        place_en: Tamashima Harbour Island, Kurashiki
+        place_ja: 倉敷市・玉島ハーバーアイランド
+        prefecture: Okayama
+      - start_time: "09:45"
+        place_en: Tamashima Torimachi shopping street, Kurashiki
+        place_ja: 倉敷市・玉島通町商店街
+        prefecture: Okayama
+      - start_time: "10:00"
+        place_en: Nishimachi and Nakagaimachi, Tamashima, Kurashiki
+        place_ja: 倉敷市・玉島西町・仲買町
+        prefecture: Okayama
+      - start_time: "10:15"
+        place_en: Sami Beach west car park, Kurashiki
+        place_ja: 倉敷市・沙美海岸西駐車場
+        prefecture: Okayama
+      - start_time: "10:40"
+        place_en: Horseshoe Crab Museum, Kasaoka
+        place_ja: 笠岡市・笠岡市立カブトガニ博物館
+        prefecture: Okayama
+      - start_time: "11:10"
+        place_en: Kasaoka Cherry Blossom Festival, Kasaoka
+        place_ja: 笠岡市・笠岡さくら祭
+        prefecture: Okayama
+      - start_time: "11:40"
+        place_en: Ibara Line DE Tokutoku-ichi market, Ibara
+        place_ja: 井原市・井原線DE得得市
+        prefecture: Okayama
+      - start_time: "13:25"
+        place_en: Old San'yodo highway, Yakage
+        place_ja: 矢掛町・旧山陽道
+        prefecture: Okayama
+      - start_time: "15:30"
+        place_en: Okayama Plaza Hotel, Okayama (finish)
+        place_ja: 岡山市・岡山プラザホテル
+        prefecture: Okayama
+list_as_of: 2026-03-24
+cars:
+  - entry_no: "1"
+    year: 1936
+    make: Bentley
+    model: Derby
+  - entry_no: "2"
+    year: 1936
+    make: Lagonda
+    model: LG45 Rapide
+  - entry_no: "3"
+    year: 1948
+    make: MG
+    model: TC
+  - entry_no: "4"
+    year: 1951
+    make: MG
+    model: TD
+  - entry_no: "5"
+    year: 1951
+    make: MG
+    model: TD
+  - entry_no: "6"
+    year: 1950
+    make: Mercedes-Benz
+    model: 170S Cabriolet A
+  - entry_no: "7"
+    year: 1954
+    make: Arnolt
+    model: Bristol
+  - entry_no: "8"
+    year: 1950
+    make: Jaguar
+    model: XK120
+  - entry_no: "9"
+    year: 1954
+    make: Jaguar
+    model: XK120 SE Fixed Head Coupé
+  - entry_no: "11"
+    year: 1953
+    make: Austin-Healey
+    model: 100/4
+  - entry_no: "12"
+    year: 1954
+    make: Austin-Healey
+    model: 100/4 BN1
+  - entry_no: "13"
+    year: 1957
+    make: Austin-Healey
+    model: 100/6
+  - entry_no: "14"
+    year: 1955
+    make: MG
+    model: MGA
+  - entry_no: "15"
+    year: 1956
+    make: MG
+    model: MGA
+  - entry_no: "16"
+    year: 1959
+    make: MG
+    model: MGA Twin Cam
+  - entry_no: "17"
+    year: 1957
+    make: Alfa Romeo
+    model: Giulietta Spider 750D
+  - entry_no: "18"
+    year: 1957
+    make: Porsche
+    model: 356A Speedster
+  - entry_no: "19"
+    year: 1958
+    make: Porsche
+    model: 356A Cabriolet
+  - entry_no: "20"
+    year: 1958
+    make: Triumph
+    model: TR3A
+  - entry_no: "21"
+    year: 1959
+    make: Triumph
+    model: TR3
+  - entry_no: "22"
+    year: 1961
+    make: Triumph
+    model: TR3B
+  - entry_no: "23"
+    year: 1961
+    make: Triumph
+    model: TR3
+  - entry_no: "24"
+    year: 1959
+    make: Volkswagen
+    model: Type 1
+  - entry_no: "25"
+    year: 1960
+    make: Daimler
+    model: SP250
+  - entry_no: "26"
+    year: 1961
+    make: Austin-Healey
+    model: Sprite Mk II
+  - entry_no: "27"
+    year: 1961
+    make: Austin-Healey
+    model: Sprite Mk I
+  - entry_no: "28"
+    year: 1961
+    make: Austin-Healey
+    model: 3000 Mk I
+  - entry_no: "29"
+    year: 1961
+    make: Alfa Romeo
+    model: Giulietta Spider
+  - entry_no: "30"
+    year: 1961
+    make: Jaguar
+    model: E-Type Series 1 OTS
+  - entry_no: "31"
+    year: 1962
+    make: Jaguar
+    model: E-Type Series 1 Roadster
+  - entry_no: "32"
+    year: 1962
+    make: Mercedes-Benz
+    model: 190SL
+  - entry_no: "33"
+    year: 1964
+    make: Morris
+    model: Minor 1000
+  - entry_no: "34"
+    year: 1965
+    make: Lotus
+    model: Elan S3 FHC
+  - entry_no: "35"
+    year: 1966
+    make: Lotus
+    model: Elan S3
+  - entry_no: "36"
+    year: 1966
+    make: Lotus
+    model: Elan S2
+  - entry_no: "37"
+    year: 1967
+    make: Lotus
+    model: Elan S3
+  - entry_no: "38"
+    year: 1966
+    make: Austin-Healey
+    model: Mk III
+  - entry_no: "39"
+    year: 1966
+    make: Alfa Romeo
+    model: Spider 1600 Duetto
+  - entry_no: "40"
+    year: 1965
+    make: Jaguar
+    model: E-Type Series 1
+  - entry_no: "41"
+    year: 1967
+    make: Jaguar
+    model: 4.2L E-Type Series 1
+  - entry_no: "42"
+    year: 1967
+    make: Fiat
+    model: "500"
+  - entry_no: "43"
+    year: 1969
+    make: Mercedes-Benz
+    model: W111 280SE Coupé V8 3.5L
+  - entry_no: "44"
+    year: 1969
+    make: Maserati
+    model: Mexico
+  - entry_no: "45"
+    year: 1969
+    make: Alfa Romeo
+    model: Giulia GT1300 Junior
+  - entry_no: "46"
+    year: 1969
+    make: Alfa Romeo
+    model: GT 1300 Junior
+  - entry_no: "47"
+    year: 1970
+    make: Alfa Romeo
+    model: Montreal
+  - entry_no: "48"
+    year: 1970
+    make: Alfa Romeo
+    model: 1300 Junior Zagato
+  - entry_no: "49"
+    year: 1970
+    make: BMW
+    model: 2000C
+  - entry_no: "50"
+    year: 1970
+    make: Porsche
+    model: 911 T
+  - entry_no: "51"
+    year: 1972
+    make: Alpine
+    model: A110
+  - entry_no: "52"
+    year: 1974
+    make: Lancia
+    model: Fulvia Coupé
+  - entry_no: "53"
+    year: 1975
+    make: Triumph
+    model: Spitfire 1500
+  - entry_no: "54"
+    year: 1978
+    make: MG
+    model: MGB
+  - entry_no: "55"
+    year: 1986
+    make: Lamborghini
+    model: Countach 5000QV
+  - entry_no: "56"
+    year: 1987
+    make: Ferrari
+    model: 328GTS
+  - entry_no: "57"
+    year: 1955
+    make: Ford
+    model: Thunderbird
+  - entry_no: "58"
+    year: 1958
+    make: Chevrolet
+    model: Corvette C1
+  - entry_no: "59"
+    year: 1966
+    make: Ford
+    model: Mustang 289GT Fastback
+  - entry_no: "60"
+    year: 1969
+    make: Chevrolet
+    model: Corvette
+  - entry_no: "61"
+    year: 1969
+    make: Chevrolet
+    model: Corvette C3
+  - entry_no: "62"
+    year: 1967
+    make: Datsun
+    model: Fairlady 2000 SR311 Low Window
+  - entry_no: "63"
+    year: 1969
+    make: Suzuki
+    model: Fronte 800
+  - entry_no: "64"
+    year: 1970
+    make: Nissan
+    model: Fairlady Z 432
+  - entry_no: "65"
+    year: 1975
+    make: Nissan
+    model: Skyline 2000GT-X
+  - entry_no: "66"
+    year: 1989
+    make: Nissan
+    model: Cedric
+  - entry_no: "67"
+    year: 1991
+    make: Honda
+    model: NSX
+  - entry_no: "68"
+    year: 1992
+    make: Nissan
+    model: Skyline R32 GT-R
+  - entry_no: "69"
+    year: 1993
+    make: Nissan
+    model: Skyline GT-R BNR32
+  - entry_no: "70"
+    year: 1999
+    make: Nissan
+    model: Skyline R34 GT-R
+  - entry_no: "71"
+    year: 1990
+    make: Porsche
+    model: 911 Carrera 2
+  - entry_no: "72"
+    year: 1995
+    make: Porsche
+    model: 911 Carrera RS
+  - entry_no: "73"
+    year: 1999
+    make: Ferrari
+    model: F355B
+  - entry_no: "74"
+    year: 1993
+    make: Jaguar
+    model: XJS
+  - entry_no: "75"
+    year: 1978
+    make: Volkswagen
+    model: 1303LE Cabriolet
+  - entry_no: "76"
+    year: 1984
+    make: Morgan
+    model: 4/4
+  - entry_no: "77"
+    year: 1987
+    make: Caterham
+    model: Super Seven
+  - entry_no: "78"
+    year: 1993
+    make: TVR
+    model: Griffith
+  - entry_no: "79"
+    year: 1993
+    make: Westfield
+    model: SC
+  - entry_no: "80"
+    year: 1996
+    make: Jack Knight
+    model: Mini
+  - entry_no: "81"
+    year: 2023
+    make: Maserati
+    model: MC20 Cielo
+  - entry_no: "82"
+    year: 2017
+    make: Lamborghini
+    model: Aventador SV
+  - entry_no: "83"
+    year: 2025
+    make: Lamborghini
+    model: Revuelto
+  - entry_no: "84"
+    year: 2001
+    make: Mercedes-Benz
+    model: V280
