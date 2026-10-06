@@ -170,14 +170,12 @@ summary { cursor: pointer; font-weight: 600; }
    axis, so it supplies its own, or its last bar sits on the table header below. */
 .chart.decades { margin-bottom: 24px; }
 
-/* The home page maps. The coastline and every dot share one projection in build.py, and the
-   dot's ring keeps two venues close together readable as two. */
-.map-defs { position: absolute; }
-.map { display: block; height: auto; }
-.map use { fill: #E0E0E0; }
-.map circle { fill: #8C1C24; stroke: #FFFFFF; }
-.map circle.off { fill: #5C5C5C; }
-.map.overview { width: 100%; max-width: 320px; margin: 0 auto 24px; }
+/* The home page thumbnails. The coastline and the dot share one projection in build.py. */
+.venue-map-defs { position: absolute; }
+.venue-map { display: block; height: auto; }
+.venue-map use { fill: #E0E0E0; }
+.venue-map circle { fill: #8C1C24; stroke: #FFFFFF; }
+.venue-map circle.off { fill: #5C5C5C; }
 
 /* A 16:9 box held by padding, since the old browsers the site supports lack aspect-ratio.
    Vertical padding percentages are of the width, which is what makes the trick work. */
@@ -193,7 +191,7 @@ summary { cursor: pointer; font-weight: 600; }
   /* The thumbnail stays beside the entry rather than under it, spanning the date and text. */
   .events > li { grid-template-columns: 1fr 96px; }
   .events > li > time, .events > li > div { grid-column: 1; }
-  .events > li > .map { grid-column: 2; grid-row: 1 / span 2; }
+  .events > li > .venue-map { grid-column: 2; grid-row: 1 / span 2; }
   .facts { gap: 4px; }
   .facts dd { margin-bottom: 16px; }
 }
@@ -224,7 +222,7 @@ summary { cursor: pointer; font-weight: 600; }
   .dot { background: #D0636A; }
   .dot.tentative { background: #F3D98B; }
   .cross { color: #F2A493; }
-  .map use { fill: #333333; }
-  .map circle { fill: #D0636A; stroke: #141414; }
-  .map circle.off { fill: #A8A8A8; }
+  .venue-map use { fill: #333333; }
+  .venue-map circle { fill: #D0636A; stroke: #141414; }
+  .venue-map circle.off { fill: #A8A8A8; }
 }
