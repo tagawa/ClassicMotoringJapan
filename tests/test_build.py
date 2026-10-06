@@ -965,12 +965,41 @@ def token_violations(css: str) -> list[str]:
     return found
 
 
+def duplicate_selectors(css: str) -> list[str]:
+    """Selectors given a second rule in the same scope: the top level, or one @media block.
+
+    A repeat is how a new rule lands on an existing class unnoticed. The thumbnails were first
+    styled as .map, which the Map link already used, and the link became a block with a red pin.
+    """
+    css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+    media = r"@media[^{]*\{((?:[^{}]*\{[^{}]*\})*)\s*\}"
+    found = []
+    for scope in [re.sub(media, "", css)] + re.findall(media, css):
+        seen = set()
+        for head in re.findall(r"([^{}]+)\{[^{}]*\}", scope):
+            head = " ".join(head.split())
+            if head in seen:
+                found.append(head)
+            seen.add(head)
+    return found
+
+
 class StylesheetTokenTests(unittest.TestCase):
     """Every colour, size and space in the stylesheet comes from the documented set."""
 
     def test_the_stylesheet_uses_only_token_values(self):
         css = (ROOT / "static/style.css").read_text(encoding="utf-8")
         self.assertEqual(token_violations(css), [])
+
+    def test_no_selector_is_given_two_rules_in_one_scope(self):
+        css = (ROOT / "static/style.css").read_text(encoding="utf-8")
+        self.assertEqual(duplicate_selectors(css), [])
+
+    def test_the_duplicate_check_catches_a_repeat(self):
+        css = (".map { padding: 4px 0; }\n.map  circle { fill: red; }\n.map { display: block; }\n"
+               "@media (max-width: 480px) { .map { margin: 0; } .facts { gap: 4px; } .facts { margin: 0; } }")
+        # Once per scope is fine: the media block restating .map is not a repeat.
+        self.assertEqual(duplicate_selectors(css), [".map", ".facts"])
 
     def test_the_brand_red_is_the_link_colour_in_both_themes(self):
         css = (ROOT / "static/style.css").read_text(encoding="utf-8")
@@ -1855,6 +1884,37 @@ class UnannouncedFeeTests(unittest.TestCase):
             with self.subTest(page=name):
                 self.assertIn("Admission not announced", html)
                 self.assertNotIn("Free to watch", html)
+
+    # Once the day has passed, "not announced" says nothing useful, so past entries drop it.
+    # The build never reads the clock: the home page hides it under Past events in CSS, and an
+    # edition page removes it in the browser once the edition has ended in Japan.
+
+    def test_the_past_list_on_the_home_page_hides_it(self):
+        self.assertIn('Shizuoka.<span class="fee-unannounced"> Admission not announced.</span>', self.home_html)
+        css = (ROOT / "static/style.css").read_text(encoding="utf-8")
+        self.assertRegex(css, r"(?m)^#past-list \.fee-unannounced \{ display: none; \}")
+
+    def pages_with_entry_list(self, fee) -> dict:
+        tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, tmp)
+        write_event(tmp / "data", "meet", fee=fee)
+        write_instance(tmp / "data", "meet", 2026,
+                       instance_yaml("meet", 2026, "2026-11-03", "2026-11-03", extra=CARS))
+        build.build(tmp / "data", tmp / "site")
+        return {rel: (tmp / "site" / rel).read_text(encoding="utf-8")
+                for rel in ("index.html", "events/meet/2026/index.html")}
+
+    def test_an_edition_page_drops_the_cost_once_the_edition_has_ended(self):
+        html = self.pages_with_entry_list(None)["events/meet/2026/index.html"]
+        self.assertIn('<dt class="fee-unannounced">Cost</dt>', html)
+        self.assertIn('<dd class="fee-unannounced">Admission not announced</dd>', html)
+        self.assertIn('if ("2026-11-03" < todayInJapan)', html)
+
+    def test_a_published_fee_stays_on_past_entries(self):
+        for rel, html in self.pages_with_entry_list(1500).items():
+            with self.subTest(page=rel):
+                self.assertIn("\u00a51,500", html)
+                self.assertNotIn("fee-unannounced", html)
 
     def test_the_json_feed_leaves_the_fee_out_rather_than_calling_it_zero(self):
         feed = json.loads((self.out / "api/events.json").read_text(encoding="utf-8"))
