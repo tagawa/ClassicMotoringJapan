@@ -4,7 +4,7 @@ status: confirmed
 start: 2026-10-02
 end: 2026-10-05
 source_url: https://www.lafesta-autunno.com/2026/schedule/
-last_verified: 2026-09-21
+last_verified: 2026-10-06
 sequence: 0
 route_en: >
   The 29th running, through Tokyo and eight prefectures, two of them (Gunma and
@@ -211,7 +211,7 @@ route:
         place_en: Makuhari Bay Town, Chiba City
         place_ja: 千葉市・幕張ベイタウン
         prefecture: Chiba
-list_as_of: 2026-09-14
+list_as_of: 2026-10-06
 cars:
   - entry_no: "01"
     year: 1928
@@ -326,9 +326,9 @@ cars:
     make: Porsche
     model: 356 Speedster
   - entry_no: "33"
-    year: 1955
-    make: Jaguar
-    model: XK140
+    year: 1958
+    make: Porsche
+    model: 356A
   - entry_no: "34"
     year: 1949
     make: Bristol
@@ -413,3 +413,8 @@ cars:
     year: 1961
     make: MG
     model: 1600 Mk II
+videos:
+  - youtube_id: se4nefVXwrA
+    label_en: The paddock and the start in Tokyo
+  - youtube_id: UhoeNPmV0Ik
+    label_en: Day 2, the start at Urabandai Lake Resort (video by bakabonspa)
