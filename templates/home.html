@@ -38,7 +38,7 @@
 {% elif r.ed.status == "cancelled" %}
         <span class="badge cancelled">Cancelled</span>
 {% endif %}
-        <p class="meta">{% if r.ev.name_ja %}<span lang="ja">{{ r.ev.name_ja }}</span><br>{% endif %}{{ r.ev.prefecture }}. {{ r.ev.spectator_fee_jpy | fee }}.</p>
+        <p class="meta">{% if r.ev.name_ja %}<span lang="ja">{{ r.ev.name_ja }}</span><br>{% endif %}{{ r.ev.prefecture }}.{% if r.ev.spectator_fee_jpy is none %}<span class="fee-unannounced"> {{ r.ev.spectator_fee_jpy | fee }}.</span>{% else %} {{ r.ev.spectator_fee_jpy | fee }}.{% endif %}</p>
       </div>
 {% if r.dot %}
       <svg class="venue-map" viewBox="{{ map_box }}" width="96" height="{{ (96 * map_ratio) | round | int }}" aria-hidden="true" focusable="false"><use xlink:href="#japan" fill="#E0E0E0"/><circle cx="{{ r.dot[0] }}" cy="{{ r.dot[1] }}" r="6" stroke-width="1.5"{% if r.ed.status == "cancelled" %} class="off"{% endif %}/></svg>

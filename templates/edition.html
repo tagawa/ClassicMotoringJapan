@@ -28,8 +28,13 @@
   <dd>{{ r.when_full }}</dd>
   <dt>Where</dt>
   <dd>{{ r.venue }}, {{ ev.prefecture }}{{ map_link(r.pin) }}</dd>
+{% if ev.spectator_fee_jpy is none %}
+  <dt class="fee-unannounced">Cost</dt>
+  <dd class="fee-unannounced">{{ ev.spectator_fee_jpy | fee }}</dd>
+{% else %}
   <dt>Cost</dt>
   <dd>{{ ev.spectator_fee_jpy | fee }}</dd>
+{% endif %}
 </dl>
 {% if r.next %}
 <p><a href="{{ root }}{{ r.next.path }}">Next edition: {{ r.next.when }}</a>{% if r.next.ed.status == "tentative" %} (dates not confirmed){% elif r.next.ed.status == "cancelled" %} (cancelled){% endif %}</p>
@@ -119,6 +124,22 @@
 {% if r.previous_videos and not r.videos %}
 <h2>From the {{ r.previous_videos.label }} edition</h2>
 {{ video_figure(r.previous_videos.videos[0]) }}
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if ev.spectator_fee_jpy is none %}
+<script>
+  (function () {
+    // "Not announced" is no use once the edition is over. Past means its last day has
+    // ended in Japan, the same test the home page uses to move an entry to Past events.
+    var todayInJapan = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+    if ("{{ ed.end.isoformat() }}" < todayInJapan) {
+      var stale = document.querySelectorAll(".fee-unannounced");
+      for (var i = 0; i < stale.length; i++) stale[i].parentNode.removeChild(stale[i]);
+    }
+  })();
+</script>
 {% endif %}
 {% endblock %}
 
