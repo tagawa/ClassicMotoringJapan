@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import math
 import re
 import shutil
 import sys
@@ -56,6 +57,16 @@ EDITION_FILE_RE = re.compile(r"^(?P<year>\d{4})(?:-(?P<edition>[a-z0-9]+(?:-[a-z
 # outside it, which is the only coordinate mistake a build can catch on its own.
 JAPAN_LAT = (24.0, 46.0)
 JAPAN_LON = (122.0, 154.0)
+# The home page maps: the four main islands and their neighbours, not the whole range above.
+# A venue outside this box fails a test rather than a dot being clipped at the edge.
+MAP_LON = (128.5, 146.0)
+MAP_LAT = (30.0, 45.7)
+MAP_SCALE = 10
+# Longitude squeezed to its length at 36N, the middle of Honshu, so the islands keep their shape.
+MAP_X = math.cos(math.radians(36)) * MAP_SCALE
+MAP_WIDTH = round((MAP_LON[1] - MAP_LON[0]) * MAP_X, 1)
+MAP_HEIGHT = round((MAP_LAT[1] - MAP_LAT[0]) * MAP_SCALE, 1)
+MAP_OUTLINE = ROOT / "data" / "japan_outline.json"
 TIME_RE = re.compile(r"^([01]\d|2[0-3]):[0-5]\d$")
 YOUTUBE_ID_RE = re.compile(r"^[A-Za-z0-9_-]{11}$")
 # The privacy-enhanced domain: YouTube sets no cookies until the visitor presses play.
@@ -571,6 +582,19 @@ def venue_pin(ev: dict, ed: dict | None = None) -> dict | None:
             "url": f"https://maps.apple.com/?ll={source['lat']},{source['lon']}&q={quote(label)}"}
 
 
+# Maps
+
+def map_point(lat: float, lon: float) -> tuple[float, float]:
+    """The one projection: the coastline and every dot go through it, so they cannot disagree."""
+    return round((lon - MAP_LON[0]) * MAP_X, 1), round((MAP_LAT[1] - lat) * MAP_SCALE, 1)
+
+
+def japan_path() -> str:
+    rings = json.loads(MAP_OUTLINE.read_text(encoding="utf-8"))
+    return " ".join("M" + " ".join("%g,%g" % map_point(lat, lon) for lon, lat in ring) + "Z"
+                    for ring in rings)
+
+
 # iCalendar
 
 def ics_text(s: str) -> str:
@@ -753,6 +777,7 @@ def make_rows(events: dict, editions: list) -> list[dict]:
             "is_timed": is_timed,
             "venue": ed.get("venue_en") or ev["venue_en"],
             "pin": venue_pin(ev, ed),
+            "dot": None,
             "when": fmt_range(ed["start"], ed["end"]),
             # A list published before the event can still change, but once we have
             # re-checked the source after the event ended, what we show is the last word.
@@ -775,6 +800,8 @@ def make_rows(events: dict, editions: list) -> list[dict]:
                                   f"{fmt_day(ed['end'])} {ed['end_time']}, Japan time")
         else:
             r["when_full"] = r["when"]
+        if r["pin"]:
+            r["dot"] = map_point(r["pin"]["lat"], r["pin"]["lon"])
         r["jsonld"] = build_jsonld(r)
         rows.append(r)
     rows.sort(key=lambda r: (r["ed"]["start"], r["slug"], r["id"]))
@@ -977,7 +1004,9 @@ def build(data_dir: Path, out_dir: Path,
 
     write("index.html", env.get_template("home.html").render(
         **common, root="", canonical=f"{SITE_URL}/", title=f"{title} | {SITE_NAME}",
-        description=SITE_LEDE, rows=rows, years=year_chart(rows), latest=latest, jsonld=[]))
+        description=SITE_LEDE, rows=rows, years=year_chart(rows), latest=latest, jsonld=[],
+        japan=japan_path() if any(r["dot"] for r in rows) else None,
+        map_box=f"0 0 {MAP_WIDTH:g} {MAP_HEIGHT:g}", map_ratio=MAP_HEIGHT / MAP_WIDTH))
 
     sitemap = [(f"{SITE_URL}/", latest)]
     for slug, ev in sorted(events.items()):
