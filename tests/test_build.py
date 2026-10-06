@@ -428,7 +428,7 @@ class BuildOutputTests(unittest.TestCase):
     # Every row carries its end date for the browser script (tests/test_browser.py has the other half)
 
     def test_home_rows_carry_end_dates_in_date_order(self):
-        ends = re.findall(r'data-end="(\d{4}-\d{2}-\d{2})"', self.pages["index.html"])
+        ends = re.findall(r'<li data-end="(\d{4}-\d{2}-\d{2})"', self.pages["index.html"])
         self.assertEqual(ends, ["2026-04-12", "2026-10-19", "2026-10-25", "2026-11-03", "2027-11-03"])
 
     # Old and budget devices: plain CSS only (see ~/.claude/DESIGN.md)
@@ -1974,6 +1974,93 @@ class CoordinateTests(unittest.TestCase):
         html = self.page("events/meet/2026/index.html")
         self.assertIn("ll=35.1,138.9", html)
         self.assertIn("q=Another%20Field", html)
+
+
+class JapanMapTests(unittest.TestCase):
+    """The home page maps: one coastline and one projection, so a dot cannot drift off its venue."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = Path(tempfile.mkdtemp())
+        data = cls.tmp / "data"
+        write_event(data, "tokyo-meet", name_en="Tokyo Meet", extra="lat: 35.6812\nlon: 139.7671\n")
+        write_instance(data, "tokyo-meet", 2026, instance_yaml("tokyo-meet", 2026, "2026-10-18", "2026-10-18"))
+        write_instance(data, "tokyo-meet", 2027, instance_yaml("tokyo-meet", 2027, "2027-10-17", "2027-10-17",
+                                                               status="cancelled"))
+        write_event(data, "unmapped-meet", name_en="Unmapped Meet")
+        write_instance(data, "unmapped-meet", 2026,
+                       instance_yaml("unmapped-meet", 2026, "2026-11-01", "2026-11-01"))
+        build.build(data, cls.tmp / "site")
+        cls.html = (cls.tmp / "site" / "index.html").read_text(encoding="utf-8")
+        cls.entries = re.findall(r'<li data-end="[^"]*">.*?</li>', cls.html, re.S)
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.tmp)
+
+    def overview(self) -> str:
+        return re.search(r'<svg class="map overview".*?</svg>', self.html, re.S).group(0)
+
+    def test_the_map_corners_are_the_projection_limits(self):
+        self.assertEqual(build.map_point(build.MAP_LAT[1], build.MAP_LON[0]), (0, 0))
+        self.assertEqual(build.map_point(build.MAP_LAT[0], build.MAP_LON[1]),
+                         (build.MAP_WIDTH, build.MAP_HEIGHT))
+
+    def test_east_is_right_and_north_is_up(self):
+        tokyo, osaka = build.map_point(35.68, 139.77), build.map_point(34.69, 135.50)
+        self.assertGreater(tokyo[0], osaka[0])
+        self.assertLess(tokyo[1], osaka[1])
+
+    def test_a_mapped_entry_has_a_thumbnail_with_its_dot_where_the_projection_puts_it(self):
+        entry = next(e for e in self.entries if "Tokyo Meet" in e and "2026-10-18" in e)
+        x, y = build.map_point(35.6812, 139.7671)
+        self.assertEqual(entry.count('<svg class="map thumb"'), 1)
+        self.assertIn(f'cx="{x}" cy="{y}"', entry)
+
+    def test_an_entry_without_coordinates_has_no_thumbnail(self):
+        entry = next(e for e in self.entries if "Unmapped Meet" in e)
+        self.assertNotIn("<svg", entry)
+
+    def test_the_overview_has_one_dot_per_mapped_edition_dated_for_the_script(self):
+        dots = re.findall(r"<circle[^>]*>", self.overview())
+        self.assertEqual(len(dots), 2)
+        self.assertIn('data-end="2026-10-18"', dots[0])
+        self.assertIn('data-end="2027-10-17"', dots[1])
+
+    def test_a_cancelled_edition_has_a_grey_dot(self):
+        dots = re.findall(r"<circle[^>]*>", self.overview())
+        self.assertNotIn('class="off"', dots[0])
+        self.assertIn('class="off"', dots[1])
+        cancelled = next(e for e in self.entries if "2027-10-17" in e)
+        self.assertIn('class="off"', cancelled)
+
+    def test_the_maps_restate_the_prefecture_so_screen_readers_skip_them(self):
+        maps = re.findall(r'<svg class="map [^>]*>', self.html)
+        self.assertEqual(len(maps), 3)
+        for svg in maps:
+            self.assertIn('aria-hidden="true"', svg)
+
+    def test_the_coastline_is_sent_once_and_reused(self):
+        self.assertEqual(self.html.count('id="japan"'), 1)
+        # Two thumbnails and the overview.
+        self.assertEqual(self.html.count('<use xlink:href="#japan"'), 3)
+
+    def test_no_coordinates_anywhere_means_no_maps(self):
+        tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, tmp)
+        write_event(tmp / "data", "meet")
+        write_instance(tmp / "data", "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-18"))
+        build.build(tmp / "data", tmp / "site")
+        self.assertNotIn("<svg class=\"map", (tmp / "site" / "index.html").read_text(encoding="utf-8"))
+
+    def test_every_real_venue_falls_inside_the_map(self):
+        # An Okinawa or Hokkaido venue past the edge fails here, before the dot is clipped.
+        events, editions = build.load_and_validate(ROOT / "data")
+        rows = [r for r in build.make_rows(events, editions) if r["dot"]]
+        self.assertTrue(rows)
+        for r in rows:
+            x, y = r["dot"]
+            self.assertTrue(0 < x < build.MAP_WIDTH and 0 < y < build.MAP_HEIGHT, r["full_name"])
 
 
 class OutputFolderTests(unittest.TestCase):
