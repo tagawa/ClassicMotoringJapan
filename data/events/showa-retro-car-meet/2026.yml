@@ -6,11 +6,11 @@ end: 2026-10-18
 start_time: "09:30"
 end_time: "15:00"
 source_url: https://retrocar.yaesu-net.co.jp/2026_soga/?p=outline
-last_verified: 2026-09-22
+last_verified: 2026-10-06
 sequence: 0
 # The organiser lists these in two classes, retro and neo-classic. The table has no
 # class column, so they are grouped by marque here, which is what Make implies.
-list_as_of: 2026-09-22
+list_as_of: 2026-10-06
 cars:
   - entry_no: "81"
     year: 1957
@@ -181,9 +181,9 @@ cars:
     make: Messerschmitt
     model: KR200
   - entry_no: "19"
-    year: 1948
+    year: 1954
     make: MG
-    model: YA
+    model: TF 1500
   - entry_no: "124"
     year: 1952
     make: MG
@@ -248,10 +248,6 @@ cars:
     year: 1959
     make: Nissan
     model: Datsun Truck
-  - entry_no: "70"
-    year: 1959
-    make: Nissan
-    model: Austin A50 Cambridge
   - entry_no: "72"
     year: 1962
     make: Nissan
@@ -320,18 +316,10 @@ cars:
     year: 1972
     make: Nissan
     model: Fairlady Z 432-R
-  - entry_no: "60"
-    year: 1972
-    make: Nissan
-    model: Skyline
   - entry_no: "78"
     year: 1972
     make: Nissan
     model: Cedric 2-door Hardtop
-  - entry_no: "105"
-    year: 1972
-    make: Nissan
-    model: Skyline
   - entry_no: "107"
     year: 1972
     make: Nissan
@@ -344,10 +332,6 @@ cars:
     year: 1972
     make: Nissan
     model: Fairlady 240ZG
-  - entry_no: "173"
-    year: 1972
-    make: Nissan
-    model: Skyline
   - entry_no: "77"
     year: 1973
     make: Nissan
@@ -520,6 +504,7 @@ cars:
     year: 1963
     make: Toyota
     model: Toyopet Crown
+  # The organiser's list has given 1965 since late September, which an AE86 cannot be.
   - entry_no: "82"
     year: 1985
     make: Toyota
@@ -556,10 +541,6 @@ cars:
     year: 1978
     make: Toyota
     model: Sprinter
-  - entry_no: "144"
-    year: 1978
-    make: Toyota
-    model: Corona Mark II Grande
   - entry_no: "6"
     year: 1979
     make: Toyota
