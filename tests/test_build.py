@@ -1998,9 +1998,6 @@ class JapanMapTests(unittest.TestCase):
     def tearDownClass(cls):
         shutil.rmtree(cls.tmp)
 
-    def overview(self) -> str:
-        return re.search(r'<svg class="map overview".*?</svg>', self.html, re.S).group(0)
-
     def test_the_map_corners_are_the_projection_limits(self):
         self.assertEqual(build.map_point(build.MAP_LAT[1], build.MAP_LON[0]), (0, 0))
         self.assertEqual(build.map_point(build.MAP_LAT[0], build.MAP_LON[1]),
@@ -2014,36 +2011,38 @@ class JapanMapTests(unittest.TestCase):
     def test_a_mapped_entry_has_a_thumbnail_with_its_dot_where_the_projection_puts_it(self):
         entry = next(e for e in self.entries if "Tokyo Meet" in e and "2026-10-18" in e)
         x, y = build.map_point(35.6812, 139.7671)
-        self.assertEqual(entry.count('<svg class="map thumb"'), 1)
+        self.assertEqual(entry.count('<svg class="venue-map"'), 1)
         self.assertIn(f'cx="{x}" cy="{y}"', entry)
 
     def test_an_entry_without_coordinates_has_no_thumbnail(self):
         entry = next(e for e in self.entries if "Unmapped Meet" in e)
         self.assertNotIn("<svg", entry)
 
-    def test_the_overview_has_one_dot_per_mapped_edition_dated_for_the_script(self):
-        dots = re.findall(r"<circle[^>]*>", self.overview())
-        self.assertEqual(len(dots), 2)
-        self.assertIn('data-end="2026-10-18"', dots[0])
-        self.assertIn('data-end="2027-10-17"', dots[1])
+    def test_no_overview_map_tops_the_page(self):
+        # Tried and dropped: at a readable size it pushed the Upcoming list off the first screen.
+        top = self.html[:self.html.index('<section id="upcoming"')]
+        self.assertNotIn("<use", top)
 
     def test_a_cancelled_edition_has_a_grey_dot(self):
-        dots = re.findall(r"<circle[^>]*>", self.overview())
-        self.assertNotIn('class="off"', dots[0])
-        self.assertIn('class="off"', dots[1])
+        confirmed = next(e for e in self.entries if "2026-10-18" in e)
         cancelled = next(e for e in self.entries if "2027-10-17" in e)
+        self.assertNotIn('class="off"', confirmed)
         self.assertIn('class="off"', cancelled)
 
     def test_the_maps_restate_the_prefecture_so_screen_readers_skip_them(self):
-        maps = re.findall(r'<svg class="map [^>]*>', self.html)
-        self.assertEqual(len(maps), 3)
+        maps = re.findall(r'<svg class="venue-map"[^>]*>', self.html)
+        self.assertEqual(len(maps), 2)
         for svg in maps:
             self.assertIn('aria-hidden="true"', svg)
 
+    def test_the_thumbnail_styles_leave_the_map_link_alone(self):
+        # Once named .map, the thumbnail rules turned the Map link into a block and filled its pin red.
+        css = (ROOT / "static/style.css").read_text(encoding="utf-8")
+        self.assertEqual(re.findall(r"(?m)^\s*\.map\b(?!-)[^{]*", css), [".map "])
+
     def test_the_coastline_is_sent_once_and_reused(self):
         self.assertEqual(self.html.count('id="japan"'), 1)
-        # Two thumbnails and the overview.
-        self.assertEqual(self.html.count('<use xlink:href="#japan"'), 3)
+        self.assertEqual(self.html.count('<use xlink:href="#japan"'), 2)
 
     def test_no_coordinates_anywhere_means_no_maps(self):
         tmp = Path(tempfile.mkdtemp())
@@ -2051,7 +2050,7 @@ class JapanMapTests(unittest.TestCase):
         write_event(tmp / "data", "meet")
         write_instance(tmp / "data", "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-18"))
         build.build(tmp / "data", tmp / "site")
-        self.assertNotIn("<svg class=\"map", (tmp / "site" / "index.html").read_text(encoding="utf-8"))
+        self.assertNotIn("<svg class=\"venue-map", (tmp / "site" / "index.html").read_text(encoding="utf-8"))
 
     def test_every_real_venue_falls_inside_the_map(self):
         # An Okinawa or Hokkaido venue past the edge fails here, before the dot is clipped.
