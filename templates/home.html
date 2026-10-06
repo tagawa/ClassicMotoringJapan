@@ -3,7 +3,7 @@
 <h1>Classic car events in Japan</h1>
 <p class="lede">{{ site_lede }}</p>
 {% if japan %}
-<svg class="map-defs" width="0" height="0" aria-hidden="true" focusable="false"><defs><path id="japan" d="{{ japan }}"/></defs></svg>
+<svg class="venue-map-defs" width="0" height="0" aria-hidden="true" focusable="false"><defs><path id="japan" d="{{ japan }}"/></defs></svg>
 {% endif %}
 
 {% if years %}
@@ -24,16 +24,6 @@
 </div>
 {% endif %}
 
-{% if japan %}
-{# Every dated venue is drawn; the script below removes those whose day has passed. #}
-<svg class="map overview" id="overview" viewBox="{{ map_box }}" width="320" height="{{ (320 * map_ratio) | round | int }}" aria-hidden="true" focusable="false">
-  <use xlink:href="#japan" fill="#E0E0E0"/>
-{% for r in rows if r.dot %}
-  <circle cx="{{ r.dot[0] }}" cy="{{ r.dot[1] }}" r="2" stroke-width="0.6" data-end="{{ r.ed.end.isoformat() }}"{% if r.ed.status == "cancelled" %} class="off"{% endif %}/>
-{% endfor %}
-</svg>
-{% endif %}
-
 <section id="upcoming" aria-labelledby="upcoming-h">
   <h2 id="upcoming-h">Upcoming</h2>
   <p id="no-upcoming" hidden>No upcoming dates are confirmed yet. New dates appear here and in the calendar feed as organisers announce them.</p>
@@ -51,7 +41,7 @@
         <p class="meta">{% if r.ev.name_ja %}<span lang="ja">{{ r.ev.name_ja }}</span><br>{% endif %}{{ r.ev.prefecture }}. {{ r.ev.spectator_fee_jpy | fee }}.</p>
       </div>
 {% if r.dot %}
-      <svg class="map thumb" viewBox="{{ map_box }}" width="96" height="{{ (96 * map_ratio) | round | int }}" aria-hidden="true" focusable="false"><use xlink:href="#japan" fill="#E0E0E0"/><circle cx="{{ r.dot[0] }}" cy="{{ r.dot[1] }}" r="6" stroke-width="1.5"{% if r.ed.status == "cancelled" %} class="off"{% endif %}/></svg>
+      <svg class="venue-map" viewBox="{{ map_box }}" width="96" height="{{ (96 * map_ratio) | round | int }}" aria-hidden="true" focusable="false"><use xlink:href="#japan" fill="#E0E0E0"/><circle cx="{{ r.dot[0] }}" cy="{{ r.dot[1] }}" r="6" stroke-width="1.5"{% if r.ed.status == "cancelled" %} class="off"{% endif %}/></svg>
 {% endif %}
     </li>
 {% endfor %}
@@ -84,19 +74,6 @@
       }
     });
     if (moved) document.getElementById("past").hidden = false;
-    // The overview shows only what is still to come, like the Upcoming list.
-    var overview = document.getElementById("overview");
-    if (overview) {
-      var dots = overview.querySelectorAll("circle");
-      var left = dots.length;
-      for (var i = 0; i < dots.length; i++) {
-        if (dots[i].getAttribute("data-end") < todayInJapan) {
-          dots[i].parentNode.removeChild(dots[i]);
-          left -= 1;
-        }
-      }
-      if (!left) overview.style.display = "none";
-    }
     if (!document.querySelector("#upcoming-list > li")) document.getElementById("no-upcoming").hidden = false;
     // The strip looks ahead: this year and the ones after it. The list below keeps the past.
     var thisYear = todayInJapan.slice(0, 4);
