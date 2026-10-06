@@ -1181,9 +1181,10 @@ class VideoTests(unittest.TestCase):
         for frame in frames:
             self.assertIn('loading="lazy"', frame)
 
-    def test_each_video_links_to_youtube_by_its_label(self):
-        self.assertIn('<a href="https://www.youtube.com/watch?v=fIJCC_4IcE0">Day 2 on YouTube</a>',
-                      self.page(2025))
+    def test_each_video_links_to_youtube_by_its_label_alone(self):
+        html = self.page(2025)
+        self.assertIn('<a href="https://www.youtube.com/watch?v=fIJCC_4IcE0">Day 2</a>', html)
+        self.assertNotIn("on YouTube", html)
 
     def test_a_later_edition_links_to_the_latest_earlier_videos(self):
         link = re.search(r'<a href="../../../events/meet/2025/#videos">(.*?)</a>', self.page(2026)).group(1)
@@ -1216,7 +1217,7 @@ class VideoTests(unittest.TestCase):
         frame = re.search(r"<iframe[^>]*>", html).group(0)
         self.assertIn('title="Test Event 2025, Day 1"', frame)
         self.assertIn('loading="lazy"', frame)
-        self.assertIn('<a href="https://www.youtube.com/watch?v=t3UUnZ7g5P0">Day 1 on YouTube</a>', html)
+        self.assertIn('<a href="https://www.youtube.com/watch?v=t3UUnZ7g5P0">Day 1</a>', html)
 
     def test_an_edition_with_its_own_videos_borrows_none(self):
         html = self.page(2025)
