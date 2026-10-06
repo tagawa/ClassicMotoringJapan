@@ -11,6 +11,11 @@ summary_en: >
   Saitama Classic Car Club since 1995, with the backing of Satte city.
 prefecture: Saitama
 venue_en: Gongendo Park (Satte Gongendo Sakura Tsutsumi), car park
+# The flyer does not say which of the park's three car parks, all within 300 m, so the
+# pin is the Sakura Tsutsumi (park no. 4) as OpenStreetMap places it; GSI agrees on the
+# district to within 250 m.
+lat: 36.0915
+lon: 139.7243
 typical_scale: Up to 150 cars
 spectator_fee_jpy: null
 spectator_notes_en: >
