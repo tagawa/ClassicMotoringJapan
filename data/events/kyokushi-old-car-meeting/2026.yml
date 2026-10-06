@@ -8,5 +8,9 @@ end_time: "15:00"
 # The organiser publishes only on Instagram, whose posts need a login to read.
 # This listing restates the organiser's announcement and names it as its source.
 source_url: https://careventnavi.jp/kyokushi-fureai-oldcar-meeting-20261004/
-last_verified: 2026-09-24
+last_verified: 2026-10-06
 sequence: 0
+videos:
+  # The channel name is 半袖つなぎ男; its handle gives the Latin-script form.
+  - youtube_id: dnIa9ZhMTcw
+    label_en: Clips from the day (video by Hansode Tsunagi Otoko)
