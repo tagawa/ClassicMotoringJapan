@@ -18,7 +18,7 @@
       <tr>
         <td class="num">{{ r.label }}</td>
         <td>{{ r.when_full }}</td>
-        <td>{% if r.ed.status == "tentative" %}<span class="dot tentative" aria-hidden="true"></span>Not confirmed{% elif r.ed.status == "cancelled" %}{{ cancelled_cross() }}Cancelled{% else %}<span class="dot" aria-hidden="true"></span>Confirmed{% endif %}</td>
+        <td>{% if r.ed.status == "tentative" %}<span class="dot tentative" aria-hidden="true"></span>Not confirmed{% elif r.ed.status == "cancelled" %}{{ cancelled_cross() }}Cancelled{% else %}<span class="dot" aria-hidden="true"></span><span data-last-day="{{ r.ed.end.isoformat() }}">Confirmed</span>{% endif %}</td>
 {% if show_details %}
         <td>{% if r.has_page %}<a href="{{ root }}{{ r.path }}">{{ r.parts_phrase }}</a>{% endif %}</td>
 {% endif %}
@@ -60,4 +60,20 @@
 
 {% block footer %}
   <p>Last verified {{ verified.isoformat() }}. Source: <a href="{{ ev.official_url }}">official site</a>.</p>
+{% endblock %}
+
+{% block scripts %}
+{% if rows %}
+<script>
+  (function () {
+    // A confirmed edition that has run is "Held". Past means its last day has ended in
+    // Japan, the same test the home page uses to move an entry to Past events.
+    var todayInJapan = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+    var cells = document.querySelectorAll("[data-last-day]");
+    for (var i = 0; i < cells.length; i++) {
+      if (cells[i].getAttribute("data-last-day") < todayInJapan) cells[i].textContent = "Held";
+    }
+  })();
+</script>
+{% endif %}
 {% endblock %}
