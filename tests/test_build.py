@@ -387,7 +387,7 @@ class BuildOutputTests(unittest.TestCase):
 
     def test_status_keeps_its_word_and_gains_a_dot(self):
         html = self.pages["events/culture-day-show/index.html"]
-        self.assertIn('<span class="dot" aria-hidden="true"></span>Confirmed', html)
+        self.assertIn('<span class="dot" aria-hidden="true"></span><span data-last-day="2026-11-03">Confirmed</span>', html)
 
     def test_cancelled_is_a_cross_so_its_shape_differs_from_the_confirmed_dot(self):
         # Both are red, so shape is what tells them apart, even in greyscale.
@@ -1924,6 +1924,44 @@ class UnannouncedFeeTests(unittest.TestCase):
         block = json.loads(re.search(r'<script type="application/ld\+json">(.*?)</script>',
                                      self.event_html, re.S).group(1))
         self.assertNotIn("isAccessibleForFree", block)
+
+
+class HeldEditionTests(unittest.TestCase):
+    """A confirmed edition that has run reads "Held" in the event page's Dates table.
+
+    The build never reads the clock, so the page carries each confirmed edition's last day
+    and the browser swaps the word once that day has ended in Japan. Without the script the
+    cell still says Confirmed, which stays true.
+    """
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        data = self.tmp / "data"
+        write_event(data, "meet")
+        write_instance(data, "meet", 2025, instance_yaml("meet", 2025, "2025-10-18", "2025-10-19"))
+        write_instance(data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-18",
+                                                         status="cancelled"))
+        write_instance(data, "meet", 2027, instance_yaml("meet", 2027, "2027-10-17", "2027-10-17",
+                                                         status="tentative"))
+        build.build(data, self.tmp / "site")
+        self.html = (self.tmp / "site/events/meet/index.html").read_text(encoding="utf-8")
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp)
+
+    def test_a_confirmed_edition_carries_its_last_day(self):
+        self.assertIn('<span data-last-day="2025-10-19">Confirmed</span>', self.html)
+
+    def test_cancelled_and_tentative_editions_keep_their_words(self):
+        self.assertEqual(self.html.count("data-last-day="), 1)
+        self.assertIn("Cancelled</td>", self.html)
+        self.assertIn("Not confirmed</td>", self.html)
+
+    def test_the_browser_relabels_it_once_the_last_day_has_ended_in_japan(self):
+        script = re.search(r"<script>(.*?)</script>", self.html, re.S).group(1)
+        self.assertIn("new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10)", script)
+        self.assertIn('getAttribute("data-last-day") < todayInJapan', script)
+        self.assertIn('textContent = "Held"', script)
 
 
 class DisplayListTests(unittest.TestCase):
