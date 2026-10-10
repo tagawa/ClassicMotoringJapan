@@ -1,0 +1,42 @@
+slug: ena-classic-car-meeting
+year: 2026
+status: confirmed
+start: 2026-05-30
+end: 2026-05-30
+start_time: "11:00"
+end_time: "15:00"
+venue_en: Taisho-mura Roman-tei front plaza, Akechi
+street_address: 456 Akechicho, Ena, Gifu (岐阜県恵那市明智町456)
+# The pin is OSM's 大正村広場, the plaza the organiser's venue map marks as area A.
+# GSI resolves the address only as far as Akechicho, so it confirms the district
+# and nothing finer.
+lat: 35.3050
+lon: 137.3884
+# Titled "2026 Rally Japan in 恵那 クラシックカーミーティング" on the flyer. The
+# times come from the timetable PDF linked from the listing, and the city's
+# rally site has photos of the day (rally-ena.jp/akechi_report2026-2/).
+source_url: https://www.kankou-ena.jp/event/6287.php
+last_verified: 2026-10-10
+sequence: 0
+route_en: >
+  Held on the Saturday of Rally Japan 2026; the rally's own cars came north
+  through Iwamura on a liaison section from 9:30. Times here are for the lead
+  car, with the last due at Roman-tei by 11:00. The cars stood in the plaza and
+  the Taisho-mura car park, in 110 marked spaces, until 15:00. The Akechi
+  Culture Centre next door showed stage SS10 live and had rally cars on display.
+route:
+  - date: 2026-05-30
+    checkpoints:
+      - start_time: "09:30"
+        place_en: Jardin, Ena (start)
+        place_ja: 恵那市・ジャルダン
+        prefecture: Gifu
+      - start_time: "09:53"
+        place_en: Iwamura, Ena (lead car passes)
+        place_ja: 恵那市・岩村本町交差点
+        prefecture: Gifu
+      - start_time: "10:35"
+        end_time: "11:00"
+        place_en: Taisho-mura Roman-tei, Akechi (finish)
+        place_ja: 恵那市・大正村浪漫亭
+        prefecture: Gifu

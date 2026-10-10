@@ -1,0 +1,29 @@
+slug: ena-classic-car-meeting
+name_en: Ena Classic Car Meeting
+name_ja: クラシックカーミーティング
+organizer: グリーングラス クラシックカーメイト (Green Grass Classic Car Mate, an owners' circle with its office in Nagoya)
+official_url: https://rally-ena.jp/classic-car-meeting/
+summary_en: >
+  A touring parade through Ena followed by a static display, run by a circle of
+  classic car owners mostly from Aichi and Gifu, with Ena city and its tourism
+  association as backers. Meetings date back to at least 2022: some at Enakyo
+  gorge, others alongside Rally Japan when it passes through the city. The May
+  2026 listing gave about 120 cars, of models whose production began by the
+  early 1980s.
+prefecture: Gifu
+venue_en: Enakyo Visitor Centre, Ena
+street_address: 2709-79 Oicho, Ena, Gifu (岐阜県恵那市大井町2709-79)
+# No lat/lon: neither GSI nor OSM resolves the visitor centre itself, only its
+# block and the bus stop nearby, so there is no pair to point a Map link at.
+nearest_station: Ena (JR Chuo line, Akechi Railway)
+access_notes_en: >
+  By car, about 10 minutes from Ena station or 15 from Ena interchange on the
+  Chuo Expressway; on foot from the station, about an hour. The venue is not
+  the same at every meeting: May 2026 was at Taisho-mura in Akechi, 3 minutes'
+  walk from Akechi station on the Akechi Railway.
+typical_scale: About 120 cars (May 2026)
+spectator_fee_jpy: 0
+spectator_notes_en: >
+  The tourism association's listing for May 2026 gives watching as free. Its
+  listing for September 2026 doesn't mention a fee.
+last_verified: 2026-10-10
