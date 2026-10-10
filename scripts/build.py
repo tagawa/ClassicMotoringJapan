@@ -119,6 +119,8 @@ EDITION_REQUIRED = {
 }
 EDITION_OPTIONAL = {
     "start_time": "time", "end_time": "time", "venue_en": "str", "street_address": "str",
+    # For an event that moves: the prefecture this edition ran in, when it is not the event's.
+    "prefecture": "str",
     "route_en": "prose", "route": "route", "list_as_of": "date", "cars": "cars",
     "lat": "lat", "lon": "lon", "videos": "videos",
 }
@@ -392,6 +394,9 @@ def load_and_validate(data_dir: Path) -> tuple[dict, list]:
             if _is_int(ed.get("year")) and start.year != ed["year"]:
                 errors.append(f"{rel}: start {start} is not in year {ed['year']}")
         _check_coords(ed, rel, errors)
+        if "prefecture" in ed and "venue_en" not in ed:
+            # Alone it would print the event's venue in a prefecture that venue is not in.
+            errors.append(f"{rel}: prefecture on an edition needs venue_en too")
         has_st, has_et = "start_time" in ed, "end_time" in ed
         if has_st != has_et:
             errors.append(f"{rel}: give start_time and end_time together, or neither")
@@ -638,7 +643,7 @@ def build_ics(rows: list[dict]) -> str:
                       f"DTEND;VALUE=DATE:{ed['end'] + dt.timedelta(days=1):%Y%m%d}"]
         lines += [
             f"SUMMARY:{ics_text(r['display_name'])}",
-            f"LOCATION:{ics_text(r['venue'] + ', ' + ev['prefecture'] + ', Japan')}",
+            f"LOCATION:{ics_text(r['venue'] + ', ' + r['prefecture'] + ', Japan')}",
         ]
         if r["pin"]:
             lines.append(f"GEO:{r['pin']['lat']};{r['pin']['lon']}")
@@ -658,7 +663,7 @@ def build_ics(rows: list[dict]) -> str:
 
 def build_jsonld(r: dict) -> Markup:
     ev, ed = r["ev"], r["ed"]
-    address = {"@type": "PostalAddress", "addressRegion": ev["prefecture"], "addressCountry": "JP"}
+    address = {"@type": "PostalAddress", "addressRegion": r["prefecture"], "addressCountry": "JP"}
     street = ed.get("street_address") or ev.get("street_address")
     if street:
         address["streetAddress"] = street
@@ -721,7 +726,7 @@ def event_description(ev: dict) -> str:
 def edition_description(r: dict) -> str:
     """Status first, so a cancelled edition's snippet cannot read like a normal listing."""
     status = {"cancelled": "Cancelled. ", "tentative": "Dates not confirmed. "}.get(r["ed"]["status"], "")
-    return f"{status}{r['parts_phrase']} for {r['full_name']}: {r['when']}, {r['venue']}, {r['ev']['prefecture']}."
+    return f"{status}{r['parts_phrase']} for {r['full_name']}: {r['when']}, {r['venue']}, {r['prefecture']}."
 
 
 def list_phrase(parts: list[str]) -> str:
@@ -776,6 +781,7 @@ def make_rows(events: dict, editions: list) -> list[dict]:
             "uid": f"{slug}-{ed_id}@{UID_DOMAIN}",
             "is_timed": is_timed,
             "venue": ed.get("venue_en") or ev["venue_en"],
+            "prefecture": ed.get("prefecture") or ev["prefecture"],
             "pin": venue_pin(ev, ed),
             "dot": None,
             "when": fmt_range(ed["start"], ed["end"]),
@@ -844,7 +850,7 @@ def build_api(rows: list[dict]) -> str:
             "end_time": ed.get("end_time"),
             "all_day": not r["is_timed"],
             "venue": r["venue"],
-            "prefecture": ev["prefecture"],
+            "prefecture": r["prefecture"],
             "street_address": ed.get("street_address") or ev.get("street_address"),
             "lat": pin["lat"] if pin else None,
             "lon": pin["lon"] if pin else None,
