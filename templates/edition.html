@@ -27,7 +27,7 @@
   <dt>When</dt>
   <dd>{{ r.when_full }}</dd>
   <dt>Where</dt>
-  <dd>{{ r.venue }}, {{ ev.prefecture }}{{ map_link(r.pin) }}</dd>
+  <dd>{{ r.venue }}, {{ r.prefecture }}{{ map_link(r.pin) }}</dd>
 {% if ev.spectator_fee_jpy is none %}
   <dt class="fee-unannounced">Cost</dt>
   <dd class="fee-unannounced">{{ ev.spectator_fee_jpy | fee }}</dd>
