@@ -8,10 +8,12 @@ prefecture: Gifu
 # The address is from Gifu Prefecture's tourism site (kankou-gifu.jp/spot/detail_9180.html).
 # No lat/lon: GSI resolves it only as far as Kiyomicho-Mikkamachi and OSM has no entry.
 street_address: 165 Kiyomicho-Mikkamachi, Takayama, Gifu (岐阜県高山市清見町三日町165)
-# The second running. The club's own page has been rewritten for 2027, so the date,
-# venue and car count come from the description of the video below; the club's news
-# list still records entries opening on 2 May 2026. No times or fee were found.
-source_url: https://www.youtube.com/watch?v=guFHJ5cd2Og
+# The second running. The club's own page has been rewritten for 2027 and now records
+# only entries opening on 2 May 2026, so the date, venue and car count come from the
+# description of the video below. The page prints this link as the organiser's
+# announcement, which is why it points at the club and not the video. No times or fee
+# were found.
+source_url: https://eikokusha.my.canva.site/
 last_verified: 2026-10-10
 sequence: 0
 videos:
