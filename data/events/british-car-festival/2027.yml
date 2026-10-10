@@ -1,0 +1,12 @@
+slug: british-car-festival
+year: 2027
+status: confirmed
+start: 2027-05-22
+end: 2027-05-22
+# The organiser gives these hours as planned (予定); the event page says so.
+start_time: "09:00"
+end_time: "15:00"
+# The third running, backed by the Chunichi Shimbun. The date is on the flyer too.
+source_url: https://eikokusha.my.canva.site/
+last_verified: 2026-10-10
+sequence: 0

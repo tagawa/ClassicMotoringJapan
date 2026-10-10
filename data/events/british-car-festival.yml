@@ -1,0 +1,32 @@
+slug: british-car-festival
+name_en: British Car Festival
+name_ja: 英国車祭
+organizer: 英国車クラブ東海 (a club for British car owners in the Tokai area, formed in 2023)
+official_url: https://eikokusha.my.canva.site/
+summary_en: >
+  A yearly gathering of British cars of every age, from Austin, MG, Jaguar and
+  the classic Mini to Lotus, Caterham, Morgan and Aston Martin, run by a
+  Tokai-area owners' club. First held in 2025. The second, at Takayama in Gifu
+  in October 2026, had about 130 cars and a waiting list for entries. The 2027
+  festival is at Little World in Inuyama, with places for 200 cars and British
+  cars given priority in selection.
+prefecture: Aichi
+venue_en: Little World, Inuyama
+street_address: 90-48 Imai, Inuyama, Aichi (愛知県犬山市今井成沢90-48)
+# GSI's point for the address, which falls inside OSM's outline of the museum
+# on its west side.
+lat: 35.3731
+lon: 137.0189
+nearest_station: Inuyama (Meitetsu Inuyama line)
+access_notes_en: >
+  Gifu Bus from Inuyama station takes about 20 minutes. Inuyama is about 30
+  minutes from Meitetsu Nagoya and 40 from Meitetsu Gifu. The car park in front
+  of the entrance costs ¥1,000 a car and ¥500 a motorcycle, cash only. The 2026
+  festival was held elsewhere, at Wood Forum Hida in Takayama, Gifu.
+typical_scale: About 130 cars in 2026; 200 places in 2027
+spectator_fee_jpy: null
+spectator_notes_en: >
+  The organiser's page gives no spectator arrangements for 2027: neither a fee
+  nor whether the cars stand inside the museum grounds. It gives the hours,
+  9:00 to 15:00, as planned.
+last_verified: 2026-10-10
