@@ -2074,6 +2074,60 @@ class CoordinateTests(unittest.TestCase):
         self.assertIn("q=Another%20Field", html)
 
 
+class EditionPrefectureTests(unittest.TestCase):
+    """An event that moves between prefectures: each edition is printed with the one it ran in."""
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.tmp)
+        self.out = self.tmp / "site"
+
+    def build_with(self, edition_extra: str) -> None:
+        # write_event puts the event at Test Park, Shizuoka.
+        write_event(self.tmp / "data", "meet")
+        write_instance(self.tmp / "data", "meet", 2026,
+                       instance_yaml("meet", 2026, "2026-10-18", "2026-10-18", extra=edition_extra))
+        build.build(self.tmp / "data", self.out)
+
+    def page(self, rel: str) -> str:
+        return (self.out / rel).read_text(encoding="utf-8")
+
+    def test_the_edition_page_names_the_edition_s_prefecture(self):
+        self.build_with("venue_en: Another Field\nprefecture: Gifu\n" + CARS)
+        html = self.page("events/meet/2026/index.html")
+        self.assertIn("<dd>Another Field, Gifu</dd>", html)
+        self.assertIn("Another Field, Gifu.", re.search(r'<meta name="description" content="([^"]*)"', html).group(1))
+        self.assertNotIn("Shizuoka", html)
+
+    def test_the_event_page_keeps_the_event_s_prefecture(self):
+        self.build_with("venue_en: Another Field\nprefecture: Gifu\n" + CARS)
+        self.assertIn("Test Park, Shizuoka", self.page("events/meet/index.html"))
+
+    def test_the_home_page_lists_the_edition_under_its_own_prefecture(self):
+        self.build_with("venue_en: Another Field\nprefecture: Gifu\n" + CARS)
+        html = self.page("index.html")
+        self.assertIn("Gifu.", html)
+        self.assertNotIn("Shizuoka", html)
+
+    def test_the_calendar_structured_data_and_feed_agree_with_the_page(self):
+        self.build_with("venue_en: Another Field\nprefecture: Gifu\n" + CARS)
+        self.assertIn("LOCATION:Another Field\\, Gifu\\, Japan", self.page("classic-car-events.ics"))
+        events = [b for b in jsonld_blocks(self.page("events/meet/2026/index.html")) if b["@type"] == "Event"]
+        self.assertEqual([b["location"]["address"]["addressRegion"] for b in events], ["Gifu"])
+        self.assertEqual([e["prefecture"] for e in json.loads(self.page("api/events.json"))["events"]], ["Gifu"])
+
+    def test_without_one_the_edition_takes_the_event_s(self):
+        self.build_with(CARS)
+        self.assertIn("<dd>Test Park, Shizuoka</dd>", self.page("events/meet/2026/index.html"))
+        self.assertEqual([e["prefecture"] for e in json.loads(self.page("api/events.json"))["events"]], ["Shizuoka"])
+
+    def test_a_prefecture_without_a_venue_is_refused(self):
+        # It would print the event's venue in a prefecture it is not in.
+        with self.assertRaises(build.ValidationError) as ctx:
+            self.build_with("prefecture: Gifu\n" + CARS)
+        self.assertIn("venue_en", str(ctx.exception))
+
+
 class JapanMapTests(unittest.TestCase):
     """The home page maps: one coastline and one projection, so a dot cannot drift off its venue."""
 
