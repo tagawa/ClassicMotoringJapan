@@ -30,7 +30,10 @@ from markupsafe import Markup, escape
 
 SITE_NAME = "Classic Motoring Japan"
 SITE_URL = "https://classicmotoringjapan.com"
-SITE_LEDE = "When and where to watch, how to get there, and what cars you'll see."
+# Also the search snippet, the share text and the llms.txt summary, so it has to say
+# what the site covers without the home page's heading above it.
+SITE_LEDE = ("Events across Japan for classic cars, Japanese and imported: when and where to watch, "
+             "how to get there, and what you'll see.")
 ABOUT_DESCRIPTION = ("How Classic Motoring Japan's event listings are translated from, and checked "
                      "against, each organiser's own announcements.")
 ISSUES_URL = "https://github.com/tagawa/ClassicMotoringJapan/issues"
@@ -112,6 +115,8 @@ EVENT_OPTIONAL = {
     "nearest_station": "prose", "access_notes_en": "prose", "typical_eras": "strlist",
     "typical_scale": "str", "spectator_notes_en": "prose", "photography_notes_en": "prose",
     "lat": "lat", "lon": "lon",
+    # The newest build year the organiser accepts, only where a source states one exactly.
+    "cutoff_year": "int",
 }
 EDITION_REQUIRED = {
     "slug": "str", "year": "int", "status": "status", "start": "date", "end": "date",
@@ -123,6 +128,8 @@ EDITION_OPTIONAL = {
     "prefecture": "str",
     "route_en": "prose", "route": "route", "list_as_of": "date", "cars": "cars",
     "lat": "lat", "lon": "lon", "videos": "videos",
+    # For an event whose limit moves each year: this edition's, when it is not the event's.
+    "cutoff_year": "int",
 }
 ROUTE_DAY_REQUIRED = {"date": "date", "checkpoints": "checkpoints"}
 CHECKPOINT_REQUIRED = {"start_time": "time", "place_en": "str", "prefecture": "str"}
@@ -417,12 +424,13 @@ def load_and_validate(data_dir: Path) -> tuple[dict, list]:
                             errors.append(f"{where}: duplicate entry_no {no!r}")
                         seen.add(no)
             # Same rule as a checkpoint's prefecture: a column filled for some rows and not
-            # others cannot be scanned, so each of these is given for every car or for none.
-            for key in ("entry_no", "year"):
-                filled = sum(1 for car in cars if isinstance(car, dict) and key in car)
-                if 0 < filled < len(cars):
-                    errors.append(f"{rel}: give {key} on every car or on none "
-                                  f"({filled} of {len(cars)} have one)")
+            # others cannot be scanned, so a number is given for every car or for none. A
+            # year is not held to it: organisers leave the odd one blank, and dropping the
+            # car to keep the column full would lose more than the gap does.
+            filled = sum(1 for car in cars if isinstance(car, dict) and "entry_no" in car)
+            if 0 < filled < len(cars):
+                errors.append(f"{rel}: give entry_no on every car or on none "
+                              f"({filled} of {len(cars)} have one)")
         _check_route(ed.get("route"), start, end, rel, errors)
         if isinstance(ed.get("videos"), list):
             for i, video in enumerate(ed["videos"], 1):
@@ -502,15 +510,16 @@ def decade_chart(cars) -> dict | None:
     """How an entry list falls by decade, counted from the rows the table renders.
 
     A decade with no cars keeps its row, so a gap in the field stays visible instead of
-    closing up and reading as a run. A list without years has nothing to count, and one
-    drawn from part of the list could contradict the table it sits above, so it is drawn
-    only when every row carries a year.
+    closing up and reading as a run. A list without years has nothing to count. Cars the
+    organiser gave no year for are counted in a closing line, so the strip still adds up
+    to the table it sits above.
     """
-    if not cars or not all("year" in car for car in cars):
+    years = [car["year"] for car in cars or [] if "year" in car]
+    if not years:
         return None
     counts: dict[int, int] = {}
-    for car in cars:
-        decade = car["year"] // 10 * 10
+    for year in years:
+        decade = year // 10 * 10
         counts[decade] = counts.get(decade, 0) + 1
     peak = max(counts.values())
     rows = []
@@ -522,7 +531,34 @@ def decade_chart(cars) -> dict | None:
             "text": f"{n} car{'' if n == 1 else 's'}" if n else "none",
             "width": round(max(n / peak * 100, CHART_MIN_BAR), 2) if n else 0,
         })
-    return {"total": len(cars), "rows": rows}
+    undated = len(cars) - len(years)
+    return {"rows": rows,
+            "rest": f"No year given: {undated} car{'' if undated == 1 else 's'}" if undated else None}
+
+
+def makes_chart(cars) -> dict | None:
+    """Which makes an entry list has several of, counted from the rows the table renders.
+
+    A make with one car would only repeat its table row, so those share a single line.
+    Counted only when every row has an entry number: there a row is a car, whereas a
+    show's announced line-up names models, and two models are not two cars.
+    """
+    if not cars or not all("entry_no" in car for car in cars):
+        return None
+    counts: dict[str, int] = {}
+    for car in cars:
+        counts[car["make"]] = counts.get(car["make"], 0) + 1
+    several = sorted(((make, n) for make, n in counts.items() if n > 1),
+                     key=lambda pair: (-pair[1], pair[0].casefold()))
+    rows = [{"label": make, "text": f"{n} cars",
+             "width": round(max(n / several[0][1] * 100, CHART_MIN_BAR), 2)} for make, n in several]
+    singles = len(counts) - len(several)
+    rest = None
+    if singles:
+        # "and" only when there are rows above for it to follow on from.
+        rest = (("and " if rows else "")
+                + (f"{singles} makes with one car each" if singles > 1 else "1 make with one car"))
+    return {"rows": rows, "rest": rest}
 
 
 def year_chart(rows: list[dict]) -> list[dict]:
@@ -784,11 +820,14 @@ def make_rows(events: dict, editions: list) -> list[dict]:
             "prefecture": ed.get("prefecture") or ev["prefecture"],
             "pin": venue_pin(ev, ed),
             "dot": None,
+            "has_route": bool(present["route"]),
+            "cutoff_year": ed.get("cutoff_year") or ev.get("cutoff_year"),
             "when": fmt_range(ed["start"], ed["end"]),
             # A list published before the event can still change, but once we have
             # re-checked the source after the event ended, what we show is the last word.
             "chart": route_chart(ed.get("route")),
             "decades": decade_chart(ed.get("cars")),
+            "makes": makes_chart(ed.get("cars")),
             "videos": [{"label": v["label_en"], "title": f"{display_name} {year}, {v['label_en']}",
                         "embed": VIDEO_EMBED_URL + v["youtube_id"], "watch": VIDEO_WATCH_URL + v["youtube_id"]}
                        for v in ed.get("videos") or []],
