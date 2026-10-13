@@ -52,6 +52,7 @@ class PastEventsTest(unittest.TestCase):
             "upcoming": page.locator("#upcoming-list a").all_inner_texts(),
             "past": page.locator("#past-list a").all_inner_texts(),
             "past_visible": page.locator("#past").is_visible(),
+            "heading": page.locator("#upcoming-h").inner_text(),
         }
         ctx.close()
         return result
@@ -62,6 +63,10 @@ class PastEventsTest(unittest.TestCase):
         self.assertEqual(s["past"], ["Past Meet"])
         self.assertEqual(s["upcoming"], ["Next Meet"])
         self.assertTrue(s["past_visible"])
+
+    def test_the_sorted_list_is_headed_upcoming(self):
+        # The markup says Events, for a reader whose browser never runs the script.
+        self.assertEqual(self.sections_at("2026-10-19T15:30:00Z")["heading"], "Upcoming")
 
     def test_stays_upcoming_until_midnight_in_japan(self):
         # 23:00 on 19 Oct in Japan: the event day is not over yet.

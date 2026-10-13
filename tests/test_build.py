@@ -129,9 +129,11 @@ def make_fixture(data: Path) -> None:
                    instance_yaml("hill-climb", 2026, "2026-10-25", "2026-10-25", extra=CARS))
 
 
-def cars_yaml(years, as_of="2026-09-15") -> str:
-    rows = "".join(f'  - entry_no: "{i:02d}"\n    year: {y}\n    make: Test\n    model: Car\n'
-                   for i, y in enumerate(years, 1))
+def cars_yaml(years, as_of="2026-09-15", makes=None) -> str:
+    """makes, when given, names each car's make in turn; otherwise every car is a Test."""
+    makes = makes or ["Test"] * len(years)
+    rows = "".join(f'  - entry_no: "{i:02d}"\n    year: {y}\n    make: {make}\n    model: Car\n'
+                   for i, (y, make) in enumerate(zip(years, makes), 1))
     return f"list_as_of: {as_of}\ncars:\n{rows}"
 
 
@@ -509,7 +511,7 @@ class BuildOutputTests(unittest.TestCase):
         for page, html in self.pages.items():
             if page == "about/index.html":
                 continue
-            self.assertRegex(html, r"(Last verified|Most recent check:) 2026-09-20", page)
+            self.assertRegex(html, r"(Last verified</dt>\s*<dd>|Most recent check: )2026-09-20", page)
 
     def test_internal_links_are_relative(self):
         for page, html in self.pages.items():
@@ -905,6 +907,43 @@ class AboutPageTests(unittest.TestCase):
     def test_is_listed_in_the_sitemap_and_llms_txt(self):
         self.assertIn(f"<loc>{build.SITE_URL}/about/</loc>", (self.out / "sitemap.xml").read_text(encoding="utf-8"))
         self.assertIn(f"({build.SITE_URL}/about/)", (self.out / "llms.txt").read_text(encoding="utf-8"))
+
+
+class VerifiedPlacementTests(unittest.TestCase):
+    """The check date and its source sit with the facts they vouch for, not under the lists."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = Path(tempfile.mkdtemp())
+        cls.out = cls.tmp / "site"
+        make_fixture(cls.tmp / "data")
+        build.build(cls.tmp / "data", cls.out)
+        cls.edition = (cls.out / "events/autumn-rally/2026/index.html").read_text(encoding="utf-8")
+        cls.event = (cls.out / "events/autumn-rally/index.html").read_text(encoding="utf-8")
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.tmp)
+
+    def facts(self, html: str) -> str:
+        return re.search(r'(?s)<dl class="facts">.*?</dl>', html).group(0)
+
+    def test_an_edition_page_gives_the_date_and_links_the_source_among_its_facts(self):
+        self.assertRegex(self.facts(self.edition),
+                         r'<dt>Last verified</dt>\s*<dd>2026-09-20, against the '
+                         r'<a href="https://example.com/autumn-rally/2026/">organiser\'s announcement</a></dd>')
+
+    def test_on_an_edition_page_it_comes_before_the_entry_list_and_route(self):
+        self.assertLess(self.edition.index("Last verified"), self.edition.index("<h2"))
+
+    def test_an_event_page_gives_the_date_beside_the_official_site(self):
+        self.assertRegex(self.facts(self.event),
+                         r'(?s)<dt>Official site</dt>.*?</dd>\s*<dt>Last verified</dt>\s*'
+                         r'<dd>2026-09-20, against the official site</dd>')
+
+    def test_the_footer_no_longer_repeats_it(self):
+        for html in (self.edition, self.event):
+            self.assertNotIn("Last verified", html[html.index('<footer class="site-footer">'):])
 
 
 class BritishSpellingTests(unittest.TestCase):
@@ -1410,6 +1449,16 @@ class SiteCopyTests(unittest.TestCase):
                       "does not confirm these dates yet.", html)
         self.assertNotIn("booking", html)
 
+    def test_the_lede_stands_alone_as_a_description(self):
+        # It is also the search snippet, the share text and the llms.txt summary, where no
+        # heading sits above it to say what the site covers.
+        for phrase in ("classic cars", "Japan", "Japanese and imported"):
+            self.assertIn(phrase, build.SITE_LEDE)
+
+    def test_the_about_page_says_both_japanese_and_imported_cars(self):
+        # "Classic" alone does not tell an imported-car reader the site covers their cars.
+        self.assertIn("Japanese and imported", self.html("about/index.html"))
+
     def test_the_about_page_does_not_list_the_language_model_index(self):
         self.assertNotIn("llms.txt", self.html("about/index.html"))
 
@@ -1721,11 +1770,9 @@ class ValidationTests(unittest.TestCase):
         self.assert_rejected(instance_yaml("meet", 2026, "2026-10-18", "2026-10-18", extra=extra),
                              "entry_no on every car or on none")
 
-    def test_years_must_be_given_for_every_car_or_none(self):
-        extra = ('list_as_of: 2026-09-15\ncars:\n  - year: 1929\n    make: Bentley\n    model: Blower\n'
-                 '  - make: Alfa Romeo\n    model: 6C 1750 GS\n')
-        self.assert_rejected(instance_yaml("meet", 2026, "2026-10-18", "2026-10-18", extra=extra),
-                             "year on every car or on none")
+    def test_a_cutoff_year_must_be_a_whole_number(self):
+        self.assert_rejected(instance_yaml("meet", 2026, "2026-10-18", "2026-10-18", extra="cutoff_year: about 2000\n"),
+                             "cutoff_year: must be a whole number")
 
     def test_a_car_still_needs_a_make_and_a_model(self):
         extra = "list_as_of: 2026-09-15\ncars:\n  - make: Bentley\n"
@@ -1776,8 +1823,11 @@ class DecadeStripTests(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.tmp)
 
+    def strip(self) -> str:
+        return re.search(r'(?s)<ol class="chart decades">.*?</ol>', self.html).group(0)
+
     def rows(self) -> list[str]:
-        return re.findall(r'<span class="chart-when">(.*?)</span>', self.html)
+        return re.findall(r'<span class="chart-when">(.*?)</span>', self.strip())
 
     def test_one_row_per_decade_from_the_oldest_car_to_the_newest(self):
         self.assertEqual(self.rows(), ["1920s: 1 car", "1930s: none", "1940s: none", "1950s: 3 cars"])
@@ -1790,7 +1840,39 @@ class DecadeStripTests(unittest.TestCase):
         self.assertIsNotNone(empty, "an empty decade should hold its row and draw nothing")
 
     def test_the_bars_are_hidden_from_screen_readers_as_a_restatement(self):
-        self.assertEqual(self.html.count('<span class="chart-track" aria-hidden="true">'), 4)
+        self.assertEqual(self.strip().count('<span class="chart-track" aria-hidden="true">'), 4)
+
+    def page(self, cars: str) -> str:
+        tmp = Path(tempfile.mkdtemp())
+        try:
+            data = tmp / "data"
+            write_event(data, "meet")
+            write_instance(data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-18", extra=cars))
+            build.build(data, tmp / "site")
+            return (tmp / "site" / "events" / "meet" / "2026" / "index.html").read_text(encoding="utf-8")
+        finally:
+            shutil.rmtree(tmp)
+
+    # An organiser's list sometimes leaves one car's year blank; the car still entered.
+    UNDATED = '  - entry_no: "03"\n    make: Test\n    model: Car\n'
+
+    def test_a_car_without_a_year_gets_a_closing_line_so_the_strip_adds_up_to_the_table(self):
+        self.html = self.page(cars_yaml([1929, 1955]) + self.UNDATED)
+        self.assertEqual(self.rows(), ["1920s: 1 car", "1930s: none", "1940s: none", "1950s: 1 car",
+                                       "No year given: 1 car"])
+        self.assertEqual(self.strip().count("chart-track"), 4, "the closing line counts, it draws no bar")
+
+    def test_a_car_without_a_year_keeps_its_row_with_the_year_blank(self):
+        html = self.page(cars_yaml([1929, 1955]) + self.UNDATED)
+        self.assertIn('<tr><td class="num">03</td><td class="num"></td><td>Test</td><td>Car</td></tr>', html)
+
+    def test_a_list_where_every_car_has_a_year_has_no_closing_line(self):
+        self.assertNotIn("No year given", self.html)
+
+    def test_a_numbered_list_with_no_years_at_all_has_no_strip(self):
+        html = self.page('list_as_of: 2026-09-15\ncars:\n' + self.UNDATED)
+        self.assertNotIn("chart decades", html)
+        self.assertNotIn("<th scope=\"col\">Year</th>", html)
 
     def test_an_edition_without_an_entry_list_has_no_strip(self):
         tmp = Path(tempfile.mkdtemp())
@@ -1804,6 +1886,146 @@ class DecadeStripTests(unittest.TestCase):
             self.assertNotIn("chart decades", html)
         finally:
             shutil.rmtree(tmp)
+
+
+class MakeStripTests(unittest.TestCase):
+    """Which makes turned out in numbers, counted from the same rows the table renders."""
+
+    def page(self, cars: str) -> str:
+        tmp = Path(tempfile.mkdtemp())
+        try:
+            data = tmp / "data"
+            write_event(data, "meet")
+            write_instance(data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-18", extra=cars))
+            build.build(data, tmp / "site")
+            return (tmp / "site" / "events" / "meet" / "2026" / "index.html").read_text(encoding="utf-8")
+        finally:
+            shutil.rmtree(tmp)
+
+    def strip(self, makes: list[str]) -> str:
+        html = self.page(cars_yaml([1955] * len(makes), makes=makes))
+        found = re.search(r'(?s)<ol class="chart makes">.*?</ol>', html)
+        self.assertIsNotNone(found, "an entry list should have a make strip")
+        return found.group(0)
+
+    def lines(self, strip: str) -> list[str]:
+        return [re.sub(r"<[^>]+>", "", li).split("\n")[1].strip() for li in re.findall(r"(?s)<li>.*?</li>", strip)]
+
+    def test_a_make_with_two_or_more_cars_gets_a_row_and_the_rest_share_one_line(self):
+        strip = self.strip(["Fiat", "Alfa Romeo", "Bugatti", "Alfa Romeo", "Fiat", "Alfa Romeo", "Siata"])
+        self.assertEqual(self.lines(strip),
+                         ["Alfa Romeo: 3 cars", "Fiat: 2 cars", "and 2 makes with one car each"])
+
+    def test_makes_with_the_same_count_are_in_alphabetical_order(self):
+        strip = self.strip(["Porsche", "alfa", "MG", "Porsche", "alfa", "MG"])
+        self.assertEqual(self.lines(strip), ["alfa: 2 cars", "MG: 2 cars", "Porsche: 2 cars"])
+
+    def test_the_busiest_make_fills_the_track_and_the_others_scale_to_it(self):
+        strip = self.strip(["Fiat", "Alfa Romeo", "Alfa Romeo", "Fiat", "Alfa Romeo"])
+        self.assertEqual(re.findall(r"width: ([\d.]+)%", strip), ["100.0", "66.67"])
+
+    def test_the_bars_are_hidden_from_screen_readers_and_the_rest_line_has_none(self):
+        strip = self.strip(["Fiat", "Fiat", "Bugatti"])
+        self.assertEqual(strip.count('<span class="chart-track" aria-hidden="true">'), 1)
+        self.assertEqual(strip.count('<span class="chart-track"'), 1)
+
+    def test_a_lone_single_make_is_worded_in_the_singular(self):
+        self.assertEqual(self.lines(self.strip(["Fiat", "Fiat", "Bugatti"]))[-1], "and 1 make with one car")
+
+    def test_no_rest_line_when_every_make_has_several_cars(self):
+        self.assertEqual(self.lines(self.strip(["Fiat", "Fiat"])), ["Fiat: 2 cars"])
+
+    def test_a_field_of_single_makes_is_one_line_with_nothing_to_follow_on_from(self):
+        self.assertEqual(self.lines(self.strip(["Fiat", "Bugatti", "Siata"])), ["3 makes with one car each"])
+
+    def test_it_sits_between_the_decade_strip_and_the_table(self):
+        html = self.page(cars_yaml([1955, 1955], makes=["Fiat", "Fiat"]))
+        self.assertLess(html.index('class="chart decades"'), html.index('class="chart makes"'))
+        self.assertLess(html.index('class="chart makes"'), html.index("<table>"))
+
+    def test_a_show_line_up_names_models_not_cars_so_it_is_not_counted(self):
+        # Two Toyota models on a stand are not "Toyota: 2 cars": nobody has counted the cars.
+        html = self.page(display_cars_yaml([("Toyota", "2000GT"), ("Toyota", "Sports 800")]))
+        self.assertNotIn("chart makes", html)
+
+
+class HomeRowFactsTests(unittest.TestCase):
+    """What a reader choosing between rows wants first: do the cars move, and how old are they."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = Path(tempfile.mkdtemp())
+        data = cls.tmp / "data"
+        write_event(data, "tour", name_en="Tour", extra="cutoff_year: 1975\n")
+        write_instance(data, "tour", 2026, instance_yaml("tour", 2026, "2026-10-18", "2026-10-19", extra=ROUTE))
+        write_event(data, "parade", name_en="Parade")
+        write_instance(data, "parade", 2026,
+                       instance_yaml("parade", 2026, "2026-11-22", "2026-11-22",
+                                     extra="route_en: From the town hall along the high street.\n"))
+        write_event(data, "show", name_en="Show", extra="cutoff_year: 1988\n")
+        write_instance(data, "show", 2025, instance_yaml("show", 2025, "2025-11-03", "2025-11-03"))
+        write_instance(data, "show", 2026,
+                       instance_yaml("show", 2026, "2026-11-03", "2026-11-03", extra="cutoff_year: 1996\n"))
+        write_event(data, "meet", name_en="Meet")
+        write_instance(data, "meet", 2026, instance_yaml("meet", 2026, "2026-11-08", "2026-11-08"))
+        build.build(data, cls.tmp / "site")
+        html = (cls.tmp / "site" / "index.html").read_text(encoding="utf-8")
+        cls.rows = {(name, when[:4]): " ".join(re.sub(r"<[^>]+>", " ", meta).split())
+                    for when, name, meta in re.findall(
+                        r'(?s)<li data-end="([^"]+)">.*?<a href="[^"]*">([^<]+)</a>.*?<p class="meta">(.*?)</p>', html)}
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.tmp)
+
+    def test_every_edition_has_a_row(self):
+        # The assertions below read rows by name, so a regex that found none would pass them all.
+        self.assertEqual(len(self.rows), 5)
+
+    def test_an_edition_with_a_timetabled_route_says_the_cars_are_driven(self):
+        self.assertIn("Driven route.", self.rows["Tour", "2026"])
+
+    def test_so_does_one_whose_route_is_only_described(self):
+        self.assertIn("Driven route.", self.rows["Parade", "2026"])
+
+    def test_an_edition_without_a_route_does_not(self):
+        self.assertNotIn("Driven route", self.rows["Show", "2026"])
+        self.assertNotIn("Driven route", self.rows["Meet", "2026"])
+
+    def test_the_cutoff_year_follows_the_place_and_the_fee(self):
+        self.assertEqual(self.rows["Tour", "2026"],
+                         "\u30c6\u30b9\u30c8\u30a4\u30d9\u30f3\u30c8 Shizuoka. Free to watch. Driven route. Cars to 1975.")
+
+    def test_an_event_with_no_cutoff_on_record_claims_none(self):
+        self.assertNotIn("Cars to", self.rows["Meet", "2026"])
+        self.assertNotIn("Cars to", self.rows["Parade", "2026"])
+
+    def test_an_edition_can_give_its_own_cutoff_and_the_others_keep_the_events(self):
+        self.assertIn("Cars to 1996.", self.rows["Show", "2026"])
+        self.assertIn("Cars to 1988.", self.rows["Show", "2025"])
+
+
+class HomeHeadingTests(unittest.TestCase):
+    """Without JavaScript nothing sorts the list, so its heading must not call it upcoming."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = Path(tempfile.mkdtemp())
+        make_fixture(cls.tmp / "data")
+        build.build(cls.tmp / "data", cls.tmp / "site")
+        cls.html = (cls.tmp / "site" / "index.html").read_text(encoding="utf-8")
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.tmp)
+
+    def test_the_list_of_every_edition_is_headed_neutrally_in_the_markup(self):
+        self.assertIn('<h2 id="upcoming-h">Events</h2>', self.html)
+
+    def test_only_the_script_that_sorts_the_list_calls_it_upcoming(self):
+        markup, script = self.html.split("<script>\n  (function () {", 1)
+        self.assertNotIn("Upcoming", markup)
+        self.assertIn('document.getElementById("upcoming-h").textContent = "Upcoming";', script)
 
 
 class LatinOnlyNameTests(unittest.TestCase):
