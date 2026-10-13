@@ -1,0 +1,91 @@
+# A make's home country, for a car whose entry list prints no country of its own.
+# One make per line in alphabetical order, with a code scripts/build.py has a flag for
+# (COUNTRIES there: DE, FR, GB, IT, JP, SE, US). null is a decision too: no one country
+# fits, so such a car shows no flag unless its edition file gives it a `country`.
+# A car's own `country` always wins over this table.
+# 56 of these pairings are the Coppa organisers' own, from their entry lists; the rest are ours.
+Abarth: IT
+Alfa Romeo: IT
+Alpine: FR
+Alvis: GB
+Arnolt: null  # an American firm's car on a British Bristol chassis with an Italian body
+Aston Martin: GB
+Austin: GB
+Austin-Healey: GB
+Bandini: IT
+Bentley: GB
+Birkin: null  # a Seven replica; its maker's country has not been checked
+BMW: DE
+BMW Alpina: DE
+BNC: FR
+Branca: IT
+Bristol: GB
+Buckler: GB
+Bugatti: FR
+Caterham: GB
+Chevrolet: US
+Cisitalia: IT
+Citroën: FR
+Crepaldi Panhard: null  # the organiser's list marks it Italy and France
+Daihatsu: JP
+Daimler: GB
+Datsun: JP
+Dino: IT
+DMC: US
+Ermini: IT
+Ferrari: IT
+Fiat: IT
+Fiat-Abarth: IT
+Ford: null  # Mustangs in America, Anglias in Britain; set `country` on the car
+Gilco-Fiat: IT
+GT Development: null  # a GT40 replica; its maker's country has not been checked
+Healey: GB
+Heinkel: null  # German, but its bubble car was also built in Britain as the Trojan
+Honda: JP
+Imperial: US
+Isuzu: JP
+Jack Knight: GB
+Jaguar: GB
+Jensen: GB
+Lagonda: GB
+Lamborghini: IT
+Lancia: IT
+Lexus: JP
+Lotus: GB
+Marcos: GB
+Maserati: IT
+Mazda: JP
+Mercedes-Benz: DE
+Messerschmitt: DE
+MG: GB
+Mini: GB
+Mitsubishi: JP
+Morgan: GB
+Morris: GB
+Nardi: IT
+Nissan: JP
+Nissan Diesel: JP
+OSCA: IT
+Packard: US
+Panhard: FR
+Pontiac: US
+Porsche: DE
+Prince: JP
+Renault: FR
+Riley: GB
+Rolls-Royce: GB
+Rover: GB
+Sammio: GB
+Siata: IT
+Simca: FR
+Stanguellini: IT
+Subaru: JP
+Suzuki: JP
+Swallow: GB
+Toyota: JP
+Triumph: GB
+TVR: GB
+Unknown: null  # the organiser's list did not name the make
+Volkswagen: DE
+Volvo: SE
+Westfield: GB
