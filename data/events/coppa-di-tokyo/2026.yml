@@ -1,0 +1,32 @@
+slug: coppa-di-tokyo
+year: 2026
+status: confirmed
+start: 2026-11-21
+end: 2026-11-21
+# From the guide for entrants dated 2026-09-01 (download/20a_coppac_di_tokyo_annai.pdf),
+# whose text is outlined, so it has to be rendered to read. It gives the timetable as
+# planned (予定): reception from 8:30, start from 10:00, finish from 12:00.
+source_url: https://www.coppa-di-tokyo.com/
+last_verified: 2026-10-13
+sequence: 0
+# From the 2026 guide. On the edition, not the event: the 2025 entry list has
+# later cars and no source gives that year's limit.
+cutoff_year: 1976
+route_en: >
+  The 20th edition. The organiser gives these times as planned (予定), and has
+  not yet published the route through Tokyo or the entry list.
+route:
+  - date: 2026-11-21
+    checkpoints:
+      - start_time: "08:30"
+        place_en: Shiodome Nishi Park (cars check in)
+        place_ja: 汐留西公園
+        prefecture: Tokyo
+      - start_time: "10:00"
+        place_en: Shiodome Nishi Park (start)
+        place_ja: 汐留西公園
+        prefecture: Tokyo
+      - start_time: "12:00"
+        place_en: Shiodome Nishi Park (finish)
+        place_ja: 汐留西公園
+        prefecture: Tokyo
