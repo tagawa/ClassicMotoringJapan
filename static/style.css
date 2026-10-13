@@ -168,9 +168,9 @@ summary { cursor: pointer; font-weight: 600; }
 /* Four evenly spaced labels, so a bar in August can be placed by eye. The spans must
    sit flush in the markup: whitespace between inline-blocks would wrap the last one. */
 .chart-axis.quarters span { display: inline-block; width: 25%; }
-/* The route and year strips end in an axis that carries the gap. The decade strip has no
-   axis, so it supplies its own, or its last bar sits on the table header below. */
-.chart.decades { margin-bottom: 24px; }
+/* The route and year strips end in an axis that carries the gap. The decade and make strips have no
+   axis, so each supplies its own, or its last bar sits on what follows. */
+.chart.decades, .chart.makes { margin-bottom: 24px; }
 
 /* The home page thumbnails. The coastline and the dot share one projection in build.py. */
 .venue-map-defs { position: absolute; }
