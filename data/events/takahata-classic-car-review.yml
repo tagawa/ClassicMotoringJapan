@@ -11,7 +11,11 @@ summary_en: >
   14th.
 prefecture: Yamagata
 venue_en: Showa Enmusubi-dori, Mahoroba-dori and Chosha-dori shopping streets, Takahata
-# No pin: neither GSI nor OpenStreetMap knows the streets by name.
+# Neither GSI nor OpenStreetMap knows the streets by name. The pin is the event
+# headquarters (本部) on the organiser's 2026 venue map, a Google My Maps embed on
+# event_classiccar2026/event-gaiyo.html; GSI puts the point in 大字高畠.
+lat: 38.0038
+lon: 140.1982
 nearest_station: Takahata (JR Yamagata Shinkansen and Ou line)
 access_notes_en: >
   About 10 minutes by car from the station, and about 10 minutes from Nanyo-Takahata
