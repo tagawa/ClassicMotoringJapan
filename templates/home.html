@@ -25,7 +25,9 @@
 {% endif %}
 
 <section id="upcoming" aria-labelledby="upcoming-h">
-  <h2 id="upcoming-h">Upcoming</h2>
+{# Every edition, oldest first, until the script below moves the past ones out. Only then
+   is "Upcoming" true, so the script sets it and a reader without JavaScript never sees it. #}
+  <h2 id="upcoming-h">Events</h2>
   <p id="no-upcoming" hidden>No upcoming dates are confirmed yet. New dates appear here and in the calendar feed as organisers announce them.</p>
   <ul class="events" id="upcoming-list">
 {% for r in rows %}
@@ -38,7 +40,7 @@
 {% elif r.ed.status == "cancelled" %}
         <span class="badge cancelled">Cancelled</span>
 {% endif %}
-        <p class="meta">{% if r.ev.name_ja %}<span lang="ja">{{ r.ev.name_ja }}</span><br>{% endif %}{{ r.prefecture }}.{% if r.ev.spectator_fee_jpy is none %}<span class="fee-unannounced"> {{ r.ev.spectator_fee_jpy | fee }}.</span>{% else %} {{ r.ev.spectator_fee_jpy | fee }}.{% endif %}</p>
+        <p class="meta">{% if r.ev.name_ja %}<span lang="ja">{{ r.ev.name_ja }}</span><br>{% endif %}{{ r.prefecture }}.{% if r.ev.spectator_fee_jpy is none %}<span class="fee-unannounced"> {{ r.ev.spectator_fee_jpy | fee }}.</span>{% else %} {{ r.ev.spectator_fee_jpy | fee }}.{% endif %}{% if r.has_route %} Driven route.{% endif %}{% if r.cutoff_year %} Cars to {{ r.cutoff_year }}.{% endif %}</p>
       </div>
 {% if r.dot %}
       <svg class="venue-map" viewBox="{{ map_box }}" width="96" height="{{ (96 * map_ratio) | round | int }}" aria-hidden="true" focusable="false"><use xlink:href="#japan" fill="#E0E0E0"/><circle cx="{{ r.dot[0] }}" cy="{{ r.dot[1] }}" r="6" stroke-width="1.5"{% if r.ed.status == "cancelled" %} class="off"{% endif %}/></svg>
@@ -74,6 +76,7 @@
       }
     });
     if (moved) document.getElementById("past").hidden = false;
+    document.getElementById("upcoming-h").textContent = "Upcoming";
     if (!document.querySelector("#upcoming-list > li")) document.getElementById("no-upcoming").hidden = false;
     // The strip looks ahead: this year and the ones after it. The list below keeps the past.
     var thisYear = todayInJapan.slice(0, 4);

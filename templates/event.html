@@ -55,11 +55,9 @@
 {% endif %}
   <dt>Official site</dt>
   <dd><a href="{{ ev.official_url }}">{{ ev.organizer or ev.official_url }}</a> (Japanese)</dd>
+  <dt>Last verified</dt>
+  <dd>{{ verified.isoformat() }}, against the official site</dd>
 </dl>
-{% endblock %}
-
-{% block footer %}
-  <p>Last verified {{ verified.isoformat() }}. Source: <a href="{{ ev.official_url }}">official site</a>.</p>
 {% endblock %}
 
 {% block scripts %}

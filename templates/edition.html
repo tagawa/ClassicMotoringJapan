@@ -35,6 +35,8 @@
   <dt>Cost</dt>
   <dd>{{ ev.spectator_fee_jpy | fee }}</dd>
 {% endif %}
+  <dt>Last verified</dt>
+  <dd>{{ ed.last_verified.isoformat() }}, against the <a href="{{ ed.source_url }}">organiser's announcement</a></dd>
 </dl>
 {% if r.next %}
 <p><a href="{{ root }}{{ r.next.path }}">Next edition: {{ r.next.when }}</a>{% if r.next.ed.status == "tentative" %} (dates not confirmed){% elif r.next.ed.status == "cancelled" %} (cancelled){% endif %}</p>
@@ -100,6 +102,28 @@
     </span>
   </li>
 {% endfor %}
+{% if r.decades.rest %}
+  <li>
+    <span class="chart-when">{{ r.decades.rest }}</span>
+  </li>
+{% endif %}
+</ol>
+{% endif %}
+{% if r.makes %}
+<ol class="chart makes">
+{% for row in r.makes.rows %}
+  <li>
+    <span class="chart-when">{{ row.label }}: {{ row.text }}</span>
+    <span class="chart-track" aria-hidden="true">
+      <i style="left: 0%; width: {{ row.width }}%"></i>
+    </span>
+  </li>
+{% endfor %}
+{% if r.makes.rest %}
+  <li>
+    <span class="chart-when">{{ r.makes.rest }}</span>
+  </li>
+{% endif %}
 </ol>
 {% endif %}
 <div class="table-wrap">
@@ -141,8 +165,4 @@
   })();
 </script>
 {% endif %}
-{% endblock %}
-
-{% block footer %}
-  <p>Last verified {{ ed.last_verified.isoformat() }}. Source: <a href="{{ ed.source_url }}">organiser's announcement</a>.</p>
 {% endblock %}
