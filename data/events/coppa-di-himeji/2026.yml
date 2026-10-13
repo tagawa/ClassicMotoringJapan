@@ -6,7 +6,8 @@ end: 2026-06-07
 # Times and places are the text of the route guide page, last edited 2026-05-26.
 # It names the towns in order (姫路市, 加西市, 淡路市, 西脇市, 宍粟市), which is where
 # Kasai for Kotani and Awaji for the park come from. The entry list is an HTML table
-# (entry-list, last edited 2026-05-31) with a driver column that is not copied.
+# (entry-list, last edited 2026-05-31) with a driver column that is not copied. Each
+# car's country is its "Crafted" column (I, GB, D, F, USA, J), written as ISO codes.
 source_url: https://coppa-di-himeji.com/root-map
 last_verified: 2026-10-13
 sequence: 0
@@ -58,503 +59,629 @@ cars:
     year: 1926
     make: Bugatti
     model: T37
+    country: FR
   - entry_no: "2"
     year: 1929
     make: Bugatti
     model: T35B
+    country: FR
   - entry_no: "3"
     year: 1921
     make: Fiat
     model: 501S Testa Silvani
+    country: IT
   - entry_no: "4"
     year: 1926
     make: Alvis
     model: 12/50 Duck's-Back 2-Seater Special Body
+    country: GB
   - entry_no: "5"
     year: 1936
     make: Bentley
     model: Derby
+    country: GB
   - entry_no: "6"
     year: 1936
     make: Lagonda
     model: LG45
+    country: GB
   - entry_no: "7"
     year: 1932
     make: Morgan
     model: Super Sports Three-Wheeler
+    country: GB
   - entry_no: "8"
     year: 1947
     make: Nardi
     model: Danese 750 Boby Sport
+    country: IT
   - entry_no: "9"
     year: 1953
     make: Bandini
     model: 750 Siluro Bialbero MM
+    country: IT
   - entry_no: "10"
     year: 1951
     make: Branca
     model: 1100 Sport MM
+    country: IT
   - entry_no: "11"
     year: 1960
     make: Porsche
     model: 356B
+    country: DE
   - entry_no: "12"
     year: 1949
     make: Stanguellini
     model: 1100 Sport
+    country: IT
   - entry_no: "13"
     year: 1953
     make: Alfa Romeo
     model: 1900C Sprint Pininfarina
+    country: IT
   - entry_no: "14"
     year: 1958
     make: Abarth
     model: 750 Zagato
+    country: IT
   - entry_no: "15"
     year: 1958
     make: Fiat-Abarth
     model: 750 Record Monza Zagato
+    country: IT
   - entry_no: "16"
     year: 1959
     make: Fiat-Abarth
     model: 750 Record Monza Zagato
+    country: IT
   - entry_no: "17"
     year: 1961
     make: Fiat-Abarth
     model: 850 Coupé Scorpione Allemano
+    country: IT
   - entry_no: "18"
     year: 1967
     make: Fiat-Abarth
     model: 1000TC
+    country: IT
   - entry_no: "19"
     year: 1969
     make: Fiat-Abarth
     model: 1000TCR Gr.5
+    country: IT
   - entry_no: "20"
     year: 1969
     make: Fiat-Abarth
     model: 1000TCR
+    country: IT
   - entry_no: "21"
     year: 1956
     make: Fiat
     model: "600"
+    country: IT
   - entry_no: "22"
     year: 1956
     make: Fiat
     model: 600 Carrozzeria Scioneri
+    country: IT
   - entry_no: "23"
     year: 1972
     make: Fiat
     model: Dino
+    country: IT
   - entry_no: "24"
     year: 1970
     make: Fiat
     model: 850 Racer
+    country: IT
   - entry_no: "25"
     year: 1966
     make: Fiat
     model: 850 Spider
+    country: IT
   - entry_no: "26"
     year: 1960
     make: BMW
     model: Isetta 300
+    country: DE
   - entry_no: "27"
     year: 1951
     make: Volkswagen
     model: Type 1 Split Window
+    country: DE
   - entry_no: "28"
     year: 1928
     make: Austin
     model: Seven Sports
+    country: GB
   - entry_no: "29"
     year: 1948
     make: MG
     model: TC
+    country: GB
   - entry_no: "30"
     year: 1949
     make: MG
     model: TC
+    country: GB
   - entry_no: "31"
     year: 1953
     make: MG
     model: TD
+    country: GB
   - entry_no: "32"
     year: 1959
     make: MG
     model: MGA Twin Cam
+    country: GB
   - entry_no: "33"
     year: 1955
     make: Triumph
     model: TR2
+    country: GB
   - entry_no: "34"
     year: 1957
     make: Triumph
     model: TR3
+    country: GB
   - entry_no: "35"
     year: 1954
     make: Austin-Healey
     model: 100/4 BN1
+    country: GB
   - entry_no: "36"
     year: 1954
     make: Austin-Healey
     model: 100/4 BN1
+    country: GB
   - entry_no: "37"
     year: 1970
     make: Mercedes-Benz
     model: 280SL
+    country: DE
   - entry_no: "38"
     year: 1955
     make: Austin-Healey
     model: "100/4"
+    country: GB
   - entry_no: "39"
     year: 1955
     make: Austin-Healey
     model: "100/4"
+    country: GB
   - entry_no: "40"
     year: 1956
     make: Austin-Healey
     model: 100/4 BN2
+    country: GB
   - entry_no: "41"
     year: 1956
     make: Austin-Healey
     model: 100M
+    country: GB
   - entry_no: "42"
     year: 1957
     make: Austin-Healey
     model: "100/6"
+    country: GB
   - entry_no: "43"
     year: 1958
     make: Austin-Healey
     model: "100/6"
+    country: GB
   - entry_no: "44"
     year: 1959
     make: Austin-Healey
     model: "100/6"
+    country: GB
   - entry_no: "45"
     year: 1960
     make: Austin-Healey
     model: 3000 Mk I
+    country: GB
   - entry_no: "46"
     year: 1959
     make: Austin-Healey
     model: 3000 Mk I
+    country: GB
   - entry_no: "47"
     year: 1959
     make: Austin-Healey
     model: Sprite Mk I
+    country: GB
   - entry_no: "48"
     year: 1961
     make: Austin-Healey
     model: Sprite Mk I
+    country: GB
   - entry_no: "49"
     year: 1951
     make: Jaguar
     model: XK120 OTS
+    country: GB
   - entry_no: "50"
     year: 1960
     make: Jaguar
     model: XK150 FHC
+    country: GB
   - entry_no: "51"
     year: 1958
     make: Jaguar
     model: Mk I
+    country: GB
   - entry_no: "52"
     year: 1964
     make: Jaguar
     model: E-Type Series 1 OTS
+    country: GB
   - entry_no: "53"
     year: 1963
     make: Jaguar
     model: E-Type Series 1 FHC
+    country: GB
   - entry_no: "54"
     year: 1966
     make: Jaguar
     model: E-Type Series 1 FHC
+    country: GB
   - entry_no: "55"
     year: 1970
     make: Maserati
     model: Indy
+    country: IT
   - entry_no: "56"
     year: 1964
     make: Ferrari
     model: 330GT 2+2
+    country: IT
   - entry_no: "57"
     year: 1969
     make: Dino
     model: 206GT
+    country: IT
   - entry_no: "58"
     year: 1961
     make: Alfa Romeo
     model: Giulietta Galbiati Coupé
+    country: IT
   - entry_no: "59"
     year: 1957
     make: Alfa Romeo
     model: Giulietta Spider 750D
+    country: IT
   - entry_no: "60"
     year: 1959
     make: Alfa Romeo
     model: Giulietta Spider
+    country: IT
   - entry_no: "61"
     year: 1959
     make: Alfa Romeo
     model: Giulietta Spider 750D
+    country: IT
   - entry_no: "62"
     year: 1962
     make: Alfa Romeo
     model: Giulietta Spider
+    country: IT
   - entry_no: "63"
     year: 1963
     make: Alfa Romeo
     model: Giulia Spider
+    country: IT
   - entry_no: "64"
     year: 1964
     make: Alfa Romeo
     model: Giulia Spider Veloce
+    country: IT
   - entry_no: "65"
     year: 1966
     make: Alfa Romeo
     model: Spider Duetto
+    country: IT
   - entry_no: "66"
     year: 1969
     make: Alfa Romeo
     model: Spider Duetto
+    country: IT
   - entry_no: "67"
     year: 1967
     make: Alfa Romeo
     model: Giulia 1600GT Veloce
+    country: IT
   - entry_no: "68"
     year: 1984
     make: Porsche
     model: 930 Carrera
+    country: DE
   - entry_no: "69"
     year: 1969
     make: Alfa Romeo
     model: GT1300 Junior
+    country: IT
   - entry_no: "70"
     year: 1974
     make: Alfa Romeo
     model: 2000GT Veloce
+    country: IT
   - entry_no: "71"
     year: 1968
     make: Lancia
     model: Flaminia GTL Touring
+    country: IT
   - entry_no: "72"
     year: 1957
     make: Imperial
     model: Southampton
+    country: US
   - entry_no: "73"
     year: 1965
     make: Citroën
     model: Ami 6
+    country: FR
   - entry_no: "74"
     year: 1960
     make: Citroën
     model: ID19
+    country: FR
   - entry_no: "75"
     year: 1967
     make: Citroën
     model: DS19
+    country: FR
   - entry_no: "76"
     year: 1973
     make: Citroën
     model: DS23 ie
+    country: FR
   - entry_no: "77"
     year: 1967
     make: Alpine
     model: A110
+    country: FR
   - entry_no: "78"
     year: 1964
     make: Porsche
     model: 904GTS
+    country: DE
   - entry_no: "79"
     year: 1959
     make: Porsche
     model: 356A Cabriolet
+    country: DE
   - entry_no: "80"
     year: 1959
     make: Porsche
     model: 356A Convertible D
+    country: DE
   - entry_no: "81"
     year: 1959
     make: Porsche
     model: 356A Convertible D
+    country: DE
   - entry_no: "82"
     year: 1956
     make: Porsche
     model: 356A
+    country: DE
   - entry_no: "83"
     year: 1958
     make: Porsche
     model: 356A
+    country: DE
   - entry_no: "84"
     year: 1963
     make: Porsche
     model: 356B Super 90
+    country: DE
   - entry_no: "85"
     year: 1962
     make: Porsche
     model: 356B Super 90
+    country: DE
   - entry_no: "86"
     year: 1962
     make: Porsche
     model: 356B Karmann Hardtop
+    country: DE
   - entry_no: "87"
     year: 1961
     make: Porsche
     model: 356B Karmann Hardtop Coupé
+    country: DE
   - entry_no: "88"
     year: 1963
     make: Porsche
     model: 356B Cabriolet Super 90
+    country: DE
   - entry_no: "89"
     year: 1963
     make: Porsche
     model: 356B Super
+    country: DE
   - entry_no: "90"
     year: 1974
     make: Isuzu
     model: 117 Coupé
+    country: JP
   - entry_no: "91"
     year: 1964
     make: Porsche
     model: 356C Cabriolet
+    country: DE
   - entry_no: "92"
     year: 1965
     make: Porsche
     model: 356SC
+    country: DE
   - entry_no: "93"
     year: 1971
     make: Fiat
     model: 124 Sport Spider
+    country: IT
   - entry_no: "94"
     year: 1962
     make: Lotus
     model: Elite Series 2 SE
+    country: GB
   - entry_no: "95"
     year: 1965
     make: Lotus
     model: Elan Series 3 FHC
+    country: GB
   - entry_no: "96"
     year: 1965
     make: Lotus
     model: Elan Series 2
+    country: GB
   - entry_no: "97"
     year: 1974
     make: Porsche
     model: "914/6"
+    country: DE
   - entry_no: "98"
     year: 1966
     make: Lotus
     model: Elan Series 2
+    country: GB
   - entry_no: "99"
     year: 1967
     make: Lotus
     model: Elan Series 3 DHC
+    country: GB
   - entry_no: "100"
     year: 1971
     make: Lotus
     model: Elan Series 4 Sprint
+    country: GB
   - entry_no: "101"
     year: 1972
     make: Simca
     model: Rallye 2
+    country: FR
   - entry_no: "102"
     year: 1977
     make: Simca
     model: Rallye 3
+    country: FR
   - entry_no: "103"
     year: 1964
     make: Morris
     model: Minor 1000
+    country: GB
   - entry_no: "104"
     year: 1972
     make: Alfa Romeo
     model: 2000GTV
+    country: IT
   - entry_no: "105"
     year: 1971
     make: MG
     model: Midget Mk IV
+    country: GB
   - entry_no: "106"
     year: 1973
     make: Jensen
     model: Jensen-Healey
+    country: GB
   - entry_no: "107"
     year: 1979
     make: Lotus
     model: Esprit Series 2 JPS
+    country: GB
   - entry_no: "108"
     year: 1965
     make: Porsche
     model: 911T
+    country: DE
   - entry_no: "109"
     year: 1970
     make: Porsche
     model: 911T
+    country: DE
   - entry_no: "110"
     year: 1971
     make: Porsche
     model: 911 Targa
+    country: DE
   - entry_no: "111"
     year: 1973
     make: Porsche
     model: "911"
+    country: DE
   - entry_no: "112"
     year: 1978
     make: Porsche
     model: 911 Turbo
+    country: DE
   - entry_no: "113"
     year: 1979
     make: Porsche
     model: 911SC
+    country: DE
   - entry_no: "114"
     year: 1967
     make: Volkswagen
     model: Karmann Ghia
+    country: DE
   - entry_no: "115"
     year: 1966
     make: Mercedes-Benz
     model: 300SE Coupé
+    country: DE
   - entry_no: "116"
     year: 1969
     make: Mercedes-Benz
     model: 280SE Coupé
+    country: DE
   - entry_no: "117"
     year: 1969
     make: Mercedes-Benz
     model: 280SE Coupé
+    country: DE
   - entry_no: "118"
     year: 1969
     make: Mercedes-Benz
     model: 280SL
+    country: DE
   - entry_no: "119"
     year: 1970
     make: Mercedes-Benz
     model: 250CE
+    country: DE
   - entry_no: "120"
     year: 1970
     make: Alfa Romeo
     model: 1750GTV
+    country: IT
   - entry_no: "121"
     year: 1972
     make: Fiat
     model: 124 Sport Coupé
+    country: IT
   - entry_no: "122"
     year: 1973
     make: Fiat
     model: 124 Sport Spider
+    country: IT
   - entry_no: "123"
     year: 1973
     make: Fiat
     model: 124 Rally
+    country: IT
   - entry_no: "124"
     year: 1973
     make: Porsche
     model: "914"
+    country: DE
   - entry_no: "125"
     year: 1974
     make: BMW
     model: 3.0CS Alpina
+    country: DE
   - entry_no: "126"
     year: 1974
     make: BMW
     model: 2002 Turbo
+    country: DE
