@@ -497,7 +497,8 @@ class BuildOutputTests(unittest.TestCase):
     def test_entry_list_labels_and_keeps_leading_zeros(self):
         html = self.pages["events/autumn-rally/2026/index.html"]
         self.assertIn("<h2>Entry list</h2>", html)
-        self.assertIn("Entry list as of 2026-09-15.", html)
+        self.assertNotIn("Entry list as of", html, "the heading already says what the list is")
+        self.assertIn("<p>As of 2026-09-15.", html)
         self.assertIn("Provisional: cars may withdraw or change.", html)
         self.assertIn(">037<", html)
         self.assertEqual(re.findall(r'<th scope="col">(.*?)</th>', html)[-4:],
@@ -562,7 +563,8 @@ class BuildOutputTests(unittest.TestCase):
 
     def test_events_json_repeats_the_entry_list_the_page_tabulates(self):
         self.assertEqual(self.api_event("autumn-rally-2026")["cars"][1],
-                         {"entry_no": "037", "year": 1934, "make": "Alfa Romeo", "model": "6C 1750 GS"})
+                         # The country is the make's: the page shows its flag, so the JSON says it too.
+                         {"entry_no": "037", "year": 1934, "make": "Alfa Romeo", "model": "6C 1750 GS", "country": "IT"})
         self.assertNotIn("cars", self.api_event("culture-day-show-2026"))
 
     def test_events_json_carries_a_prose_route_where_that_is_all_the_source_gave(self):
@@ -1078,7 +1080,7 @@ class EntryListProvisionalTests(unittest.TestCase):
 
     def test_list_is_provisional_while_the_event_is_still_ahead_of_our_last_check(self):
         html = self.edition_page("2026-09-20")
-        self.assertIn("Entry list as of 2026-09-15.", html)
+        self.assertIn("<p>As of 2026-09-15.", html)
         self.assertIn("cars may withdraw or change", html)
 
     def test_list_is_still_provisional_when_we_only_checked_on_the_closing_day(self):
@@ -1087,7 +1089,7 @@ class EntryListProvisionalTests(unittest.TestCase):
 
     def test_list_is_settled_once_we_have_checked_after_the_event_ended(self):
         html = self.edition_page("2026-10-19")
-        self.assertIn("Entry list as of 2026-09-15.", html)
+        self.assertIn("<p>As of 2026-09-15.", html)
         self.assertNotIn("cars may withdraw or change", html)
 
 
@@ -1770,6 +1772,12 @@ class ValidationTests(unittest.TestCase):
         self.assert_rejected(instance_yaml("meet", 2026, "2026-10-18", "2026-10-18", extra=extra),
                              "entry_no on every car or on none")
 
+    def test_a_car_country_must_be_one_the_site_can_draw(self):
+        extra = ('list_as_of: 2026-09-15\ncars:\n  - entry_no: "12"\n    year: 1929\n    make: Bentley\n'
+                 '    model: Blower\n    country: England\n')
+        self.assert_rejected(instance_yaml("meet", 2026, "2026-10-18", "2026-10-18", extra=extra),
+                             "country: must be one of")
+
     def test_a_cutoff_year_must_be_a_whole_number(self):
         self.assert_rejected(instance_yaml("meet", 2026, "2026-10-18", "2026-10-18", extra="cutoff_year: about 2000\n"),
                              "cutoff_year: must be a whole number")
@@ -1921,6 +1929,89 @@ class EntryListHeadingTests(unittest.TestCase):
         html = self.page(display_cars_yaml([("Toyota", "2000GT"), ("Honda", "S500")]))
         self.assertEqual(self.subheadings(html), [])
         self.assertIn("<table>", html)
+
+
+class EntryListFlagTests(unittest.TestCase):
+    """A car's country, where the organiser's list gives one, as a small flag beside its make."""
+
+    FLAGGED = ('list_as_of: 2026-09-15\ncars:\n'
+               '  - entry_no: "01"\n    year: 1955\n    make: Alfa Romeo\n    model: Car\n    country: IT\n'
+               '  - entry_no: "02"\n    year: 1956\n    make: MG\n    model: Car\n    country: GB\n'
+               '  - entry_no: "03"\n    year: 1957\n    make: Lancia\n    model: Car\n    country: IT\n'
+               '  - entry_no: "04"\n    year: 1958\n    make: Test\n    model: Car\n')
+
+    def site(self, cars: str) -> dict:
+        tmp = Path(tempfile.mkdtemp())
+        try:
+            data = tmp / "data"
+            write_event(data, "meet")
+            write_instance(data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-18", extra=cars))
+            build.build(data, tmp / "site")
+            return {"page": (tmp / "site" / "events" / "meet" / "2026" / "index.html").read_text(encoding="utf-8"),
+                    "json": (tmp / "site" / "api" / "events.json").read_text(encoding="utf-8")}
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_the_flag_sits_before_the_make_and_names_its_country_for_those_who_cannot_see_it(self):
+        html = self.site(self.FLAGGED)["page"]
+        self.assertRegex(html, r'<td class="flagged"><svg class="flag"[^>]* role="img" aria-label="Italy"[^>]*><title>Italy</title>'
+                               r'<use xlink:href="#flag-it"/></svg>Alfa Romeo</td>')
+        self.assertRegex(html, r'aria-label="Britain"[^>]*><title>Britain</title><use xlink:href="#flag-gb"/></svg>MG</td>')
+
+    def test_each_flag_on_the_page_is_drawn_once_and_no_others_are_shipped(self):
+        html = self.site(self.FLAGGED)["page"]
+        self.assertEqual(html.count('id="flag-it"'), 1)
+        self.assertEqual(html.count('id="flag-gb"'), 1)
+        self.assertNotIn('id="flag-de"', html)
+        self.assertLess(html.index('id="flag-it"'), html.index('xlink:href="#flag-it"'),
+                        "the drawings should be defined before the rows that use them")
+
+    def test_a_car_without_a_country_keeps_the_indent_so_the_makes_still_line_up(self):
+        # The cell is indented by the flag's width either way, so a make that wraps hangs clear of it.
+        self.assertIn('<td class="unflagged">Test</td>', self.site(self.FLAGGED)["page"])
+
+    def test_a_list_with_no_countries_has_no_flags_and_no_slots(self):
+        html = self.site(cars_yaml([1955, 1956]))["page"]
+        self.assertNotIn("flag", html)
+        self.assertIn("<td>Test</td>", html)
+
+    def test_the_json_carries_the_country_code(self):
+        self.assertIn('"country": "IT"', self.site(self.FLAGGED)["json"])
+
+    def numbered(self, *cars: str) -> str:
+        return "list_as_of: 2026-09-15\ncars:\n" + "".join(
+            f'  - entry_no: "{i:02d}"\n    year: 1960\n    model: Car\n{car}' for i, car in enumerate(cars, 1))
+
+    def test_a_list_that_prints_no_country_takes_each_flag_from_the_make(self):
+        site = self.site(self.numbered("    make: Lancia\n", "    make: Honda\n"))
+        self.assertRegex(site["page"], r'aria-label="Italy"[^>]*><title>Italy</title><use xlink:href="#flag-it"/></svg>Lancia</td>')
+        self.assertRegex(site["page"], r'aria-label="Japan"[^>]*><title>Japan</title><use xlink:href="#flag-jp"/></svg>Honda</td>')
+        self.assertIn('"country": "IT"', site["json"], "the JSON should say what the page shows")
+
+    def test_a_cars_own_country_beats_its_makes(self):
+        # A BMW Isetta built at Brighton: the organiser's list says Britain, the make says Germany.
+        page = self.site(self.numbered("    make: BMW\n    country: GB\n"))["page"]
+        self.assertRegex(page, r'aria-label="Britain"[^>]*><title>Britain</title><use xlink:href="#flag-gb"/></svg>BMW</td>')
+        self.assertNotIn('id="flag-de"', page)
+
+    def test_a_make_with_no_single_country_has_no_flag_until_a_car_is_given_one(self):
+        # Ford built Mustangs in America and Anglias in Britain, so the make alone settles nothing.
+        page = self.site(self.numbered("    make: Ford\n", "    make: Ford\n    country: US\n", "    make: Lancia\n"))["page"]
+        self.assertIn('<td class="unflagged">Ford</td>', page)
+        self.assertRegex(page, r'<use xlink:href="#flag-us"/></svg>Ford</td>')
+
+    def test_every_make_points_at_a_country_the_site_can_draw_or_at_none(self):
+        for make, code in build.MAKE_COUNTRIES.items():
+            self.assertTrue(code is None or code in build.COUNTRIES, f"{make}: {code}")
+
+    def test_every_country_has_a_name_and_a_drawing_with_ids_of_its_own(self):
+        ids = []
+        for code, (name, art) in build.COUNTRIES.items():
+            self.assertRegex(code, r"^[A-Z]{2}$")
+            self.assertTrue(name and art.startswith("<"), code)
+            ids += re.findall(r'id="([^"]+)"', art)
+        self.assertEqual(len(ids), len(set(ids)), "an id repeated across drawings would clash on a page with both")
+        self.assertTrue(all(i.startswith("flag-") for i in ids), ids)
 
 
 class MakeStripTests(unittest.TestCase):
@@ -2249,14 +2340,15 @@ class DisplayListTests(unittest.TestCase):
         self.assertEqual(self.headers(), ["Make", "Model"])
 
     def test_the_rows_still_render(self):
-        self.assertIn("<td>Toyota</td><td>2000GT</td>", self.html)
+        self.assertRegex(self.html, r"<td[^>]*>(<svg.*?</svg>)?Toyota</td><td>2000GT</td>")
 
     def test_it_is_not_called_an_entry_list(self):
         self.assertIn("<h2>Cars on display</h2>", self.html)
         self.assertNotIn("Entry list", self.html)
 
-    def test_the_as_of_line_names_what_the_list_is(self):
-        self.assertIn("Cars on display as of 2026-09-15.", self.html)
+    def test_the_as_of_line_does_not_repeat_the_heading_above_it(self):
+        self.assertIn("<p>As of 2026-09-15.", self.html)
+        self.assertNotIn("Cars on display as of", self.html)
 
     def test_a_list_that_can_still_change_says_so_without_calling_them_entrants(self):
         self.assertIn("Provisional: the line-up may change.", self.html)
