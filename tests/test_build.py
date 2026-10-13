@@ -563,8 +563,7 @@ class BuildOutputTests(unittest.TestCase):
 
     def test_events_json_repeats_the_entry_list_the_page_tabulates(self):
         self.assertEqual(self.api_event("autumn-rally-2026")["cars"][1],
-                         # The country is the make's: the page shows its flag, so the JSON says it too.
-                         {"entry_no": "037", "year": 1934, "make": "Alfa Romeo", "model": "6C 1750 GS", "country": "IT"})
+                         {"entry_no": "037", "year": 1934, "make": "Alfa Romeo", "model": "6C 1750 GS"})
         self.assertNotIn("cars", self.api_event("culture-day-show-2026"))
 
     def test_events_json_carries_a_prose_route_where_that_is_all_the_source_gave(self):
@@ -1940,11 +1939,14 @@ class EntryListFlagTests(unittest.TestCase):
                '  - entry_no: "03"\n    year: 1957\n    make: Lancia\n    model: Car\n    country: IT\n'
                '  - entry_no: "04"\n    year: 1958\n    make: Test\n    model: Car\n')
 
-    def site(self, cars: str) -> dict:
+    def site(self, cars: str, makes: str = "") -> dict:
+        """makes, when given, is the text of data/makes.yml: each make's home country."""
         tmp = Path(tempfile.mkdtemp())
         try:
             data = tmp / "data"
             write_event(data, "meet")
+            if makes:
+                (data / "makes.yml").write_text(makes, encoding="utf-8")
             write_instance(data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-18", extra=cars))
             build.build(data, tmp / "site")
             return {"page": (tmp / "site" / "events" / "meet" / "2026" / "index.html").read_text(encoding="utf-8"),
@@ -1983,26 +1985,49 @@ class EntryListFlagTests(unittest.TestCase):
             f'  - entry_no: "{i:02d}"\n    year: 1960\n    model: Car\n{car}' for i, car in enumerate(cars, 1))
 
     def test_a_list_that_prints_no_country_takes_each_flag_from_the_make(self):
-        site = self.site(self.numbered("    make: Lancia\n", "    make: Honda\n"))
+        site = self.site(self.numbered("    make: Lancia\n", "    make: Honda\n"), makes="Honda: JP\nLancia: IT\n")
         self.assertRegex(site["page"], r'aria-label="Italy"[^>]*><title>Italy</title><use xlink:href="#flag-it"/></svg>Lancia</td>')
         self.assertRegex(site["page"], r'aria-label="Japan"[^>]*><title>Japan</title><use xlink:href="#flag-jp"/></svg>Honda</td>')
         self.assertIn('"country": "IT"', site["json"], "the JSON should say what the page shows")
 
     def test_a_cars_own_country_beats_its_makes(self):
         # A BMW Isetta built at Brighton: the organiser's list says Britain, the make says Germany.
-        page = self.site(self.numbered("    make: BMW\n    country: GB\n"))["page"]
+        page = self.site(self.numbered("    make: BMW\n    country: GB\n"), makes="BMW: DE\n")["page"]
         self.assertRegex(page, r'aria-label="Britain"[^>]*><title>Britain</title><use xlink:href="#flag-gb"/></svg>BMW</td>')
         self.assertNotIn('id="flag-de"', page)
 
     def test_a_make_with_no_single_country_has_no_flag_until_a_car_is_given_one(self):
         # Ford built Mustangs in America and Anglias in Britain, so the make alone settles nothing.
-        page = self.site(self.numbered("    make: Ford\n", "    make: Ford\n    country: US\n", "    make: Lancia\n"))["page"]
+        page = self.site(self.numbered("    make: Ford\n", "    make: Ford\n    country: US\n", "    make: Lancia\n"),
+                         makes="Ford: null  # Mustangs in America, Anglias in Britain\nLancia: IT\n")["page"]
         self.assertIn('<td class="unflagged">Ford</td>', page)
         self.assertRegex(page, r'<use xlink:href="#flag-us"/></svg>Ford</td>')
 
-    def test_every_make_points_at_a_country_the_site_can_draw_or_at_none(self):
-        for make, code in build.MAKE_COUNTRIES.items():
-            self.assertTrue(code is None or code in build.COUNTRIES, f"{make}: {code}")
+    def test_a_make_the_table_does_not_know_has_no_flag(self):
+        page = self.site(self.numbered("    make: Lancia\n", "    make: Honda\n"), makes="Honda: JP\n")["page"]
+        self.assertIn('<td class="unflagged">Lancia</td>', page)
+
+    def test_a_site_with_no_make_table_still_builds(self):
+        self.assertNotIn("flag", self.site(self.numbered("    make: Lancia\n"))["page"])
+
+    def assert_makes_rejected(self, makes: str, expected: str):
+        with self.assertRaises(build.ValidationError) as caught:
+            self.site(self.numbered("    make: Lancia\n"), makes=makes)
+        self.assertIn(expected, str(caught.exception))
+
+    def test_a_make_with_a_country_the_site_cannot_draw_is_rejected(self):
+        self.assert_makes_rejected("Lancia: Italy\n", "makes.yml: Lancia: must be one of")
+
+    def test_a_make_listed_twice_is_rejected_rather_than_the_last_one_winning(self):
+        self.assert_makes_rejected("Lancia: IT\nHonda: JP\nLancia: FR\n", "makes.yml: Lancia is listed twice")
+
+    def test_a_table_that_is_not_make_then_country_is_rejected(self):
+        self.assert_makes_rejected("- Lancia\n- Honda\n", "makes.yml: must be a list of makes, each with a country")
+
+    def test_the_real_table_is_valid_and_carries_both_kinds_of_decision(self):
+        makes = build.load_makes(ROOT / "data")
+        self.assertEqual(makes["Alfa Romeo"], "IT")
+        self.assertIsNone(makes["Ford"], "Ford is in the table as a make with no single country")
 
     def test_every_country_has_a_name_and_a_drawing_with_ids_of_its_own(self):
         ids = []
@@ -2340,7 +2365,7 @@ class DisplayListTests(unittest.TestCase):
         self.assertEqual(self.headers(), ["Make", "Model"])
 
     def test_the_rows_still_render(self):
-        self.assertRegex(self.html, r"<td[^>]*>(<svg.*?</svg>)?Toyota</td><td>2000GT</td>")
+        self.assertIn("<td>Toyota</td><td>2000GT</td>", self.html)
 
     def test_it_is_not_called_an_entry_list(self):
         self.assertIn("<h2>Cars on display</h2>", self.html)
