@@ -970,7 +970,7 @@ SPACING = {"4px", "8px", "16px", "24px", "32px", "48px"}
 VIDEO_RATIO = "56.25%"
 RADII = {"8px"}
 # An 8px radius turns the outline round a short link into a pill.
-FOCUS_RADII = {"4px"}
+SMALL_RADII = {"4px"}
 KEYWORDS = {"0", "auto", "inherit", "transparent", "currentcolor"}
 COLOUR_PROPS = re.compile(r"^(color|background(-color)?|border(-(top|right|bottom|left))?-color|outline-color|fill)$")
 SPACING_PROPS = re.compile(r"^(margin|padding)(-(top|right|bottom|left))?$|^gap$")
@@ -997,7 +997,9 @@ def token_violations(css: str) -> list[str]:
                 allowed = SPACING | {VIDEO_RATIO} if selector.strip() == ".video-frame" else SPACING
                 bad = [w for w in words if w not in allowed | KEYWORDS]
             elif prop == "border-radius":
-                allowed = RADII | FOCUS_RADII if ":focus" in selector else RADII
+                # 8px would turn a focus ring round a short link, or a 16px-high flag, into a pill.
+                small = ":focus" in selector or selector.strip() == ".flag"
+                allowed = RADII | SMALL_RADII if small else RADII
                 bad = [w for w in words if w not in allowed | KEYWORDS]
             else:
                 continue
@@ -1050,6 +1052,7 @@ class StylesheetTokenTests(unittest.TestCase):
         # A zero from a check that cannot fire proves nothing, so show it firing.
         css = ("a { margin: 13px 8px; color: #123456; font-size: 15px; border-radius: 4px; }\n"
                "a:focus-visible { border-radius: 4px; }\n"
+               ".flag { border-radius: 4px; }\n"
                "b { padding: 0 auto; color: currentColor; background: #fff4d6; }")
         self.assertEqual(token_violations(css), [
             "colour #123456",
