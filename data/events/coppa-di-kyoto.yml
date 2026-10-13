@@ -1,0 +1,23 @@
+slug: coppa-di-kyoto
+name_en: Coppa di Kyoto
+name_ja: コッパ ディ 京都
+organizer: コッパディ京都実行委員会 (Coppa di Kyoto organising committee), with Kyoto Prefecture as co-organiser
+official_url: https://www.coppa-di-kyoto.com/
+summary_en: >
+  A two-day rally through Kyoto Prefecture, first run in 2008 and co-organised
+  with the prefecture since 2016. It now runs every other year, alternating with
+  Coppa di Himeji. The 11th, in 2025, left the Kyoto Prefectural Office, stopped
+  overnight at Miyazu and finished on the Arashiyama-Takao Parkway. The 12th is
+  planned for 2027; no date is announced.
+prefecture: Kyoto
+venue_en: Kyoto Prefectural Office (start)
+# GSI puts the district the guide names (藪之内町) at this point and OpenStreetMap has
+# the office's old main building there. No street_address: the guide gives a Kyoto
+# street-crossing address, and no source here gives the streets' readings.
+lat: 35.0211
+lon: 135.7553
+nearest_station: Marutamachi (Karasuma subway line), about 650 metres away in a straight line
+typical_scale: 70 cars
+# No source states an admission.
+spectator_fee_jpy: null
+last_verified: 2026-10-13

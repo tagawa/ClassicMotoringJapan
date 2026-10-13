@@ -1,0 +1,328 @@
+slug: coppa-di-kyoto
+year: 2025
+status: confirmed
+start: 2025-05-31
+end: 2025-06-01
+# Times, places and the 1975 limit are from the guide for entrants dated 2025-01-20
+# (download/25coppadikyoto_guide.pdf), whose text layer is garbled, so render it.
+# It gives no place for the second day's 8:30 start; the hotel is where it says the
+# cars finished and stayed the night before.
+# The entry list is an image (imgentrylist/entrylist2025_02.jpg, posted 2025-05-30)
+# with no crew names; its car names match the day-one result sheet by number.
+# - Entry 55, a Siata, is listed as "1937・1947", so it has no single year here.
+# - On the day, the result sheet has other cars at 27 and 70 and none at 34 or 58;
+#   this is the list as published beforehand.
+source_url: https://www.coppa-di-kyoto.com/
+last_verified: 2026-10-13
+sequence: 0
+cutoff_year: 1975
+route_en: >
+  The 11th edition, run with Kyoto Prefecture on its "Mori no Kyoto" (forest)
+  and "Umi no Kyoto" (sea) themes. The organiser published start and finish
+  times only, with no checkpoints between them.
+route:
+  - date: 2025-05-31
+    checkpoints:
+      - start_time: "08:00"
+        place_en: Kyoto Prefectural Office (cars check in)
+        place_ja: 京都府庁
+        prefecture: Kyoto
+      - start_time: "09:30"
+        place_en: Kyoto Prefectural Office (start)
+        place_ja: 京都府庁
+        prefecture: Kyoto
+      - start_time: "17:30"
+        place_en: Mercure Kyoto Miyazu Resort & Spa, Miyazu (finish)
+        place_ja: メルキュール京都宮津リゾート&スパ
+        prefecture: Kyoto
+  - date: 2025-06-01
+    checkpoints:
+      - start_time: "08:30"
+        place_en: Mercure Kyoto Miyazu Resort & Spa, Miyazu (start)
+        place_ja: メルキュール京都宮津リゾート&スパ
+        prefecture: Kyoto
+      - start_time: "11:00"
+        place_en: Arashiyama-Takao Parkway, car park inside the Takao gate (finish)
+        place_ja: 嵐山-高雄パークウェイ 高雄口ゲート内大駐車場
+        prefecture: Kyoto
+list_as_of: 2025-05-30
+cars:
+  - entry_no: "1"
+    year: 1925
+    make: Bugatti
+    model: T13 Brescia
+  - entry_no: "2"
+    year: 1934
+    make: Riley
+    model: 12/4 Special
+  - entry_no: "3"
+    year: 1925
+    make: Packard
+    model: 8 Moss Special
+  - entry_no: "4"
+    year: 1975
+    make: Mini
+    model: Moke
+  - entry_no: "5"
+    year: 1975
+    make: Citroën
+    model: 2CV
+  - entry_no: "6"
+    year: 1968
+    make: Toyota
+    model: Publica Convertible
+  - entry_no: "7"
+    year: 1948
+    make: MG
+    model: TC
+  - entry_no: "8"
+    year: 1954
+    make: MG
+    model: TF
+  - entry_no: "9"
+    year: 1964
+    make: MG
+    model: Midget
+  - entry_no: "10"
+    year: 1975
+    make: Triumph
+    model: Spitfire 1500
+  - entry_no: "11"
+    year: 1955
+    make: Triumph
+    model: TR2
+  - entry_no: "12"
+    year: 1961
+    make: Triumph
+    model: TR3B
+  - entry_no: "13"
+    year: 1960
+    make: Lotus
+    model: 7 Series 1
+  - entry_no: "14"
+    year: 1962
+    make: Lotus
+    model: Elite
+  - entry_no: "15"
+    year: 1965
+    make: Lotus
+    model: Elan Series 2
+  - entry_no: "16"
+    year: 1966
+    make: Lotus
+    model: Elan Series 2
+  - entry_no: "17"
+    year: 1965
+    make: Lotus
+    model: Elan Series 3 FHC
+  - entry_no: "18"
+    year: 1971
+    make: Lotus
+    model: Elan Series 4 Sprint
+  - entry_no: "19"
+    year: 1964
+    make: Lotus
+    model: Elan
+  - entry_no: "20"
+    year: 1970
+    make: Lotus
+    model: Europa
+  - entry_no: "21"
+    year: 1972
+    make: Toyota
+    model: Corolla Levin
+  - entry_no: "22"
+    year: 1954
+    make: Austin-Healey
+    model: 100/4 BN1
+  - entry_no: "23"
+    year: 1954
+    make: Austin-Healey
+    model: 100/4 BN1
+  - entry_no: "24"
+    year: 1956
+    make: Austin-Healey
+    model: 100M
+  - entry_no: "25"
+    year: 1957
+    make: Austin-Healey
+    model: "100/6"
+  - entry_no: "26"
+    year: 1958
+    make: Austin-Healey
+    model: "100/6"
+  - entry_no: "27"
+    year: 1985
+    make: Maserati
+    model: Zagato
+  - entry_no: "28"
+    year: 1959
+    make: Austin-Healey
+    model: 3000 Mk I
+  - entry_no: "29"
+    year: 1960
+    make: Austin-Healey
+    model: "3000"
+  - entry_no: "30"
+    year: 1951
+    make: Jaguar
+    model: XK120 OTS
+  - entry_no: "31"
+    year: 1963
+    make: Jaguar
+    model: E-Type Series 1 FHC
+  - entry_no: "32"
+    year: 1966
+    make: Jaguar
+    model: E-Type Series 1
+  - entry_no: "33"
+    year: 1973
+    make: Jaguar
+    model: E-Type Series 3
+  - entry_no: "34"
+    year: 1962
+    make: Morris
+    model: Oxford Traveller Series 6
+  - entry_no: "35"
+    year: 1969
+    make: Nissan
+    model: Skyline 2000GT-R
+  - entry_no: "36"
+    year: 1963
+    make: Chevrolet
+    model: Corvette C2
+  - entry_no: "37"
+    year: 1969
+    make: Chevrolet
+    model: Corvette C3
+  - entry_no: "38"
+    year: 1969
+    make: Mercedes-Benz
+    model: 280SE
+  - entry_no: "39"
+    year: 1971
+    make: Mercedes-Benz
+    model: 280SL
+  - entry_no: "40"
+    year: 1955
+    make: Porsche
+    model: 356 Speedster
+  - entry_no: "41"
+    year: 1956
+    make: Porsche
+    model: 356 Speedster
+  - entry_no: "42"
+    year: 1956
+    make: Porsche
+    model: 356A
+  - entry_no: "43"
+    year: 1957
+    make: Porsche
+    model: 356A
+  - entry_no: "44"
+    year: 1964
+    make: Porsche
+    model: 356SC
+  - entry_no: "45"
+    year: 1973
+    make: Porsche
+    model: 911S
+  - entry_no: "46"
+    year: 1973
+    make: Alpine
+    model: A110
+  - entry_no: "47"
+    year: 1977
+    make: Alpine
+    model: A110
+  - entry_no: "48"
+    year: 1964
+    make: Citroën
+    model: DS19
+  - entry_no: "49"
+    year: 1968
+    make: Citroën
+    model: DS21 Pallas
+  - entry_no: "50"
+    year: 1954
+    make: Lancia
+    model: Aurelia B20S GT
+  - entry_no: "51"
+    year: 1964
+    make: Lancia
+    model: Flaminia Convertible
+  - entry_no: "52"
+    year: 1961
+    make: Maserati
+    model: 3500 GT
+  - entry_no: "53"
+    year: 1953
+    make: Alfa Romeo
+    model: 1900C Pininfarina Coupé
+  - entry_no: "54"
+    year: 1947
+    make: Nardi
+    model: 750S
+  - entry_no: "55"
+    make: Siata
+    model: Topolino Sport (listed as 1937 and 1947)
+  - entry_no: "56"
+    year: 1949
+    make: Siata
+    model: Amica
+  - entry_no: "57"
+    year: 1959
+    make: Fiat-Abarth
+    model: 750 Record Monza Zagato
+  - entry_no: "58"
+    year: 1961
+    make: Fiat-Abarth
+    model: 850 Coupé Scorpione Allemano
+  - entry_no: "59"
+    year: 1963
+    make: Fiat-Abarth
+    model: 850TC
+  - entry_no: "60"
+    year: 1970
+    make: Fiat
+    model: 850 Racer
+  - entry_no: "61"
+    year: 1972
+    make: Fiat
+    model: Dino Coupé 2400
+  - entry_no: "62"
+    year: 1959
+    make: Alfa Romeo
+    model: Giulietta Spider
+  - entry_no: "63"
+    year: 1960
+    make: Alfa Romeo
+    model: Giulietta Spider
+  - entry_no: "64"
+    year: 1962
+    make: Alfa Romeo
+    model: Giulietta Spider
+  - entry_no: "65"
+    year: 1963
+    make: Alfa Romeo
+    model: Giulia Spider
+  - entry_no: "66"
+    year: 1961
+    make: Alfa Romeo
+    model: Giulietta
+  - entry_no: "67"
+    year: 1967
+    make: Alfa Romeo
+    model: Giulia 1600 GTV
+  - entry_no: "68"
+    year: 1970
+    make: Alfa Romeo
+    model: 1300 Junior Zagato
+  - entry_no: "69"
+    year: 1970
+    make: Volvo
+    model: Amazon
+  - entry_no: "70"
+    year: 1973
+    make: Jensen
+    model: Jensen-Healey

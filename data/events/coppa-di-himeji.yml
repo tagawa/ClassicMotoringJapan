@@ -1,0 +1,20 @@
+slug: coppa-di-himeji
+name_en: Coppa di Himeji
+name_ja: コッパディ姫路
+organizer: COPPA GIAPPONE, run by コッパディ姫路実行委員会 (Coppa di Himeji organising committee)
+official_url: https://coppa-di-himeji.com/
+summary_en: >
+  A two-day rally from Himeji Otemae Park, in front of Himeji Castle, around
+  southern Hyogo. It runs every other year, alternating with Coppa di Kyoto:
+  2015, 2017, 2019, 2022, 2024 and 2026 so far. The next is planned for early
+  summer 2028, with entries opening around December 2027.
+prefecture: Hyogo
+venue_en: Himeji Otemae Park (start and finish)
+# OpenStreetMap's point for the park; GSI puts it in 本町, the castle district.
+lat: 34.8351
+lon: 134.6933
+nearest_station: Sanyo-Himeji, about 800 metres away in a straight line, or JR Himeji, about 1.1 km
+typical_scale: 126 cars on the 2026 entry list
+# No source states an admission.
+spectator_fee_jpy: null
+last_verified: 2026-10-13

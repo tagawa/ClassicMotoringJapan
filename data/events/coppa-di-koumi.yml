@@ -1,0 +1,22 @@
+slug: coppa-di-koumi
+name_en: Coppa di Koumi
+name_ja: コッパ ディ 小海
+organizer: コッパ ディ 小海 実行委員会 (Coppa di Koumi organising committee), with the town of Koumi as co-organiser
+official_url: https://www.coppadikoumi.com/
+summary_en: >
+  A two-day rally below Yatsugatake in Nagano, based at the Gateaux Kingdom Koumi
+  hotel; the 35th ran in April 2026. Saturday is a regularity run of about 240 km
+  on public roads, and Sunday is a two-heat hill climb in the hotel grounds.
+  Entry is for classic cars built in the 1970s or earlier, plus any the organiser
+  admits. The 36th is planned for 2027; no date is announced.
+prefecture: Nagano
+venue_en: Gateaux Kingdom Koumi, Matsubarako Kogen (start and finish)
+# The pin is the organiser's own Google Maps link on event.html; OpenStreetMap has
+# the hotel at the same point under its former name, Koumi Re-Ex.
+lat: 36.0558
+lon: 138.4140
+nearest_station: Matsubarako (JR Koumi line), about 5 km away in a straight line
+typical_scale: About 60 cars
+# The organiser's site thanks the spectators who come each year but states no admission.
+spectator_fee_jpy: null
+last_verified: 2026-10-13
