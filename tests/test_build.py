@@ -1888,6 +1888,41 @@ class DecadeStripTests(unittest.TestCase):
             shutil.rmtree(tmp)
 
 
+class EntryListHeadingTests(unittest.TestCase):
+    """The two strips look alike, so each part of an entry list says what it counts."""
+
+    def page(self, cars: str) -> str:
+        tmp = Path(tempfile.mkdtemp())
+        try:
+            data = tmp / "data"
+            write_event(data, "meet")
+            write_instance(data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-18", extra=cars))
+            build.build(data, tmp / "site")
+            return (tmp / "site" / "events" / "meet" / "2026" / "index.html").read_text(encoding="utf-8")
+        finally:
+            shutil.rmtree(tmp)
+
+    def subheadings(self, html: str) -> list[str]:
+        return re.findall(r"<h3>(.*?)</h3>", html)
+
+    def test_each_strip_and_the_table_has_its_own_heading_in_page_order(self):
+        html = self.page(cars_yaml([1929, 1955, 1955]))
+        self.assertEqual(self.subheadings(html), ["By decade", "By make", "All cars"])
+        order = [html.index(mark) for mark in ("<h3>By decade</h3>", '<ol class="chart decades">',
+                                               "<h3>By make</h3>", '<ol class="chart makes">',
+                                               "<h3>All cars</h3>", "<table>")]
+        self.assertEqual(order, sorted(order), "each heading should sit directly above what it names")
+
+    def test_a_numbered_list_without_years_has_no_decade_heading(self):
+        html = self.page('list_as_of: 2026-09-15\ncars:\n  - entry_no: "01"\n    make: Test\n    model: Car\n')
+        self.assertEqual(self.subheadings(html), ["By make", "All cars"])
+
+    def test_a_line_up_with_no_strips_has_no_headings_to_tell_apart(self):
+        html = self.page(display_cars_yaml([("Toyota", "2000GT"), ("Honda", "S500")]))
+        self.assertEqual(self.subheadings(html), [])
+        self.assertIn("<table>", html)
+
+
 class MakeStripTests(unittest.TestCase):
     """Which makes turned out in numbers, counted from the same rows the table renders."""
 
