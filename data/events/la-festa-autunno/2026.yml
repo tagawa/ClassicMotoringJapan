@@ -408,11 +408,11 @@ cars:
   - entry_no: "56"
     year: 1959
     make: MG
-    model: A-FHC
+    model: MGA-FHC
   - entry_no: "57"
     year: 1961
     make: MG
-    model: 1600 Mk II
+    model: MGA 1600 Mk II
 videos:
   - youtube_id: se4nefVXwrA
     label_en: The paddock and the start in Tokyo
