@@ -259,6 +259,8 @@ cars:
     year: 1955
     make: Ford
     model: Thunderbird
+    # Ford has no one country, so this is from the model.
+    country: US
   - entry_no: "40"
     year: 1958
     make: Chevrolet

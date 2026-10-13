@@ -284,6 +284,8 @@ cars:
     year: 1955
     make: Ford
     model: Thunderbird
+    # Ford has no one country, so this is from the model.
+    country: US
   - entry_no: "58"
     year: 1958
     make: Chevrolet
@@ -292,6 +294,8 @@ cars:
     year: 1966
     make: Ford
     model: Mustang 289GT Fastback
+    # Ford has no one country, so this is from the model.
+    country: US
   - entry_no: "60"
     year: 1969
     make: Chevrolet

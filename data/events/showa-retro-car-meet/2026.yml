@@ -68,6 +68,8 @@ cars:
     year: 1973
     make: Ford
     model: Mustang
+    # Ford has no one country, so this is from the model.
+    country: US
   - entry_no: "150"
     year: 1965
     make: GT Development
