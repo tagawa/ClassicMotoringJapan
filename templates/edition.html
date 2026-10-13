@@ -90,7 +90,9 @@
 {% elif section == "cars" %}
 <h2>{{ r.cars_label }}</h2>
 <p>{{ r.cars_label }} as of {{ ed.list_as_of.isoformat() }}.{% if r.list_provisional %} Provisional: {{ r.cars_caveat }}.{% endif %}</p>
+{# The two strips share one look, so each part of the list is headed with what it counts. #}
 {% if r.decades %}
+<h3>By decade</h3>
 <ol class="chart decades">
 {% for row in r.decades.rows %}
   <li>
@@ -110,6 +112,7 @@
 </ol>
 {% endif %}
 {% if r.makes %}
+<h3>By make</h3>
 <ol class="chart makes">
 {% for row in r.makes.rows %}
   <li>
@@ -125,6 +128,9 @@
   </li>
 {% endif %}
 </ol>
+{% endif %}
+{% if r.decades or r.makes %}
+<h3>All cars</h3>
 {% endif %}
 <div class="table-wrap">
   <table>
