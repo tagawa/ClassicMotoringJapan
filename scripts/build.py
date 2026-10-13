@@ -142,7 +142,44 @@ COMBINED_PROSE = (("nearest_station", "access_notes_en"),)
 # A source that names the models a show will have on the floor gives neither an entry
 # number nor a year, and a model's production span is not the age of the car on the stand.
 CAR_REQUIRED = {"make": "str", "model": "str"}
-CAR_OPTIONAL = {"entry_no": "str", "year": "int", "colour": "str"}
+CAR_OPTIONAL = {"entry_no": "str", "year": "int", "colour": "str", "country": "country"}
+
+
+def _stripes(colours, across: bool) -> str:
+    """Equal bands on the 30 by 20 field every flag is drawn on."""
+    size = (30 if across else 20) / len(colours)
+    return "".join(
+        f'<path fill="{c}" d="M{round(i * size, 2)} 0h{round(size, 2)}v20h-{round(size, 2)}z"/>' if across
+        else f'<path fill="{c}" d="M0 {round(i * size, 2)}h30v{round(size, 2)}H0z"/>'
+        for i, c in enumerate(colours))
+
+
+# Where an organiser's list says a car was built: ISO 3166 code, the name read out in place
+# of the flag, and the flag itself. Drawn here, not fetched, so the site still ships no image
+# files and needs no emoji font, which Windows lacks for flags. Colours are each country's own.
+# Any id inside a drawing starts "flag-" and is its alone, since one page can carry them all.
+COUNTRIES = {
+    "DE": ("Germany", _stripes(("#000000", "#DD0000", "#FFCC00"), across=False)),
+    "FR": ("France", _stripes(("#000091", "#FFFFFF", "#E1000F"), across=True)),
+    # The red saltire is counterchanged, which the clip path does: each arm shows on one side
+    # of its diagonal only. Widths are the flag's own, scaled from a height of 30 to 20.
+    "GB": ("Britain",
+           '<clipPath id="flag-gb-arms"><path d="M15 10h15v10zv10H0zH0V0zV0h15z"/></clipPath>'
+           '<path fill="#012169" d="M0 0h30v20H0z"/>'
+           '<path stroke="#FFFFFF" stroke-width="4" d="M0 0l30 20M30 0L0 20"/>'
+           '<path stroke="#C8102E" stroke-width="2.67" clip-path="url(#flag-gb-arms)" d="M0 0l30 20M30 0L0 20"/>'
+           '<path stroke="#FFFFFF" stroke-width="6.67" d="M15 0v20M0 10h30"/>'
+           '<path stroke="#C8102E" stroke-width="4" d="M15 0v20M0 10h30"/>'),
+    "IT": ("Italy", _stripes(("#009246", "#FFFFFF", "#CE2B37"), across=True)),
+    "JP": ("Japan", '<path fill="#FFFFFF" d="M0 0h30v20H0z"/><circle fill="#BC002D" cx="15" cy="10" r="6"/>'),
+    "SE": ("Sweden", '<path fill="#006AA7" d="M0 0h30v20H0z"/><path fill="#FECC02" d="M9.38 0h3.75v20H9.38zM0 8h30v4H0z"/>'),
+    # Fifty stars do not survive at this size, so the canton carries a grid of dots.
+    "US": ("USA",
+           _stripes(("#B22234", "#FFFFFF") * 6 + ("#B22234",), across=False)
+           + '<path fill="#3C3B6E" d="M0 0h12v10.77H0z"/>'
+           + "".join(f'<circle fill="#FFFFFF" cx="{1.5 + 2.25 * col}" cy="{1.6 + 2.5 * row}" r="0.5"/>'
+                     for row in range(4) for col in range(5))),
+}
 # Order of the table's columns. A column no car fills is dropped, not left blank.
 CAR_COLUMNS = (("entry_no", "No.", True), ("year", "Year", True), ("make", "Make", False),
                ("model", "Model", False), ("colour", "Colour", False))
@@ -224,6 +261,10 @@ def _check_value(kind: str, v, where: str, errors: list[str]) -> None:
     elif kind == "status":
         if v not in STATUSES:
             errors.append(f"{where}: must be one of {sorted(STATUSES)}, got {v!r}")
+    elif kind == "country":
+        if v not in COUNTRIES:
+            errors.append(f"{where}: must be one of {sorted(COUNTRIES)}, the countries the site has a "
+                          f"flag for, got {v!r}")
     elif kind == "time":
         if _is_int(v):
             errors.append(
@@ -498,6 +539,37 @@ def route_chart(route) -> dict | None:
                      for begins, finishes in windows],
         })
     return {"start": _hhmm(axis_start), "end": _hhmm(axis_end), "days": days}
+
+# A make's home country, for a car whose list prints no country of its own. The pairings
+# for 56 of these are the Coppa organisers' own, from their entry lists; the rest are ours.
+# None is a decision too: no one country fits, so such a car has no flag unless it is given
+# a `country` itself. Ford built Mustangs in America and Anglias in Britain; Heinkel's
+# bubble car was also built in Britain as the Trojan; an Arnolt-Bristol is American, British
+# and Italian at once. tools/test_makes.py checks every make in data/ is here.
+MAKE_COUNTRIES = {
+    **dict.fromkeys(("BMW", "BMW Alpina", "Mercedes-Benz", "Messerschmitt", "Porsche", "Volkswagen"), "DE"),
+    **dict.fromkeys(("Alpine", "BNC", "Bugatti", "Citroën", "Panhard", "Renault", "Simca"), "FR"),
+    **dict.fromkeys(("Alvis", "Aston Martin", "Austin", "Austin-Healey", "Bentley", "Bristol", "Buckler",
+                     "Caterham", "Daimler", "Healey", "Jack Knight", "Jaguar", "Jensen", "Lagonda", "Lotus",
+                     "MG", "Marcos", "Mini", "Morgan", "Morris", "Riley", "Rolls-Royce", "Rover", "Sammio",
+                     "Swallow", "Triumph", "TVR", "Westfield"), "GB"),
+    **dict.fromkeys(("Abarth", "Alfa Romeo", "Bandini", "Branca", "Cisitalia", "Dino", "Ermini", "Ferrari",
+                     "Fiat", "Fiat-Abarth", "Gilco-Fiat", "Lamborghini", "Lancia", "Maserati", "Nardi", "OSCA",
+                     "Siata", "Stanguellini"), "IT"),
+    **dict.fromkeys(("Daihatsu", "Datsun", "Honda", "Isuzu", "Lexus", "Mazda", "Mitsubishi", "Nissan",
+                     "Nissan Diesel", "Prince", "Subaru", "Suzuki", "Toyota"), "JP"),
+    "Volvo": "SE",
+    **dict.fromkeys(("Chevrolet", "DMC", "Imperial", "Packard", "Pontiac"), "US"),
+    **dict.fromkeys(("Arnolt", "Birkin", "Crepaldi Panhard", "Ford", "GT Development", "Heinkel", "Unknown"), None),
+}
+
+
+def with_countries(cars):
+    """Each car with the country its flag shows: its own where it has one, else its make's."""
+    if not cars:
+        return cars
+    return [{**car, "country": country} if (country := car.get("country") or MAKE_COUNTRIES.get(car["make"])) else car
+            for car in cars]
 
 
 def car_columns(cars) -> list[dict]:
@@ -789,6 +861,7 @@ def make_rows(events: dict, editions: list) -> list[dict]:
         slug, year = ed["slug"], ed["year"]
         edition = fmt_edition(item["edition"]) if item["edition"] else None
         display_name = f"{ev['name_en']} {edition}" if edition else ev["name_en"]
+        cars = with_countries(ed.get("cars"))
         columns = car_columns(ed.get("cars"))
         # Cars with entry numbers entered something and can withdraw; cars without are
         # exhibits a show has announced, which it can change without anyone pulling out.
@@ -828,6 +901,10 @@ def make_rows(events: dict, editions: list) -> list[dict]:
             "chart": route_chart(ed.get("route")),
             "decades": decade_chart(ed.get("cars")),
             "makes": makes_chart(ed.get("cars")),
+            "cars": cars,
+            # The flags this page's list uses, each to be drawn once ahead of the table.
+            "flags": [{"code": code, "name": COUNTRIES[code][0], "art": COUNTRIES[code][1]}
+                      for code in sorted({car["country"] for car in cars or [] if "country" in car})],
             "videos": [{"label": v["label_en"], "title": f"{display_name} {year}, {v['label_en']}",
                         "embed": VIDEO_EMBED_URL + v["youtube_id"], "watch": VIDEO_WATCH_URL + v["youtube_id"]}
                        for v in ed.get("videos") or []],
@@ -899,7 +976,7 @@ def build_api(rows: list[dict]) -> str:
             "source_url": ed["source_url"],
             "last_verified": ed["last_verified"],
             "cars_as_of": ed.get("list_as_of"),
-            "cars": ed.get("cars"),
+            "cars": r["cars"],
             "route": ed.get("route"),
             "route_en": prose_text(ed["route_en"]) if "route_en" in ed else None,
             "videos": ed.get("videos"),
@@ -1023,6 +1100,7 @@ def build(data_dir: Path, out_dir: Path,
     env = Environment(loader=FileSystemLoader(templates_dir),
                       autoescape=select_autoescape(["html"]),
                       trim_blocks=True, lstrip_blocks=True, keep_trailing_newline=True)
+    env.globals["countries"] = COUNTRIES
     env.filters["fee"] = fmt_fee
     env.filters["prose"] = prose_html
     env.filters["weekday"] = fmt_weekday
