@@ -395,6 +395,47 @@ def _check_route(route, start, end, rel: str, errors: list[str]) -> None:
                 latest = begins
 
 
+class _UniqueKeyLoader(yaml.SafeLoader):
+    """YAML keeps the last of two identical keys without a word, so a make entered twice
+    with different countries would quietly take the second. This loader refuses instead."""
+
+
+def _unique_mapping(loader, node):
+    keys = [loader.construct_object(key) for key, _ in node.value]
+    for key in keys:
+        if keys.count(key) > 1:
+            raise yaml.constructor.ConstructorError(None, None, f"{key} is listed twice", node.start_mark)
+    return loader.construct_mapping(node)
+
+
+_UniqueKeyLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, _unique_mapping)
+
+
+def load_makes(data_dir: Path) -> dict:
+    """data/makes.yml: each make's home country, or None where no one country fits.
+
+    It is for a car whose list prints no country of its own; the file says more. A site
+    without the file builds without flags from makes.
+    """
+    path = data_dir / "makes.yml"
+    if not path.exists():
+        return {}
+    try:
+        makes = yaml.load(path.read_text(encoding="utf-8"), Loader=_UniqueKeyLoader)
+    except yaml.constructor.ConstructorError as e:
+        raise ValidationError([f"makes.yml: {e.problem}"])
+    except yaml.YAMLError as e:
+        raise ValidationError([f"makes.yml: YAML syntax error: {e}"])
+    if not isinstance(makes, dict):
+        raise ValidationError(["makes.yml: must be a list of makes, each with a country, e.g. Lancia: IT"])
+    errors = [f"makes.yml: {make}: must be one of {sorted(COUNTRIES)}, the countries the site has a flag for, "
+              f"or null where no one country fits, got {code!r}"
+              for make, code in makes.items() if code is not None and code not in COUNTRIES]
+    if errors:
+        raise ValidationError(errors)
+    return makes
+
+
 def load_and_validate(data_dir: Path) -> tuple[dict, list]:
     """Return (events by slug, editions). Raise ValidationError listing every problem."""
     errors: list[str] = []
@@ -540,35 +581,11 @@ def route_chart(route) -> dict | None:
         })
     return {"start": _hhmm(axis_start), "end": _hhmm(axis_end), "days": days}
 
-# A make's home country, for a car whose list prints no country of its own. The pairings
-# for 56 of these are the Coppa organisers' own, from their entry lists; the rest are ours.
-# None is a decision too: no one country fits, so such a car has no flag unless it is given
-# a `country` itself. Ford built Mustangs in America and Anglias in Britain; Heinkel's
-# bubble car was also built in Britain as the Trojan; an Arnolt-Bristol is American, British
-# and Italian at once. tools/test_makes.py checks every make in data/ is here.
-MAKE_COUNTRIES = {
-    **dict.fromkeys(("BMW", "BMW Alpina", "Mercedes-Benz", "Messerschmitt", "Porsche", "Volkswagen"), "DE"),
-    **dict.fromkeys(("Alpine", "BNC", "Bugatti", "Citroën", "Panhard", "Renault", "Simca"), "FR"),
-    **dict.fromkeys(("Alvis", "Aston Martin", "Austin", "Austin-Healey", "Bentley", "Bristol", "Buckler",
-                     "Caterham", "Daimler", "Healey", "Jack Knight", "Jaguar", "Jensen", "Lagonda", "Lotus",
-                     "MG", "Marcos", "Mini", "Morgan", "Morris", "Riley", "Rolls-Royce", "Rover", "Sammio",
-                     "Swallow", "Triumph", "TVR", "Westfield"), "GB"),
-    **dict.fromkeys(("Abarth", "Alfa Romeo", "Bandini", "Branca", "Cisitalia", "Dino", "Ermini", "Ferrari",
-                     "Fiat", "Fiat-Abarth", "Gilco-Fiat", "Lamborghini", "Lancia", "Maserati", "Nardi", "OSCA",
-                     "Siata", "Stanguellini"), "IT"),
-    **dict.fromkeys(("Daihatsu", "Datsun", "Honda", "Isuzu", "Lexus", "Mazda", "Mitsubishi", "Nissan",
-                     "Nissan Diesel", "Prince", "Subaru", "Suzuki", "Toyota"), "JP"),
-    "Volvo": "SE",
-    **dict.fromkeys(("Chevrolet", "DMC", "Imperial", "Packard", "Pontiac"), "US"),
-    **dict.fromkeys(("Arnolt", "Birkin", "Crepaldi Panhard", "Ford", "GT Development", "Heinkel", "Unknown"), None),
-}
-
-
-def with_countries(cars):
+def with_countries(cars, makes: dict):
     """Each car with the country its flag shows: its own where it has one, else its make's."""
     if not cars:
         return cars
-    return [{**car, "country": country} if (country := car.get("country") or MAKE_COUNTRIES.get(car["make"])) else car
+    return [{**car, "country": country} if (country := car.get("country") or makes.get(car["make"])) else car
             for car in cars]
 
 
@@ -853,7 +870,7 @@ def event_notes_phrase(ev: dict) -> str | None:
 
 # Build
 
-def make_rows(events: dict, editions: list) -> list[dict]:
+def make_rows(events: dict, editions: list, makes: dict | None = None) -> list[dict]:
     rows = []
     for item in editions:
         ed, ed_id = item["data"], item["id"]
@@ -861,7 +878,7 @@ def make_rows(events: dict, editions: list) -> list[dict]:
         slug, year = ed["slug"], ed["year"]
         edition = fmt_edition(item["edition"]) if item["edition"] else None
         display_name = f"{ev['name_en']} {edition}" if edition else ev["name_en"]
-        cars = with_countries(ed.get("cars"))
+        cars = with_countries(ed.get("cars"), makes or {})
         columns = car_columns(ed.get("cars"))
         # Cars with entry numbers entered something and can withdraw; cars without are
         # exhibits a show has announced, which it can change without anyone pulling out.
@@ -1095,7 +1112,7 @@ def reset_out_dir(out_dir: Path) -> None:
 def build(data_dir: Path, out_dir: Path,
           templates_dir: Path = ROOT / "templates", static_dir: Path = ROOT / "static") -> None:
     events, editions = load_and_validate(data_dir)
-    rows = make_rows(events, editions)
+    rows = make_rows(events, editions, load_makes(data_dir))
 
     env = Environment(loader=FileSystemLoader(templates_dir),
                       autoescape=select_autoescape(["html"]),
