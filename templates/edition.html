@@ -89,7 +89,7 @@
 
 {% elif section == "cars" %}
 <h2>{{ r.cars_label }}</h2>
-<p>{{ r.cars_label }} as of {{ ed.list_as_of.isoformat() }}.{% if r.list_provisional %} Provisional: {{ r.cars_caveat }}.{% endif %}</p>
+<p>As of {{ ed.list_as_of.isoformat() }}.{% if r.list_provisional %} Provisional: {{ r.cars_caveat }}.{% endif %}</p>
 {# The two strips share one look, so each part of the list is headed with what it counts. #}
 {% if r.decades %}
 <h3>By decade</h3>
@@ -132,12 +132,15 @@
 {% if r.decades or r.makes %}
 <h3>All cars</h3>
 {% endif %}
+{% if r.flags %}
+<svg class="flag-defs" width="0" height="0" aria-hidden="true" focusable="false"><defs>{% for flag in r.flags %}<g id="flag-{{ flag.code | lower }}">{{ flag.art | safe }}</g>{% endfor %}</defs></svg>
+{% endif %}
 <div class="table-wrap">
   <table>
     <thead><tr>{% for col in r.car_columns %}<th scope="col">{{ col.label }}</th>{% endfor %}</tr></thead>
     <tbody>
-{% for car in ed.cars %}
-      <tr>{% for col in r.car_columns %}<td{% if col.num %} class="num"{% endif %}>{{ car.get(col.key, "") }}</td>{% endfor %}</tr>
+{% for car in r.cars %}
+      <tr>{% for col in r.car_columns %}<td{% if col.num %} class="num"{% elif col.key == "make" and r.flags %} class="{{ "flagged" if car.country else "unflagged" }}"{% endif %}>{% if col.key == "make" and car.country %}<svg class="flag" viewBox="0 0 30 20" width="24" height="16" role="img" aria-label="{{ countries[car.country][0] }}" focusable="false"><title>{{ countries[car.country][0] }}</title><use xlink:href="#flag-{{ car.country | lower }}"/></svg>{% endif %}{{ car.get(col.key, "") }}</td>{% endfor %}</tr>
 {% endfor %}
     </tbody>
   </table>
