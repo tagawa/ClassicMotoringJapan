@@ -1,0 +1,26 @@
+slug: kofu-station-automobile-expo
+name_en: Kofu Station Automobile Expo
+name_ja: 甲府駅自動車博覧會
+organizer: モグラハウス (Mogura House)
+# An events company in Yamanashi; its news page carries each year's details. The
+# post names a staff contact with a mobile number, which does not go here.
+official_url: https://www.mogurahouse.com/release/
+summary_en: >
+  Vintage cars and old motorcycles, Japanese and imported, built up to 1995, in
+  the plaza outside Kofu station's north exit. Illegally modified vehicles are
+  refused. At 14:00 the cars leave on a parade through Kofu. There are also
+  talk and stage shows, a flea market and kitchen cars.
+prefecture: Yamanashi
+venue_en: Yocchabare Hiroba, Kofu station north exit
+street_address: 2-2-1 Kitaguchi, Kofu, Yamanashi (山梨県甲府市北口2丁目2-1)
+# The pin is GSI's for the address, 80 m from OSM's north exit bus stop; both
+# reverse-geocode to Kitaguchi 2-chome.
+lat: 35.6677
+lon: 138.5701
+nearest_station: Kofu (JR Chuo line, Minobu line)
+spectator_fee_jpy: 0
+spectator_notes_en: >
+  Free to watch. Show cars arrive between 8:30 and 9:30. Motorcycles enter on the
+  day only.
+cutoff_year: 1995
+last_verified: 2026-10-16

@@ -1,0 +1,29 @@
+slug: nostalgic-car-hida-kuraiyama
+year: 2026
+status: confirmed
+start: 2026-10-24
+end: 2026-10-25
+start_time: "11:00"
+end_time: "15:00"
+# The 5th running. The bonnet bus rides are cancelled this year. In 2024 the
+# demonstration run was on 26 October, the day before the show.
+source_url: https://sites.google.com/view/kuraiyama-fes
+last_verified: 2026-10-16
+sequence: 0
+route_en: >
+  On Saturday a demonstration run leaves the roadside station at about 11:00 and
+  drives through Takayama, past the station and the Jinya, to stand at the Takayama
+  Museum of History and Art until about 15:00. The show itself is on Sunday, 10:00
+  to 15:00, at the roadside station.
+route:
+  - date: 2026-10-24
+    checkpoints:
+      - start_time: "11:00"
+        place_en: Michi-no-eki Mondeus Hida Kuraiyama (start)
+        place_ja: 道の駅モンデウス飛騨位山
+        prefecture: Gifu
+      - start_time: "12:00"
+        end_time: "15:00"
+        place_en: Takayama Museum of History and Art (display)
+        place_ja: 飛騨高山まちの博物館
+        prefecture: Gifu

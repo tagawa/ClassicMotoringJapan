@@ -1,0 +1,25 @@
+slug: nostalgic-car-hida-kuraiyama
+name_en: Nostalgic Car Hida Kuraiyama
+name_ja: ノスタルジックカーひだ位山
+organizer: ノスタルジックカー ひだ位山 実行委員会 (Nostalgic Car Hida Kuraiyama Executive Committee), with the Ichinomiya tourism association
+# The facts are spread over the site's subpages: dates and fees on the home page,
+# the cutoff and organiser under Concept, the timetable under スケジュール and the
+# Saturday demonstration run under 会場. The organiser's page gives its
+# representative's name, home address and phone; none of it goes here.
+official_url: https://sites.google.com/view/kuraiyama-fes
+summary_en: >
+  Cars, three-wheelers and motorcycles built in 1998 or earlier, shown at a
+  roadside station in Ichinomiya, south of Takayama. Illegally modified vehicles
+  are refused. The day has a live band, kitchen cars, a raffle and a radio-control
+  car course. First held in 2022.
+prefecture: Gifu
+venue_en: Michi-no-eki Mondeus Hida Kuraiyama (roadside station)
+# No pin: GSI resolves the address only as far as Ichinomiya-machi, and the roadside
+# station is not in OSM (checked 2026-10-16).
+street_address: 7846-1 Ichinomiya-machi, Takayama, Gifu (岐阜県高山市一之宮町7846-1)
+spectator_fee_jpy: 0
+spectator_notes_en: >
+  Free to watch. The opening ceremony is at 10:00 and the closing at 15:00, earlier
+  in bad weather. Show cars are asked not to leave before 13:00.
+cutoff_year: 1998
+last_verified: 2026-10-16
