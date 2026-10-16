@@ -77,6 +77,58 @@ class PastEventsTest(unittest.TestCase):
 
 
 @unittest.skipIf(sync_playwright is None, "playwright not installed")
+class MonthSplitTest(unittest.TestCase):
+    """A month heading follows its dates: into Past, out of Upcoming, or into both."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = Path(tempfile.mkdtemp())
+        data = cls.tmp / "data"
+        for slug, day in (("early", "2026-10-04"), ("late", "2026-10-25"), ("next", "2026-11-01")):
+            write_event(data, slug, name_en=slug.capitalize())
+            write_instance(data, slug, 2026, instance_yaml(slug, 2026, day, day))
+        build.build(data, cls.tmp / "site")
+        cls.home = (cls.tmp / "site" / "index.html").as_uri()
+        try:
+            cls.pw = sync_playwright().start()
+            cls.browser = cls.pw.chromium.launch()
+        except Exception as e:
+            shutil.rmtree(cls.tmp)
+            raise unittest.SkipTest(f"chromium unavailable: {e}")
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.browser.close()
+        cls.pw.stop()
+        shutil.rmtree(cls.tmp)
+
+    def headings_at(self, utc_instant: str) -> dict:
+        ctx = self.browser.new_context(timezone_id="Europe/London")
+        page = ctx.new_page()
+        page.clock.set_fixed_time(utc_instant)
+        page.goto(self.home)
+        result = {where: page.locator(f"#{where}-list h3").all_inner_texts() for where in ("upcoming", "past")}
+        result["past_events"] = page.locator("#past-list a").all_inner_texts()
+        ctx.close()
+        return result
+
+    def test_a_month_with_dates_on_both_sides_of_today_is_headed_in_both(self):
+        s = self.headings_at("2026-10-10T03:00:00Z")
+        self.assertEqual(s["upcoming"], ["October 2026", "November 2026"])
+        self.assertEqual(s["past"], ["October 2026"])
+
+    def test_a_month_left_with_no_dates_loses_its_upcoming_heading(self):
+        s = self.headings_at("2026-10-28T03:00:00Z")
+        self.assertEqual(s["upcoming"], ["November 2026"])
+        self.assertEqual(s["past"], ["October 2026"])
+
+    def test_past_runs_newest_first_by_month_and_by_date(self):
+        s = self.headings_at("2026-11-02T03:00:00Z")
+        self.assertEqual(s["past"], ["November 2026", "October 2026"])
+        self.assertEqual(s["past_events"], ["Next", "Late", "Early"])
+
+
+@unittest.skipIf(sync_playwright is None, "playwright not installed")
 class YearStripTest(unittest.TestCase):
     """The strip shows this year and the ones ahead. Past years are the list's job, not its."""
 

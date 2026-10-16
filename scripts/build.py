@@ -540,6 +540,24 @@ def fmt_range(start: dt.date, end: dt.date) -> str:
     return f"{fmt_day(start)} \u2013 {fmt_day(end)}"
 
 
+def fmt_span(start: dt.date, end: dt.date, year: bool = False) -> str:
+    """A date or a run of days with weekdays, which is what a weekend is planned by.
+
+    The year is left to a heading above it unless asked for, but a span across the new
+    year always names both, since one heading cannot.
+    """
+    def day(d: dt.date) -> str:
+        return f"{d:%a} {d.day}"
+    if start.year != end.year:
+        return f"{day(start)} {start:%b %Y} to {day(end)} {end:%b %Y}"
+    tail = f" {end.year}" if year else ""
+    if start == end:
+        return f"{day(start)} {start:%b}{tail}"
+    if start.month == end.month:
+        return f"{day(start)} to {day(end)} {end:%b}{tail}"
+    return f"{day(start)} {start:%b} to {day(end)} {end:%b}{tail}"
+
+
 def _minutes(hhmm: str) -> int:
     hours, mins = hhmm.split(":")
     return int(hours) * 60 + int(mins)
@@ -617,7 +635,7 @@ def decade_chart(cars) -> dict | None:
         rows.append({
             "label": f"{decade}s",
             "count": n,
-            "text": f"{n} car{'' if n == 1 else 's'}" if n else "none",
+            "unit": "car" if n == 1 else "cars",
             "width": round(max(n / peak * 100, CHART_MIN_BAR), 2) if n else 0,
         })
     undated = len(cars) - len(years)
@@ -639,7 +657,7 @@ def makes_chart(cars) -> dict | None:
         counts[car["make"]] = counts.get(car["make"], 0) + 1
     several = sorted(((make, n) for make, n in counts.items() if n > 1),
                      key=lambda pair: (-pair[1], pair[0].casefold()))
-    rows = [{"label": make, "text": f"{n} cars",
+    rows = [{"label": make, "count": n, "unit": "cars",
              "width": round(max(n / several[0][1] * 100, CHART_MIN_BAR), 2)} for make, n in several]
     singles = len(counts) - len(several)
     rest = None
@@ -933,12 +951,13 @@ def make_rows(events: dict, editions: list, makes: dict | None = None) -> list[d
             r["start_dt"] = _local_dt(ed["start"], ed["start_time"])
             r["end_dt"] = _local_dt(ed["end"], ed["end_time"])
             if ed["start"] == ed["end"]:
-                r["when_full"] = f"{r['when']}, {ed['start_time']} to {ed['end_time']} Japan time"
+                r["when_full"] = (f"{fmt_span(ed['start'], ed['end'], year=True)}, "
+                                  f"{ed['start_time']} to {ed['end_time']} Japan time")
             else:
-                r["when_full"] = (f"{fmt_day(ed['start'])} {ed['start_time']} to "
-                                  f"{fmt_day(ed['end'])} {ed['end_time']}, Japan time")
+                r["when_full"] = (f"{fmt_span(ed['start'], ed['start'], year=True)} {ed['start_time']} to "
+                                  f"{fmt_span(ed['end'], ed['end'], year=True)} {ed['end_time']}, Japan time")
         else:
-            r["when_full"] = r["when"]
+            r["when_full"] = fmt_span(ed["start"], ed["end"], year=True)
         if r["pin"]:
             r["dot"] = map_point(r["pin"]["lat"], r["pin"]["lon"])
         r["jsonld"] = build_jsonld(r)
@@ -955,6 +974,27 @@ def make_rows(events: dict, editions: list, makes: dict | None = None) -> list[d
     for r in rows:
         r["next"] = next((n for n in rows if n["slug"] == r["slug"] and n["ed"]["start"] > r["ed"]["start"]), None)
     return rows
+
+
+def month_groups(rows: list[dict]) -> list[dict]:
+    """The home list as a calendar: each month in date order, each date in it once.
+
+    Editions share a date only when their first and last days both match, because the
+    browser moves a date to Past by its last day, and a shared one has to move as one.
+    """
+    months: list[dict] = []
+    for r in rows:
+        start, end = r["ed"]["start"], r["ed"]["end"]
+        key = f"{start:%Y-%m}"
+        if not months or months[-1]["key"] != key:
+            months.append({"key": key, "label": f"{start:%B %Y}", "days": []})
+        days = months[-1]["days"]
+        day = next((d for d in days if (d["start"], d["end"]) == (start, end)), None)
+        if day is None:
+            day = {"start": start, "end": end, "when": fmt_span(start, end), "rows": []}
+            days.append(day)
+        day["rows"].append(r)
+    return months
 
 
 # Files written for agents rather than readers
@@ -1144,7 +1184,7 @@ def build(data_dir: Path, out_dir: Path,
 
     write("index.html", env.get_template("home.html").render(
         **common, root="", canonical=f"{SITE_URL}/", title=f"{title} | {SITE_NAME}",
-        description=SITE_LEDE, rows=rows, years=year_chart(rows), latest=latest, jsonld=[],
+        description=SITE_LEDE, months=month_groups(rows), years=year_chart(rows), latest=latest, jsonld=[],
         japan=japan_path() if any(r["dot"] for r in rows) else None,
         map_box=f"0 0 {MAP_WIDTH:g} {MAP_HEIGHT:g}", map_ratio=MAP_HEIGHT / MAP_WIDTH))
 

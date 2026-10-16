@@ -46,15 +46,19 @@ a:focus-visible, summary:focus-visible {
 .breadcrumbs li { display: inline; }
 .breadcrumbs .sep { margin: 0 8px; }
 
-.events { list-style: none; margin: 0; padding: 0; }
+/* The home list as a calendar: a ruled heading per month, then each date once with its
+   events beside it, every event keeping its own thumbnail. */
+.month h3 { margin-bottom: 0; padding-bottom: 8px; border-bottom: 2px solid #1C1C1C; }
+.events, .events > li > ul { list-style: none; margin: 0; padding: 0; }
 .events > li {
   display: grid;
-  grid-template-columns: 160px 1fr 96px;
+  grid-template-columns: 160px 1fr;
   gap: 4px 16px;
   padding: 16px 0;
-  border-top: 1px solid #E0E0E0;
+  border-bottom: 1px solid #E0E0E0;
 }
-.events > li:last-child { border-bottom: 1px solid #E0E0E0; }
+.events > li > ul > li { display: grid; grid-template-columns: 1fr 96px; gap: 0 16px; }
+.events > li > ul > li + li { margin-top: 16px; }
 .events time { font-weight: 600; font-variant-numeric: tabular-nums; }
 .events .meta { margin: 4px 0 0; color: #5C5C5C; }
 /* "Not announced" is no use once an event is over; the script moves past entries here. */
@@ -178,6 +182,18 @@ summary { cursor: pointer; font-weight: 600; }
 /* The route and year strips end in an axis that carries the gap. The decade and make strips have no
    axis, so each supplies its own, or its last bar sits on what follows. */
 .chart.decades, .chart.makes { margin-bottom: 24px; }
+/* The entry list's two strips sit side by side where both fit, and stack on a phone with
+   no breakpoint: each column wraps below 288px. Each row is label, bar and count on one
+   line, so a 50-car list's summary stays shorter than a screen. */
+.strips { display: flex; flex-wrap: wrap; margin-left: -32px; }
+.strips > div { flex: 1 1 288px; margin-left: 32px; }
+.strips .chart > li { display: flex; align-items: center; margin: 0 0 4px; }
+.strips .chart-when { flex: 0 0 128px; margin: 0 16px 0 0; }
+.strips .chart-track { flex: 1 1 auto; }
+.strips .chart-count { flex: 0 0 32px; margin-left: 16px; text-align: right; font-variant-numeric: tabular-nums; }
+.strips .chart-rest .chart-when { flex: 1 1 auto; margin: 0; color: #5C5C5C; }
+.all-cars { margin-top: 24px; padding: 16px 0; border-top: 1px solid #E0E0E0; border-bottom: 1px solid #E0E0E0; }
+.all-cars .table-wrap { margin-top: 16px; }
 
 /* The home page thumbnails. The coastline and the dot share one projection in build.py. */
 .venue-map-defs, .flag-defs { position: absolute; }
@@ -197,10 +213,8 @@ summary { cursor: pointer; font-weight: 600; }
 
 @media (max-width: 480px) {
   .facts { grid-template-columns: 1fr; gap: 4px; }
-  /* The thumbnail stays beside the entry rather than under it, spanning the date and text. */
-  .events > li { grid-template-columns: 1fr 96px; }
-  .events > li > time, .events > li > div { grid-column: 1; }
-  .events > li > .venue-map { grid-column: 2; grid-row: 1 / span 2; }
+  /* The date goes above its events; each thumbnail stays beside its own event. */
+  .events > li { grid-template-columns: 1fr; }
   .facts dd { margin-bottom: 16px; }
 }
 
@@ -213,8 +227,10 @@ summary { cursor: pointer; font-weight: 600; }
   .breadcrumbs { color: #A8A8A8; }
   a { color: #D0636A; }
   a:focus-visible, summary:focus-visible { outline-color: #D0636A; }
-  .events > li { border-top-color: #333333; }
-  .events > li:last-child { border-bottom-color: #333333; }
+  .month h3 { border-bottom-color: #EBEBEB; }
+  .events > li { border-bottom-color: #333333; }
+  .strips .chart-rest .chart-when { color: #A8A8A8; }
+  .all-cars { border-top-color: #333333; border-bottom-color: #333333; }
   .events .meta { color: #A8A8A8; }
   .badge { background: #3A300F; color: #F3D98B; }
   .badge.cancelled { background: #3A1C16; color: #F2A493; }

@@ -91,49 +91,42 @@
 <h2>{{ r.cars_label }}</h2>
 <p>As of {{ ed.list_as_of.isoformat() }}.{% if r.list_provisional %} Provisional: {{ r.cars_caveat }}.{% endif %}</p>
 {# The two strips share one look, so each part of the list is headed with what it counts. #}
-{% if r.decades %}
-<h3>By decade</h3>
-<ol class="chart decades">
-{% for row in r.decades.rows %}
+{# The strips summarise the table, so where there is one the table folds away beneath it. #}
+{% set summarised = r.decades or r.makes %}
+{% if summarised %}
+<div class="strips">
+{% for strip, heading, kind in ((r.decades, "By decade", "decades"), (r.makes, "By make", "makes")) if strip %}
+<div>
+<h3>{{ heading }}</h3>
+<ol class="chart {{ kind }}">
+{% for row in strip.rows %}
   <li>
-    <span class="chart-when">{{ row.label }}: {{ row.text }}</span>
+    <span class="chart-when">{{ row.label }}</span>
     <span class="chart-track" aria-hidden="true">
 {% if row.count %}
       <i style="left: 0%; width: {{ row.width }}%"></i>
 {% endif %}
     </span>
+    <span class="chart-count">{{ row.count }}<span class="visually-hidden"> {{ row.unit }}</span></span>
   </li>
 {% endfor %}
-{% if r.decades.rest %}
-  <li>
-    <span class="chart-when">{{ r.decades.rest }}</span>
+{% if strip.rest %}
+  <li class="chart-rest">
+    <span class="chart-when">{{ strip.rest }}</span>
   </li>
 {% endif %}
 </ol>
-{% endif %}
-{% if r.makes %}
-<h3>By make</h3>
-<ol class="chart makes">
-{% for row in r.makes.rows %}
-  <li>
-    <span class="chart-when">{{ row.label }}: {{ row.text }}</span>
-    <span class="chart-track" aria-hidden="true">
-      <i style="left: 0%; width: {{ row.width }}%"></i>
-    </span>
-  </li>
+</div>
 {% endfor %}
-{% if r.makes.rest %}
-  <li>
-    <span class="chart-when">{{ r.makes.rest }}</span>
-  </li>
-{% endif %}
-</ol>
-{% endif %}
-{% if r.decades or r.makes %}
-<h3>All cars</h3>
+</div>
 {% endif %}
 {% if r.flags %}
+{# Outside the fold: a definition inside a closed details is not drawn in every browser. #}
 <svg class="flag-defs" width="0" height="0" aria-hidden="true" focusable="false"><defs>{% for flag in r.flags %}<g id="flag-{{ flag.code | lower }}">{{ flag.art | safe }}</g>{% endfor %}</defs></svg>
+{% endif %}
+{% if summarised %}
+<details class="all-cars">
+<summary>{% if r.cars | length > 1 %}All {{ r.cars | length }} cars{% else %}1 car{% endif %}</summary>
 {% endif %}
 <div class="table-wrap">
   <table>
@@ -145,6 +138,9 @@
     </tbody>
   </table>
 </div>
+{% if summarised %}
+</details>
+{% endif %}
 
 {% elif section == "videos" %}
 <h2 id="videos">Videos</h2>

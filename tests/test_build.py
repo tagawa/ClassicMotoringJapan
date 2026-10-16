@@ -152,6 +152,11 @@ def jsonld_blocks(html: str) -> list[dict]:
             re.findall(r'<script type="application/ld\+json">\s*(.*?)\s*</script>', html, re.S)]
 
 
+def strip_lines(strip: str) -> list[str]:
+    """Each row of a strip as a screen reader hears it: its words, without the markup."""
+    return [" ".join(re.sub(r"<[^>]+>", " ", li).split()) for li in re.findall(r"(?s)<li[^>]*>.*?</li>", strip)]
+
+
 class BuildOutputTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -995,6 +1000,10 @@ def token_violations(css: str) -> list[str]:
                 bad = [w for w in words if w not in FONT_SIZES | KEYWORDS]
             elif SPACING_PROPS.match(prop):
                 allowed = SPACING | {VIDEO_RATIO} if selector.strip() == ".video-frame" else SPACING
+                # A negative margin is half of the gap that flex rows cannot use (spec 6.5), so it
+                # is a spacing token negated, never a size of its own.
+                if prop.startswith("margin"):
+                    allowed = allowed | {f"-{w}" for w in SPACING}
                 bad = [w for w in words if w not in allowed | KEYWORDS]
             elif prop == "border-radius":
                 # 8px would turn a focus ring round a short link, or a 16px-high flag, into a pill.
@@ -1053,10 +1062,12 @@ class StylesheetTokenTests(unittest.TestCase):
         css = ("a { margin: 13px 8px; color: #123456; font-size: 15px; border-radius: 4px; }\n"
                "a:focus-visible { border-radius: 4px; }\n"
                ".flag { border-radius: 4px; }\n"
-               "b { padding: 0 auto; color: currentColor; background: #fff4d6; }")
+               "b { padding: 0 auto; color: currentColor; background: #fff4d6; }\n"
+               "i { margin-left: -32px; margin-right: -13px; padding-left: -8px; }")
         self.assertEqual(token_violations(css), [
             "colour #123456",
             "a { margin: 13px }", "a { font-size: 15px }", "a { border-radius: 4px }",
+            "i { margin-right: -13px }", "i { padding-left: -8px }",
         ])
 
 
@@ -1837,16 +1848,19 @@ class DecadeStripTests(unittest.TestCase):
         return re.search(r'(?s)<ol class="chart decades">.*?</ol>', self.html).group(0)
 
     def rows(self) -> list[str]:
-        return re.findall(r'<span class="chart-when">(.*?)</span>', self.strip())
+        return strip_lines(self.strip())
 
     def test_one_row_per_decade_from_the_oldest_car_to_the_newest(self):
-        self.assertEqual(self.rows(), ["1920s: 1 car", "1930s: none", "1940s: none", "1950s: 3 cars"])
+        self.assertEqual(self.rows(), ["1920s 1 car", "1930s 0 cars", "1940s 0 cars", "1950s 3 cars"])
+
+    def test_the_count_is_one_number_on_screen_and_says_cars_to_a_screen_reader(self):
+        self.assertIn('<span class="chart-count">3<span class="visually-hidden"> cars</span></span>', self.strip())
 
     def test_the_busiest_decade_fills_the_track(self):
         self.assertIn("width: 100.0%", self.html)
 
     def test_an_empty_decade_keeps_its_place_but_draws_no_bar(self):
-        empty = re.search(r'1930s: none</span>\s*<span class="chart-track"[^>]*>\s*</span>', self.html)
+        empty = re.search(r'1930s</span>\s*<span class="chart-track"[^>]*>\s*</span>', self.html)
         self.assertIsNotNone(empty, "an empty decade should hold its row and draw nothing")
 
     def test_the_bars_are_hidden_from_screen_readers_as_a_restatement(self):
@@ -1868,7 +1882,7 @@ class DecadeStripTests(unittest.TestCase):
 
     def test_a_car_without_a_year_gets_a_closing_line_so_the_strip_adds_up_to_the_table(self):
         self.html = self.page(cars_yaml([1929, 1955]) + self.UNDATED)
-        self.assertEqual(self.rows(), ["1920s: 1 car", "1930s: none", "1940s: none", "1950s: 1 car",
+        self.assertEqual(self.rows(), ["1920s 1 car", "1930s 0 cars", "1940s 0 cars", "1950s 1 car",
                                        "No year given: 1 car"])
         self.assertEqual(self.strip().count("chart-track"), 4, "the closing line counts, it draws no bar")
 
@@ -1915,22 +1929,42 @@ class EntryListHeadingTests(unittest.TestCase):
     def subheadings(self, html: str) -> list[str]:
         return re.findall(r"<h3>(.*?)</h3>", html)
 
-    def test_each_strip_and_the_table_has_its_own_heading_in_page_order(self):
+    def test_each_strip_has_its_own_heading_and_the_table_its_own_summary_in_page_order(self):
         html = self.page(cars_yaml([1929, 1955, 1955]))
-        self.assertEqual(self.subheadings(html), ["By decade", "By make", "All cars"])
+        self.assertEqual(self.subheadings(html), ["By decade", "By make"])
         order = [html.index(mark) for mark in ("<h3>By decade</h3>", '<ol class="chart decades">',
                                                "<h3>By make</h3>", '<ol class="chart makes">',
-                                               "<h3>All cars</h3>", "<table>")]
+                                               "<summary>All 3 cars</summary>", "<table>")]
         self.assertEqual(order, sorted(order), "each heading should sit directly above what it names")
+
+    def test_the_two_strips_share_one_row_so_wide_screens_can_set_them_side_by_side(self):
+        html = self.page(cars_yaml([1929, 1955, 1955]))
+        row = re.search(r'(?s)<div class="strips">(.*?)<details', html)
+        self.assertIsNotNone(row)
+        self.assertIn('class="chart decades"', row.group(1))
+        self.assertIn('class="chart makes"', row.group(1))
+
+    def test_the_table_folds_away_under_the_strips_that_summarise_it(self):
+        html = self.page(cars_yaml([1929, 1955, 1955]))
+        folded = re.search(r'(?s)<details class="all-cars">\s*<summary>All 3 cars</summary>.*?</details>', html)
+        self.assertIsNotNone(folded)
+        self.assertIn("<table>", folded.group(0))
+
+    def test_a_list_of_one_car_is_not_called_all_of_them(self):
+        self.assertIn("<summary>1 car</summary>", self.page(cars_yaml([1955])))
 
     def test_a_numbered_list_without_years_has_no_decade_heading(self):
         html = self.page('list_as_of: 2026-09-15\ncars:\n  - entry_no: "01"\n    make: Test\n    model: Car\n')
-        self.assertEqual(self.subheadings(html), ["By make", "All cars"])
+        self.assertEqual(self.subheadings(html), ["By make"])
+        self.assertIn('<details class="all-cars">', html)
 
-    def test_a_line_up_with_no_strips_has_no_headings_to_tell_apart(self):
+    def test_a_line_up_with_no_strips_shows_its_table_open(self):
+        # Nothing above it says what is in it, so folding it would hide the whole list.
         html = self.page(display_cars_yaml([("Toyota", "2000GT"), ("Honda", "S500")]))
         self.assertEqual(self.subheadings(html), [])
         self.assertIn("<table>", html)
+        self.assertNotIn('class="all-cars"', html)
+        self.assertNotIn('class="strips"', html)
 
 
 class EntryListFlagTests(unittest.TestCase):
@@ -2063,16 +2097,16 @@ class MakeStripTests(unittest.TestCase):
         return found.group(0)
 
     def lines(self, strip: str) -> list[str]:
-        return [re.sub(r"<[^>]+>", "", li).split("\n")[1].strip() for li in re.findall(r"(?s)<li>.*?</li>", strip)]
+        return strip_lines(strip)
 
     def test_a_make_with_two_or_more_cars_gets_a_row_and_the_rest_share_one_line(self):
         strip = self.strip(["Fiat", "Alfa Romeo", "Bugatti", "Alfa Romeo", "Fiat", "Alfa Romeo", "Siata"])
         self.assertEqual(self.lines(strip),
-                         ["Alfa Romeo: 3 cars", "Fiat: 2 cars", "and 2 makes with one car each"])
+                         ["Alfa Romeo 3 cars", "Fiat 2 cars", "and 2 makes with one car each"])
 
     def test_makes_with_the_same_count_are_in_alphabetical_order(self):
         strip = self.strip(["Porsche", "alfa", "MG", "Porsche", "alfa", "MG"])
-        self.assertEqual(self.lines(strip), ["alfa: 2 cars", "MG: 2 cars", "Porsche: 2 cars"])
+        self.assertEqual(self.lines(strip), ["alfa 2 cars", "MG 2 cars", "Porsche 2 cars"])
 
     def test_the_busiest_make_fills_the_track_and_the_others_scale_to_it(self):
         strip = self.strip(["Fiat", "Alfa Romeo", "Alfa Romeo", "Fiat", "Alfa Romeo"])
@@ -2087,7 +2121,7 @@ class MakeStripTests(unittest.TestCase):
         self.assertEqual(self.lines(self.strip(["Fiat", "Fiat", "Bugatti"]))[-1], "and 1 make with one car")
 
     def test_no_rest_line_when_every_make_has_several_cars(self):
-        self.assertEqual(self.lines(self.strip(["Fiat", "Fiat"])), ["Fiat: 2 cars"])
+        self.assertEqual(self.lines(self.strip(["Fiat", "Fiat"])), ["Fiat 2 cars"])
 
     def test_a_field_of_single_makes_is_one_line_with_nothing_to_follow_on_from(self):
         self.assertEqual(self.lines(self.strip(["Fiat", "Bugatti", "Siata"])), ["3 makes with one car each"])
@@ -2157,6 +2191,99 @@ class HomeRowFactsTests(unittest.TestCase):
     def test_an_edition_can_give_its_own_cutoff_and_the_others_keep_the_events(self):
         self.assertIn("Cars to 1996.", self.rows["Show", "2026"])
         self.assertIn("Cars to 1988.", self.rows["Show", "2025"])
+
+
+class WeekdayDateTests(unittest.TestCase):
+    """Dates a visitor plans a weekend by: the weekday first, the year only where it is needed."""
+
+    def span(self, start: str, end: str, year: bool = False) -> str:
+        return build.fmt_span(dt.date.fromisoformat(start), dt.date.fromisoformat(end), year)
+
+    def test_one_day(self):
+        self.assertEqual(self.span("2026-10-18", "2026-10-18"), "Sun 18 Oct")
+        self.assertEqual(self.span("2026-10-18", "2026-10-18", year=True), "Sun 18 Oct 2026")
+
+    def test_days_in_one_month_name_the_month_once(self):
+        self.assertEqual(self.span("2026-10-24", "2026-10-25"), "Sat 24 to Sun 25 Oct")
+        self.assertEqual(self.span("2026-10-02", "2026-10-05", year=True), "Fri 2 to Mon 5 Oct 2026")
+
+    def test_days_across_two_months_name_both(self):
+        self.assertEqual(self.span("2026-10-31", "2026-11-01"), "Sat 31 Oct to Sun 1 Nov")
+        self.assertEqual(self.span("2026-10-31", "2026-11-01", year=True), "Sat 31 Oct to Sun 1 Nov 2026")
+
+    def test_days_across_new_year_always_name_both_years(self):
+        # Under a December heading, "Thu 31 Dec to Fri 1 Jan" would leave the second year to guesswork.
+        self.assertEqual(self.span("2026-12-31", "2027-01-01"), "Thu 31 Dec 2026 to Fri 1 Jan 2027")
+
+
+class EditionWhenTests(unittest.TestCase):
+    """The facts block's When row carries the weekdays too."""
+
+    def page(self, start: str, end: str, extra: str = "") -> str:
+        tmp = Path(tempfile.mkdtemp())
+        try:
+            data = tmp / "data"
+            write_event(data, "meet")
+            write_instance(data, "meet", 2026, instance_yaml("meet", 2026, start, end, extra=extra + CARS))
+            build.build(data, tmp / "site")
+            return (tmp / "site" / "events" / "meet" / "2026" / "index.html").read_text(encoding="utf-8")
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_an_all_day_edition(self):
+        self.assertIn("<dd>Sun 18 to Mon 19 Oct 2026</dd>", self.page("2026-10-18", "2026-10-19"))
+
+    def test_a_timed_one_day_edition(self):
+        html = self.page("2026-10-18", "2026-10-18", extra='start_time: "08:00"\nend_time: "16:00"\n')
+        self.assertIn("<dd>Sun 18 Oct 2026, 08:00 to 16:00 Japan time</dd>", html)
+
+    def test_a_timed_edition_over_several_days(self):
+        html = self.page("2026-10-18", "2026-10-19", extra='start_time: "08:00"\nend_time: "16:00"\n')
+        self.assertIn("<dd>Sun 18 Oct 2026 08:00 to Mon 19 Oct 2026 16:00, Japan time</dd>", html)
+
+
+class HomeMonthGroupTests(unittest.TestCase):
+    """The home list reads like a calendar: a heading per month, each date once, its events beneath."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = Path(tempfile.mkdtemp())
+        data = cls.tmp / "data"
+        for slug, start, end in (("alpha", "2026-10-18", "2026-10-18"), ("bravo", "2026-10-18", "2026-10-18"),
+                                 ("charlie", "2026-10-18", "2026-10-19"), ("delta", "2026-10-24", "2026-10-25"),
+                                 ("echo", "2026-11-03", "2026-11-03"), ("foxtrot", "2027-02-20", "2027-02-21")):
+            write_event(data, slug, name_en=slug.capitalize(), extra="lat: 35.6812\nlon: 139.7671\n")
+            write_instance(data, slug, int(start[:4]), instance_yaml(slug, int(start[:4]), start, end))
+        build.build(data, cls.tmp / "site")
+        html = (cls.tmp / "site" / "index.html").read_text(encoding="utf-8")
+        cls.list = re.search(r'(?s)<div id="upcoming-list">.*?</section>', html).group(0)
+        cls.days = re.findall(r'(?s)<li data-end="[^"]+">\s*<time datetime="[^"]+">(.*?)</time>(.*?)</ul>\s*</li>',
+                              cls.list)
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.tmp)
+
+    def test_a_heading_per_month_in_date_order(self):
+        self.assertEqual(re.findall(r"<h3>(.*?)</h3>", self.list), ["October 2026", "November 2026", "February 2027"])
+
+    def test_each_month_is_marked_for_the_script_that_splits_past_from_upcoming(self):
+        self.assertEqual(re.findall(r'<div class="month" data-month="([^"]+)">', self.list),
+                         ["2026-10", "2026-11", "2027-02"])
+
+    def test_each_date_appears_once_with_the_weekday_and_without_the_year(self):
+        self.assertEqual([when for when, _ in self.days],
+                         ["Sun 18 Oct", "Sun 18 to Mon 19 Oct", "Sat 24 to Sun 25 Oct", "Tue 3 Nov",
+                          "Sat 20 to Sun 21 Feb"])
+
+    def test_events_on_the_same_dates_share_one_entry(self):
+        names = [re.findall(r'<a href="[^"]*">([^<]+)</a>', events) for _, events in self.days]
+        self.assertEqual(names[0], ["Alpha", "Bravo"])
+        # Same first day, a different last one: it moves to Past on another night, so it stands alone.
+        self.assertEqual(names[1], ["Charlie"])
+
+    def test_every_event_keeps_its_own_thumbnail(self):
+        self.assertEqual(self.days[0][1].count('<svg class="venue-map"'), 2)
 
 
 class HomeHeadingTests(unittest.TestCase):

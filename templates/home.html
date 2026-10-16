@@ -29,30 +29,43 @@
    is "Upcoming" true, so the script sets it and a reader without JavaScript never sees it. #}
   <h2 id="upcoming-h">Events</h2>
   <p id="no-upcoming" hidden>No upcoming dates are confirmed yet. New dates appear here and in the calendar feed as organisers announce them.</p>
-  <ul class="events" id="upcoming-list">
-{% for r in rows %}
-    <li data-end="{{ r.ed.end.isoformat() }}">
-      <time datetime="{{ r.ed.start.isoformat() }}">{{ r.when }}</time>
-      <div>
-        <a href="{{ root }}{{ r.path }}">{{ r.display_name }}</a>
+  <div id="upcoming-list">
+{% for month in months %}
+    <div class="month" data-month="{{ month.key }}">
+      <h3>{{ month.label }}</h3>
+      <ul class="events">
+{% for day in month.days %}
+        <li data-end="{{ day.end.isoformat() }}">
+          <time datetime="{{ day.start.isoformat() }}">{{ day.when }}</time>
+          <ul>
+{% for r in day.rows %}
+            <li>
+              <div>
+                <a href="{{ root }}{{ r.path }}">{{ r.display_name }}</a>
 {% if r.ed.status == "tentative" %}
-        <span class="badge">Date not confirmed</span>
+                <span class="badge">Date not confirmed</span>
 {% elif r.ed.status == "cancelled" %}
-        <span class="badge cancelled">Cancelled</span>
+                <span class="badge cancelled">Cancelled</span>
 {% endif %}
-        <p class="meta">{% if r.ev.name_ja %}<span lang="ja">{{ r.ev.name_ja }}</span><br>{% endif %}{{ r.prefecture }}.{% if r.ev.spectator_fee_jpy is none %}<span class="fee-unannounced"> {{ r.ev.spectator_fee_jpy | fee }}.</span>{% else %} {{ r.ev.spectator_fee_jpy | fee }}.{% endif %}{% if r.has_route %} Driven route.{% endif %}{% if r.cutoff_year %} Cars to {{ r.cutoff_year }}.{% endif %}</p>
-      </div>
+                <p class="meta">{% if r.ev.name_ja %}<span lang="ja">{{ r.ev.name_ja }}</span><br>{% endif %}{{ r.prefecture }}.{% if r.ev.spectator_fee_jpy is none %}<span class="fee-unannounced"> {{ r.ev.spectator_fee_jpy | fee }}.</span>{% else %} {{ r.ev.spectator_fee_jpy | fee }}.{% endif %}{% if r.has_route %} Driven route.{% endif %}{% if r.cutoff_year %} Cars to {{ r.cutoff_year }}.{% endif %}</p>
+              </div>
 {% if r.dot %}
-      <svg class="venue-map" viewBox="{{ map_box }}" width="96" height="{{ (96 * map_ratio) | round | int }}" aria-hidden="true" focusable="false"><use xlink:href="#japan" fill="#E0E0E0"/><circle cx="{{ r.dot[0] }}" cy="{{ r.dot[1] }}" r="6" stroke-width="1.5"{% if r.ed.status == "cancelled" %} class="off"{% endif %}/></svg>
+              <svg class="venue-map" viewBox="{{ map_box }}" width="96" height="{{ (96 * map_ratio) | round | int }}" aria-hidden="true" focusable="false"><use xlink:href="#japan" fill="#E0E0E0"/><circle cx="{{ r.dot[0] }}" cy="{{ r.dot[1] }}" r="6" stroke-width="1.5"{% if r.ed.status == "cancelled" %} class="off"{% endif %}/></svg>
 {% endif %}
-    </li>
+            </li>
 {% endfor %}
-  </ul>
+          </ul>
+        </li>
+{% endfor %}
+      </ul>
+    </div>
+{% endfor %}
+  </div>
 </section>
 
 <section id="past" aria-labelledby="past-h" hidden>
   <h2 id="past-h">Past events</h2>
-  <ul class="events" id="past-list"></ul>
+  <div id="past-list"></div>
 </section>
 
 {% endblock %}
@@ -69,15 +82,31 @@
     var todayInJapan = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
     var past = document.getElementById("past-list");
     var moved = 0;
-    document.querySelectorAll("#upcoming-list > li[data-end]").forEach(function (li) {
-      if (li.dataset.end < todayInJapan) {
-        past.prepend(li);
-        moved += 1;
+    // Oldest first, each one put at the top of Past, so Past runs newest first: months and dates alike.
+    var days = document.querySelectorAll("#upcoming-list li[data-end]");
+    for (var i = 0; i < days.length; i++) {
+      var day = days[i];
+      if (day.getAttribute("data-end") >= todayInJapan) continue;
+      var month = day.parentNode.parentNode;
+      var target = past.querySelector('[data-month="' + month.getAttribute("data-month") + '"]');
+      if (!target) {
+        // A month with dates on both sides of today is headed in both lists.
+        target = month.cloneNode(false);
+        target.appendChild(month.querySelector("h3").cloneNode(true));
+        target.appendChild(document.createElement("ul")).className = "events";
+        past.insertBefore(target, past.firstChild);
       }
-    });
+      var list = target.querySelector("ul");
+      list.insertBefore(day, list.firstChild);
+      moved += 1;
+    }
+    var months = document.querySelectorAll("#upcoming-list .month");
+    for (var j = 0; j < months.length; j++) {
+      if (!months[j].querySelector("li[data-end]")) months[j].parentNode.removeChild(months[j]);
+    }
     if (moved) document.getElementById("past").hidden = false;
     document.getElementById("upcoming-h").textContent = "Upcoming";
-    if (!document.querySelector("#upcoming-list > li")) document.getElementById("no-upcoming").hidden = false;
+    if (!document.querySelector("#upcoming-list li[data-end]")) document.getElementById("no-upcoming").hidden = false;
     // The strip looks ahead: this year and the ones after it. The list below keeps the past.
     var thisYear = todayInJapan.slice(0, 4);
     var strip = document.getElementById("years");
