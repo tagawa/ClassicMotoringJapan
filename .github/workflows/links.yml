@@ -1,0 +1,22 @@
+name: Check links
+
+# Separate from build.yml on purpose: a dead link must never stop the site publishing.
+# A failed scheduled run emails whoever last edited the cron line below.
+on:
+  schedule:
+    - cron: "0 0 * * 1"  # Mondays, 09:00 in Japan
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: python scripts/check_links.py
