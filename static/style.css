@@ -118,6 +118,9 @@ a:focus-visible, summary:focus-visible {
 /* Three letters is a small tap target, so give the link height without moving the text. */
 .map { display: inline-block; padding: 4px 0; }
 .calendar-links a { display: inline-block; padding: 4px 0; }
+/* Hidden beats the rule under the row above, so the links join their dates, and that rule
+   comes back once the script drops the row. */
+tr.calendar-links td { border-top-style: hidden; padding-top: 0; }
 .icon { margin-right: 4px; vertical-align: -3px; }
 
 .chip {

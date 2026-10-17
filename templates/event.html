@@ -23,14 +23,17 @@
         <td>{% if r.has_page %}<a href="{{ root }}{{ r.path }}">{{ r.parts_phrase }}</a>{% endif %}</td>
 {% endif %}
       </tr>
+{# A row of their own, not the Dates cell: a phone leaves that column too narrow for them. #}
+{% if r.ics_path %}
+      <tr class="calendar-links" data-hide-after="{{ r.ed.end.isoformat() }}">
+        <td></td>
+        <td colspan="{{ 3 if show_details else 2 }}">{{ calendar_links(r, root) }}</td>
+      </tr>
+{% endif %}
 {% endfor %}
     </tbody>
   </table>
 </div>
-{# Under the table, not in it: a phone leaves the Dates column too narrow for them. #}
-{% for r in rows if r.ics_path %}
-<p class="calendar-links" data-hide-after="{{ r.ed.end.isoformat() }}">{{ r.label }}, {{ r.when_day }}<br>{{ calendar_links(r, root) }}</p>
-{% endfor %}
 {% else %}
 <p>No dates announced yet.</p>
 {% endif %}
