@@ -501,7 +501,7 @@ class BuildOutputTests(unittest.TestCase):
 
     def test_entry_list_labels_and_keeps_leading_zeros(self):
         html = self.pages["events/autumn-rally/2026/index.html"]
-        self.assertIn("<h2>Entry list</h2>", html)
+        self.assertIn('<h2 id="cars">Entry list</h2>', html)
         self.assertNotIn("Entry list as of", html, "the heading already says what the list is")
         self.assertIn("<p>As of 2026-09-15.", html)
         self.assertIn("Provisional: cars may withdraw or change.", html)
@@ -1292,7 +1292,7 @@ class VideoTests(unittest.TestCase):
     def test_the_borrowed_video_comes_last_under_a_heading_naming_its_edition(self):
         html = self.page(2026)
         heading = html.index(">From the 2025 edition</h2>")
-        self.assertGreater(heading, html.index("<h2>Route</h2>"))
+        self.assertGreater(heading, html.index('<h2 id="route">Route</h2>'))
         self.assertGreater(html.index("<iframe"), heading)
 
     def test_the_borrowed_video_is_titled_lazy_and_linked_like_an_own_one(self):
@@ -2258,7 +2258,7 @@ class HomeMonthGroupTests(unittest.TestCase):
         build.build(data, cls.tmp / "site")
         html = (cls.tmp / "site" / "index.html").read_text(encoding="utf-8")
         cls.list = re.search(r'(?s)<div id="upcoming-list">.*?</section>', html).group(0)
-        cls.days = re.findall(r'(?s)<li data-end="[^"]+">\s*<time datetime="[^"]+">(.*?)</time>(.*?)</ul>\s*</li>',
+        cls.days = re.findall(r'(?s)<li data-end="[^"]+">\s*<div class="day-when"><time datetime="[^"]+">(.*?)</time></div>(.*?)</ul>\s*</li>',
                               cls.list)
 
     @classmethod
@@ -2499,7 +2499,7 @@ class DisplayListTests(unittest.TestCase):
         self.assertIn("<td>Toyota</td><td>2000GT</td>", self.html)
 
     def test_it_is_not_called_an_entry_list(self):
-        self.assertIn("<h2>Cars on display</h2>", self.html)
+        self.assertIn('<h2 id="cars">Cars on display</h2>', self.html)
         self.assertNotIn("Entry list", self.html)
 
     def test_the_as_of_line_does_not_repeat_the_heading_above_it(self):
@@ -2876,6 +2876,111 @@ class FathomEventTests(unittest.TestCase):
     def test_the_help_counts_when_opened_not_when_closed(self):
         script = self.pages["index.html"]
         self.assertIn('addEventListener("toggle", function (e) { if (e.target.open) report(e.target); })', script)
+
+
+class HomeTimeAwareTests(unittest.TestCase):
+    """What the home page decides by today's date, which only the browser knows: the markup
+    carries the dates, and tests/test_browser.py runs the script against them."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = Path(tempfile.mkdtemp())
+        make_fixture(cls.tmp / "data")
+        build.build(cls.tmp / "data", cls.tmp / "site")
+        cls.html = (cls.tmp / "site" / "index.html").read_text(encoding="utf-8")
+        cls.script = cls.html[cls.html.index("<script>\n  (function () {"):]
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.tmp)
+
+    def test_past_events_fold_under_a_summary_the_script_counts(self):
+        self.assertRegex(self.html, r'<section id="past" aria-labelledby="past-h" hidden>\s*<details>\s*'
+                                    r'<summary id="past-h">Past events \(<span id="past-count"></span>\)</summary>\s*'
+                                    r'<div id="past-list"></div>')
+        self.assertIn('getElementById("past-count").textContent', self.script)
+
+    def test_each_strip_bar_carries_its_last_day_so_the_past_can_be_greyed(self):
+        self.assertRegex(self.html, r'<i data-end="2026-04-12" style="left: [\d.]+%')
+        self.assertRegex(self.html, r'<i class="off" data-end="2027-11-03" style=')
+
+    def test_the_script_marks_today_on_the_strip(self):
+        self.assertIn('"chart-today"', self.script)
+        self.assertIn('"chart-today-label"', self.script)
+
+    def test_each_date_sits_in_a_box_that_can_take_a_badge(self):
+        self.assertRegex(self.html, r'<div class="day-when"><time datetime="2026-10-18">Sun 18 to Mon 19 Oct</time></div>')
+        self.assertIn('"This weekend"', self.script)
+
+
+class SiteFooterLinkTests(unittest.TestCase):
+    """The channel and the way to report an error, on every page and not only on About."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = Path(tempfile.mkdtemp())
+        make_fixture(cls.tmp / "data")
+        out = cls.tmp / "site"
+        build.build(cls.tmp / "data", out)
+        cls.pages = {str(p.relative_to(out)): p.read_text(encoding="utf-8") for p in out.rglob("*.html")}
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.tmp)
+
+    def test_every_footer_links_the_channel_the_issues_and_about(self):
+        for rel, html in self.pages.items():
+            footer = html[html.index('<footer class="site-footer">'):]
+            links = re.search(r'(?s)<p class="site-links">(.*?)</p>', footer)
+            self.assertIsNotNone(links, rel)
+            self.assertEqual([text for _, text in re.findall(r'<a href="([^"]+)">([^<]+)</a>', links.group(1))],
+                             ["YouTube channel", "Report an error on GitHub", "About this site"], rel)
+            self.assertIn(f'<a href="{build.YOUTUBE_CHANNEL_URL}">', links.group(1))
+            self.assertIn(f'<a href="{build.ISSUES_URL}">', links.group(1))
+
+
+class OnThisPageTests(unittest.TestCase):
+    """A jump to each section of a long edition page, counted from what the section shows."""
+
+    def page(self, extra: str) -> str:
+        tmp = Path(tempfile.mkdtemp())
+        try:
+            data = tmp / "data"
+            write_event(data, "meet")
+            write_instance(data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-19", extra=extra))
+            build.build(data, tmp / "site")
+            return (tmp / "site" / "events" / "meet" / "2026" / "index.html").read_text(encoding="utf-8")
+        finally:
+            shutil.rmtree(tmp)
+
+    def jumps(self, html: str) -> list[tuple[str, str]]:
+        nav = re.search(r'(?s)<nav class="on-this-page" aria-label="On this page">(.*?)</nav>', html)
+        return re.findall(r'<a href="(#[^"]+)">([^<]+)</a>', nav.group(1)) if nav else []
+
+    def test_each_section_in_page_order_with_what_it_holds(self):
+        html = self.page(VIDEOS + CARS + ROUTE)
+        self.assertEqual(self.jumps(html), [("#videos", "Videos (2)"), ("#cars", "Entry list (2 cars)"),
+                                            ("#route", "Route (2 days)")])
+
+    def test_every_jump_lands_on_a_heading(self):
+        html = self.page(VIDEOS + CARS + ROUTE)
+        for href, _ in self.jumps(html):
+            self.assertRegex(html, rf'<h2 id="{href[1:]}">')
+
+    def test_a_show_line_up_counts_models_and_a_described_route_counts_nothing(self):
+        html = self.page(display_cars_yaml([("Toyota", "2000GT"), ("Honda", "S500")])
+                         + "route_en: From the town hall along the high street.\n")
+        self.assertEqual(self.jumps(html), [("#route", "Route"), ("#cars", "Cars on display (2 models)")])
+
+    def test_a_page_with_one_section_needs_no_jumps(self):
+        self.assertEqual(self.jumps(self.page(CARS)), [])
+        self.assertNotIn('class="on-this-page"', self.page(CARS))
+
+    def test_several_videos_share_a_row_that_wide_screens_can_split(self):
+        html = self.page(VIDEOS + CARS)
+        row = re.search(r'(?s)<div class="videos">(.*?)</div>\s*(?:<h2|$)', html)
+        self.assertIsNotNone(row)
+        self.assertEqual(row.group(1).count('<figure class="video">'), 2)
 
 
 class OutputFolderTests(unittest.TestCase):

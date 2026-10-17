@@ -683,7 +683,9 @@ def year_chart(rows: list[dict]) -> list[dict]:
             "bars": [{"left": round((e["start"].timetuple().tm_yday - 1) / days * 100, 2),
                       "width": round(max(((e["end"] - e["start"]).days + 1) / days * 100,
                                          CHART_MIN_BAR), 2),
-                      "cancelled": e["status"] == "cancelled"}
+                      "cancelled": e["status"] == "cancelled",
+                      # The browser greys the bars whose last day has passed; the build never reads the clock.
+                      "end": e["end"].isoformat()}
                      for e in editions],
         })
     return years
@@ -943,6 +945,16 @@ def make_rows(events: dict, editions: list, makes: dict | None = None) -> list[d
         sections = [name for name in order if present[name]]
         page_parts = [{"route": "Route", "cars": cars_label, "videos": "Videos"}[name] for name in sections]
         has_page = bool(page_parts)
+        # Counted from what each section shows, so a jump cannot promise more than it lands on.
+        n_cars, n_videos = len(present["cars"] or []), len(present["videos"] or [])
+        n_days = len(ed.get("route") or [])
+        jump_text = {
+            "videos": f"Videos ({n_videos})",
+            "cars": f"{cars_label} ({n_cars} {'car' if cars_label == 'Entry list' else 'model'}"
+                    f"{'' if n_cars == 1 else 's'})",
+            "route": f"Route ({n_days} day{'' if n_days == 1 else 's'})" if n_days else "Route",
+        }
+        jumps = [{"id": name, "text": jump_text[name]} for name in sections] if len(sections) > 1 else []
         # "Route, entry list and videos": one wording for the title, the link and the snippet.
         parts_phrase = list_phrase(page_parts)
         path = f"events/{slug}/{ed_id}/" if has_page else f"events/{slug}/"
@@ -952,7 +964,7 @@ def make_rows(events: dict, editions: list, makes: dict | None = None) -> list[d
             "edition": edition, "display_name": display_name,
             "full_name": f"{display_name} {year}",
             "label": f"{edition} {year}" if edition else str(year),
-            "has_page": has_page, "sections": sections, "page_parts": page_parts, "parts_phrase": parts_phrase, "event_notes": event_notes_phrase(ev), "path": path, "abs_url": f"{SITE_URL}/{path}",
+            "has_page": has_page, "sections": sections, "jumps": jumps, "page_parts": page_parts, "parts_phrase": parts_phrase, "event_notes": event_notes_phrase(ev), "path": path, "abs_url": f"{SITE_URL}/{path}",
             "uid": f"{slug}-{ed_id}@{UID_DOMAIN}",
             # A saved copy never updates, so only a date that should not move is offered as one.
             "ics_path": f"events/{slug}/{ed_id}.ics" if ed["status"] == "confirmed" else None,

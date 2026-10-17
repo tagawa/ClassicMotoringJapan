@@ -60,6 +60,13 @@ a:focus-visible, summary:focus-visible {
 .events > li > ul > li { display: grid; grid-template-columns: 1fr 96px; gap: 0 16px; }
 .events > li > ul > li + li { margin-top: 16px; }
 .events time { font-weight: 600; font-variant-numeric: tabular-nums; }
+/* Filled, unlike the status badges, because it is the one thing on the list to act on first. */
+.badge.weekend { background: #8C1C24; color: #FFFFFF; }
+/* The space goes after the date, not before the badge: beside it on a phone, flush under it
+   in the narrow desktop column, where a trailing margin at a line end takes no room. */
+.day-when time { margin-right: 8px; }
+.day-when .badge { margin-left: 0; }
+#past summary { font-size: 24px; line-height: 1.3; }
 .events .meta { margin: 4px 0 0; color: #5C5C5C; }
 /* "Not announced" is no use once an event is over; the script moves past entries here. */
 #past-list .fee-unannounced { display: none; }
@@ -74,6 +81,11 @@ a:focus-visible, summary:focus-visible {
   font-weight: 600;
 }
 .badge.cancelled { background: #FBE9E5; color: #8E2A1B; }
+
+/* Jumps to an edition page's sections. Inline, so a wrapped line starts flush at the left. */
+.on-this-page { margin: 24px 0; padding: 16px 0; border-top: 1px solid #E0E0E0; border-bottom: 1px solid #E0E0E0; }
+.on-this-page span { margin-right: 16px; color: #5C5C5C; }
+.on-this-page a, .site-links a { display: inline-block; padding: 4px 0; margin-right: 16px; white-space: nowrap; }
 
 .note {
   padding: 16px;
@@ -209,8 +221,15 @@ summary { cursor: pointer; font-weight: 600; }
 .video-frame { position: relative; height: 0; padding-top: 56.25%; }
 .video-frame iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
 .video figcaption { margin-top: 8px; }
-/* Cancelled: still shown, because the list below shows it, but plainly not a date to keep. */
-.chart-track i.off { background: #5C5C5C; }
+/* Two to a row where both fit, one on a phone, with no breakpoint: each wraps below 288px. */
+.videos { display: flex; flex-wrap: wrap; margin-left: -24px; }
+.videos > .video { flex: 1 1 288px; margin-left: 24px; }
+/* Cancelled or gone: still shown, because the list below shows it, but plainly not a date to keep. */
+.chart-track i.off, .chart-track i.past { background: #5C5C5C; }
+/* Today on this year's strip, with its word on a line of its own above the track. */
+.chart-today { position: absolute; top: -4px; width: 2px; height: 16px; background: #1C1C1C; }
+.chart-today-label { display: block; position: relative; height: 24px; color: #5C5C5C; }
+.chart-today-label span { position: absolute; top: 0; white-space: nowrap; }
 
 @media (max-width: 480px) {
   .facts { grid-template-columns: 1fr; gap: 4px; }
@@ -242,7 +261,12 @@ summary { cursor: pointer; font-weight: 600; }
   .chart-track { background: #333333; }
   .chart-track i { background: #D0636A; }
   .chart-axis { color: #A8A8A8; }
-  .chart-track i.off { background: #A8A8A8; }
+  .chart-track i.off, .chart-track i.past { background: #A8A8A8; }
+  .chart-today { background: #EBEBEB; }
+  .chart-today-label { color: #A8A8A8; }
+  .badge.weekend { background: #D0636A; color: #141414; }
+  .on-this-page { border-top-color: #333333; border-bottom-color: #333333; }
+  .on-this-page span { color: #A8A8A8; }
   .chip { border-color: #333333; }
   .dot { background: #D0636A; }
   .dot.tentative { background: #F3D98B; }

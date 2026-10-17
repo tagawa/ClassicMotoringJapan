@@ -14,7 +14,7 @@
     <span class="chart-when">{{ y.label }}</span>
     <span class="chart-track" aria-hidden="true">
 {% for bar in y.bars %}
-      <i{% if bar.cancelled %} class="off"{% endif %} style="left: {{ bar.left }}%; width: {{ bar.width }}%"></i>
+      <i{% if bar.cancelled %} class="off"{% endif %} data-end="{{ bar.end }}" style="left: {{ bar.left }}%; width: {{ bar.width }}%"></i>
 {% endfor %}
     </span>
   </li>
@@ -36,7 +36,7 @@
       <ul class="events">
 {% for day in month.days %}
         <li data-end="{{ day.end.isoformat() }}">
-          <time datetime="{{ day.start.isoformat() }}">{{ day.when }}</time>
+          <div class="day-when"><time datetime="{{ day.start.isoformat() }}">{{ day.when }}</time></div>
           <ul>
 {% for r in day.rows %}
             <li>
@@ -63,9 +63,12 @@
   </div>
 </section>
 
+{# Folded: it grows all year, and the page is for what is still to come. #}
 <section id="past" aria-labelledby="past-h" hidden>
-  <h2 id="past-h">Past events</h2>
-  <div id="past-list"></div>
+  <details>
+    <summary id="past-h">Past events (<span id="past-count"></span>)</summary>
+    <div id="past-list"></div>
+  </details>
 </section>
 
 {% endblock %}
@@ -104,19 +107,69 @@
     for (var j = 0; j < months.length; j++) {
       if (!months[j].querySelector("li[data-end]")) months[j].parentNode.removeChild(months[j]);
     }
-    if (moved) document.getElementById("past").hidden = false;
+    if (moved) {
+      document.getElementById("past-count").textContent = past.querySelectorAll("li li").length;
+      document.getElementById("past").hidden = false;
+    }
     document.getElementById("upcoming-h").textContent = "Upcoming";
     if (!document.querySelector("#upcoming-list li[data-end]")) document.getElementById("no-upcoming").hidden = false;
+
+    // This weekend is Saturday and Sunday of the current week in Japan, so on a Sunday it is
+    // the one in progress. A date is badged if any of its days falls on either.
+    var today = new Date(todayInJapan + "T00:00:00Z");
+    var weekday = today.getUTCDay();
+    function daysFromToday(n) {
+      return new Date(today.getTime() + n * 86400000).toISOString().slice(0, 10);
+    }
+    var saturday = daysFromToday(weekday === 0 ? -1 : 6 - weekday);
+    var sunday = daysFromToday(weekday === 0 ? 0 : 7 - weekday);
+    var ahead = document.querySelectorAll("#upcoming-list li[data-end]");
+    for (var k = 0; k < ahead.length; k++) {
+      var first = ahead[k].querySelector("time").getAttribute("datetime");
+      if (first <= sunday && ahead[k].getAttribute("data-end") >= saturday) {
+        var badge = document.createElement("span");
+        badge.className = "badge weekend";
+        badge.textContent = "This weekend";
+        ahead[k].querySelector(".day-when").appendChild(badge);
+      }
+    }
     // The strip looks ahead: this year and the ones after it. The list below keeps the past.
     var thisYear = todayInJapan.slice(0, 4);
     var strip = document.getElementById("years");
-    var ahead = 0;
+    var yearsAhead = 0;
     if (strip) {
       strip.querySelectorAll("li[data-year]").forEach(function (li) {
         if (li.dataset.year < thisYear) li.hidden = true;
-        else ahead += 1;
+        else yearsAhead += 1;
       });
-      if (!ahead) strip.hidden = true;
+      if (!yearsAhead) strip.hidden = true;
+      // Grey for a date that has gone, as for one that was cancelled: neither is one to keep.
+      var bars = strip.querySelectorAll("i[data-end]");
+      for (var b = 0; b < bars.length; b++) {
+        if (bars[b].getAttribute("data-end") < todayInJapan) bars[b].className = (bars[b].className ? bars[b].className + " " : "") + "past";
+      }
+      // Today, placed by the same day-of-year sum the build uses for the bars.
+      var current = strip.querySelector('li[data-year="' + thisYear + '"]');
+      if (current) {
+        var yearStart = Date.UTC(Number(thisYear), 0, 1);
+        var yearDays = (Date.UTC(Number(thisYear) + 1, 0, 1) - yearStart) / 86400000;
+        var left = Math.round((today.getTime() - yearStart) / 86400000 / yearDays * 10000) / 100;
+        var track = current.querySelector(".chart-track");
+        var tick = document.createElement("b");
+        tick.className = "chart-today";
+        tick.style.left = left + "%";
+        track.appendChild(tick);
+        // A line of its own above the track, so the word can never sit on the year's label.
+        var line = document.createElement("span");
+        line.className = "chart-today-label";
+        line.setAttribute("aria-hidden", "true");
+        var word = document.createElement("span");
+        word.textContent = "Today";
+        if (left > 50) word.style.right = (100 - left) + "%";
+        else word.style.left = left + "%";
+        line.appendChild(word);
+        current.insertBefore(line, track);
+      }
     }
   })();
 </script>

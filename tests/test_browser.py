@@ -50,7 +50,9 @@ class PastEventsTest(unittest.TestCase):
         page.goto(self.home)
         result = {
             "upcoming": page.locator("#upcoming-list a").all_inner_texts(),
-            "past": page.locator("#past-list a").all_inner_texts(),
+            # textContent: Past is folded, and a closed details renders none of its text.
+            "past": page.locator("#past-list a").all_text_contents(),
+            "past_count": page.locator("#past-count").text_content(),
             "past_visible": page.locator("#past").is_visible(),
             "heading": page.locator("#upcoming-h").inner_text(),
         }
@@ -63,6 +65,7 @@ class PastEventsTest(unittest.TestCase):
         self.assertEqual(s["past"], ["Past Meet"])
         self.assertEqual(s["upcoming"], ["Next Meet"])
         self.assertTrue(s["past_visible"])
+        self.assertEqual(s["past_count"], "1")
 
     def test_the_sorted_list_is_headed_upcoming(self):
         # The markup says Events, for a reader whose browser never runs the script.
@@ -107,8 +110,8 @@ class MonthSplitTest(unittest.TestCase):
         page = ctx.new_page()
         page.clock.set_fixed_time(utc_instant)
         page.goto(self.home)
-        result = {where: page.locator(f"#{where}-list h3").all_inner_texts() for where in ("upcoming", "past")}
-        result["past_events"] = page.locator("#past-list a").all_inner_texts()
+        result = {where: page.locator(f"#{where}-list h3").all_text_contents() for where in ("upcoming", "past")}
+        result["past_events"] = page.locator("#past-list a").all_text_contents()
         ctx.close()
         return result
 
@@ -126,6 +129,67 @@ class MonthSplitTest(unittest.TestCase):
         s = self.headings_at("2026-11-02T03:00:00Z")
         self.assertEqual(s["past"], ["November 2026", "October 2026"])
         self.assertEqual(s["past_events"], ["Next", "Late", "Early"])
+
+
+@unittest.skipIf(sync_playwright is None, "playwright not installed")
+class WeekendAndTodayTest(unittest.TestCase):
+    """The badge and the strip's Today mark, both judged by Japan's date."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = Path(tempfile.mkdtemp())
+        data = cls.tmp / "data"
+        # 2026-10-17 is a Saturday.
+        for slug, start, end in (("friday", "2026-10-16", "2026-10-16"), ("sunday", "2026-10-18", "2026-10-18"),
+                                 ("across", "2026-10-16", "2026-10-17"), ("monday", "2026-10-19", "2026-10-19"),
+                                 ("later", "2026-10-25", "2026-10-25")):
+            write_event(data, slug, name_en=slug.capitalize())
+            write_instance(data, slug, 2026, instance_yaml(slug, 2026, start, end))
+        build.build(data, cls.tmp / "site")
+        cls.home = (cls.tmp / "site" / "index.html").as_uri()
+        try:
+            cls.pw = sync_playwright().start()
+            cls.browser = cls.pw.chromium.launch()
+        except Exception as e:
+            shutil.rmtree(cls.tmp)
+            raise unittest.SkipTest(f"chromium unavailable: {e}")
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.browser.close()
+        cls.pw.stop()
+        shutil.rmtree(cls.tmp)
+
+    def at(self, utc_instant: str) -> dict:
+        ctx = self.browser.new_context(timezone_id="Europe/London")
+        page = ctx.new_page()
+        page.clock.set_fixed_time(utc_instant)
+        page.goto(self.home)
+        result = {
+            "badged": page.locator("#upcoming-list li[data-end]:has(.weekend) a").all_text_contents(),
+            "today": page.locator("#years .chart-today").evaluate_all("els => els.map(el => el.style.left)"),
+            "greyed": page.locator("#years i.past").count(),
+        }
+        ctx.close()
+        return result
+
+    def test_on_a_weekday_the_coming_weekend_is_badged(self):
+        # Wednesday 14 Oct in Japan.
+        self.assertEqual(self.at("2026-10-14T03:00:00Z")["badged"], ["Across", "Sunday"])
+
+    def test_on_a_sunday_it_is_the_weekend_in_progress(self):
+        # Sunday 18 Oct, 09:00 in Japan: Saturday's events have gone to Past, Sunday's stay badged.
+        self.assertEqual(self.at("2026-10-18T00:00:00Z")["badged"], ["Sunday"])
+
+    def test_on_a_monday_it_moves_on_to_the_next_one(self):
+        self.assertEqual(self.at("2026-10-19T03:00:00Z")["badged"], ["Later"])
+
+    def test_today_is_marked_where_the_build_would_put_that_date(self):
+        # 17 Oct is day 290 of 365: 289 days in, as the bars are placed.
+        self.assertEqual(self.at("2026-10-17T03:00:00Z")["today"], ["79.18%"])
+
+    def test_bars_whose_last_day_has_passed_are_greyed(self):
+        self.assertEqual(self.at("2026-10-17T15:30:00Z")["greyed"], 2)
 
 
 @unittest.skipIf(sync_playwright is None, "playwright not installed")

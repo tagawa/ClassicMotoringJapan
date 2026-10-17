@@ -48,9 +48,18 @@
 <p><a href="{{ root }}{{ r.previous_videos.path }}#videos">{{ video_icon() }}Videos of the {{ r.previous_videos.label }} edition</a></p>
 {% endif %}
 
+{% if r.jumps %}
+<nav class="on-this-page" aria-label="On this page">
+  <span>On this page</span>
+{% for jump in r.jumps %}
+  <a href="#{{ jump.id }}">{{ jump.text }}</a>
+{% endfor %}
+</nav>
+{% endif %}
+
 {% for section in r.sections %}
 {% if section == "route" %}
-<h2>Route</h2>
+<h2 id="route">Route</h2>
 {% if ed.route_en %}
 <p>{{ ed.route_en | prose }}</p>
 {% endif %}
@@ -88,7 +97,7 @@
 {% endfor %}
 
 {% elif section == "cars" %}
-<h2>{{ r.cars_label }}</h2>
+<h2 id="cars">{{ r.cars_label }}</h2>
 <p>As of {{ ed.list_as_of.isoformat() }}.{% if r.list_provisional %} Provisional: {{ r.cars_caveat }}.{% endif %}</p>
 {# The two strips share one look, so each part of the list is headed with what it counts. #}
 {# The strips summarise the table, so where there is one the table folds away beneath it. #}
@@ -144,9 +153,11 @@
 
 {% elif section == "videos" %}
 <h2 id="videos">Videos</h2>
+<div class="videos">
 {% for video in r.videos %}
 {{ video_figure(video) }}
 {% endfor %}
+</div>
 {% endif %}
 {% endfor %}
 {# Not a section: it shows what the event is like, not what this edition has. #}
