@@ -875,16 +875,25 @@ def build_jsonld(r: dict) -> Markup:
     # An unannounced admission is not a free one, and false would be a claim of its own.
     if ev["spectator_fee_jpy"] is not None:
         data["isAccessibleForFree"] = ev["spectator_fee_jpy"] == 0
+        # No offer url: Google means a ticket page by it, and the data has none.
+        data["offers"] = {"@type": "Offer", "price": ev["spectator_fee_jpy"], "priceCurrency": "JPY"}
     if ev.get("summary_en"):
         data["description"] = prose_text(ev["summary_en"]).strip()
     if ev.get("organizer"):
-        data["organizer"] = {"@type": "Organization", "name": ev["organizer"], "url": ev["official_url"]}
+        # No url: official_url is often a tourism listing or a blog post, not the organiser's site.
+        data["organizer"] = {"@type": "Organization", "name": ev["organizer"]}
     return jsonld_markup(data)
 
 
 def jsonld_markup(data: dict) -> Markup:
     # "</" would close the script element early, whatever the JSON around it says.
     return Markup(json.dumps(data, ensure_ascii=False, indent=2).replace("</", "<\\/"))
+
+
+def build_website_jsonld() -> Markup:
+    """Where Google takes the site name shown in its results from. Home page only."""
+    return jsonld_markup({"@context": "https://schema.org", "@type": "WebSite",
+                          "name": SITE_NAME, "url": f"{SITE_URL}/"})
 
 
 def build_breadcrumbs(r: dict) -> Markup:
@@ -1241,7 +1250,7 @@ def build(data_dir: Path, out_dir: Path,
     latest = max(all_verified) if all_verified else None
     write("index.html", env.get_template("home.html").render(
         **common, root="", canonical=f"{SITE_URL}/", title=f"Classic car events in Japan | {SITE_NAME}",
-        description=SITE_LEDE, months=month_groups(rows), years=year_chart(rows), latest=latest, jsonld=[],
+        description=SITE_LEDE, months=month_groups(rows), years=year_chart(rows), latest=latest, jsonld=[build_website_jsonld()],
         japan=japan_path() if any(r["dot"] for r in rows) else None,
         map_box=f"0 0 {MAP_WIDTH:g} {MAP_HEIGHT:g}", map_ratio=MAP_HEIGHT / MAP_WIDTH))
 

@@ -225,6 +225,22 @@ class BuildOutputTests(unittest.TestCase):
         self.assertTrue(found["Autumn Rally, Shizuoka 2026"][0][1]["isAccessibleForFree"])
         self.assertFalse(found["Test Event 2026"][0][1]["isAccessibleForFree"])
 
+    def test_offer_carries_the_fee_in_yen(self):
+        found = self.jsonld_by_name()
+        self.assertEqual(found["Autumn Rally, Shizuoka 2026"][0][1]["offers"],
+                         {"@type": "Offer", "price": 0, "priceCurrency": "JPY"})
+        self.assertEqual(found["Test Event 2026"][0][1]["offers"],
+                         {"@type": "Offer", "price": 1500, "priceCurrency": "JPY"})
+
+    def test_home_page_alone_names_the_site(self):
+        # Google reads the site name in its results from WebSite data on the home page.
+        self.assertEqual(jsonld_blocks(self.pages["index.html"]),
+                         [{"@context": "https://schema.org", "@type": "WebSite",
+                           "name": "Classic Motoring Japan", "url": "https://classicmotoringjapan.com/"}])
+        for page, html in self.pages.items():
+            if page != "index.html":
+                self.assertNotIn("WebSite", [b["@type"] for b in jsonld_blocks(html)], page)
+
     # Calendar feed (offline proxy for the phone subscription)
 
     def test_ics_uses_crlf_and_folds_at_75_octets(self):
@@ -2472,6 +2488,21 @@ class UnannouncedFeeTests(unittest.TestCase):
         block = json.loads(re.search(r'<script type="application/ld\+json">(.*?)</script>',
                                      self.event_html, re.S).group(1))
         self.assertNotIn("isAccessibleForFree", block)
+        self.assertNotIn("offers", block)
+
+
+class StructuredDataOrganizerTests(unittest.TestCase):
+    """The organiser is named but given no URL: `official_url` is often a tourism listing,
+    a blog post or an Instagram account, which would be a false claim about its website."""
+
+    def test_organizer_has_a_name_and_no_url(self):
+        tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, tmp)
+        write_event(tmp / "data", "meet", extra="organizer: Test Club\n")
+        write_instance(tmp / "data", "meet", 2026, instance_yaml("meet", 2026, "2026-11-03", "2026-11-03"))
+        build.build(tmp / "data", tmp / "site")
+        block, = jsonld_blocks((tmp / "site/events/meet/index.html").read_text(encoding="utf-8"))
+        self.assertEqual(block["organizer"], {"@type": "Organization", "name": "Test Club"})
 
 
 class HeldEditionTests(unittest.TestCase):
