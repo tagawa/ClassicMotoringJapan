@@ -66,8 +66,18 @@ a:focus-visible, summary:focus-visible {
    in the narrow desktop column, where a trailing margin at a line end takes no room. */
 .day-when time { margin-right: 8px; }
 .day-when .badge { margin-left: 0; }
+/* A calendar leaf per date: weekdays on the brand band, days beneath. The month is left to
+   the heading above, so the leaf is hidden from screen readers in favour of the full date. */
+.leaf { display: inline-block; min-width: 64px; margin-bottom: 8px; text-align: center; vertical-align: top; }
+.leaf-day { display: block; padding: 0 8px; border-radius: 8px 8px 0 0; background: #8C1C24; color: #FFFFFF; text-transform: uppercase; }
+.leaf-date { display: block; padding: 0 8px; border: 1px solid #E0E0E0; border-top: 0; border-radius: 0 0 8px 8px; font-size: 24px; line-height: 1.5; }
+/* Grey once it has gone, as the year strip greys a past bar. */
+#past-list .leaf-day { background: #5C5C5C; }
 #past summary { font-size: 24px; line-height: 1.3; }
 .events .meta { margin: 4px 0 0; color: #5C5C5C; }
+/* Margins rather than flex gap, on the left so a fact that starts a wrapped line sits flush. */
+.fact-list { display: block; margin-left: -16px; }
+.fact { display: inline-block; margin-left: 16px; }
 /* "Not announced" is no use once an event is over; the script moves past entries here. */
 #past-list .fee-unannounced { display: none; }
 
@@ -265,6 +275,9 @@ summary { cursor: pointer; font-weight: 600; }
   .chart-today { background: #EBEBEB; }
   .chart-today-label { color: #A8A8A8; }
   .badge.weekend { background: #D0636A; color: #141414; }
+  .leaf-day { background: #D0636A; color: #141414; }
+  .leaf-date { border-color: #333333; }
+  #past-list .leaf-day { background: #A8A8A8; }
   .on-this-page { border-top-color: #333333; border-bottom-color: #333333; }
   .on-this-page span { color: #A8A8A8; }
   .chip { border-color: #333333; }

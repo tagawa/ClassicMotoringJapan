@@ -1,4 +1,6 @@
 {% extends "base.html" %}
+{% from "icons.html" import pin_icon, ticket_icon, route_icon, car_icon %}
+{% set stop = '<span class="visually-hidden">. </span>' | safe %}
 {% block main %}
 <h1>Classic car events in Japan</h1>
 <p class="lede">{{ site_lede }}</p>
@@ -36,7 +38,7 @@
       <ul class="events">
 {% for day in month.days %}
         <li data-end="{{ day.end.isoformat() }}">
-          <div class="day-when"><time datetime="{{ day.start.isoformat() }}">{{ day.when }}</time></div>
+          <div class="day-when"><time datetime="{{ day.start.isoformat() }}"><span class="visually-hidden">{{ day.when }}</span><span class="leaf" aria-hidden="true"><span class="leaf-day">{{ day.leaf[0] }}</span><span class="leaf-date">{{ day.leaf[1] }}</span></span></time></div>
           <ul>
 {% for r in day.rows %}
             <li>
@@ -47,7 +49,9 @@
 {% elif r.ed.status == "cancelled" %}
                 <span class="badge cancelled">Cancelled</span>
 {% endif %}
-                <p class="meta">{% if r.ev.name_ja %}<span lang="ja">{{ r.ev.name_ja }}</span><br>{% endif %}{{ r.prefecture }}.{% if r.ev.spectator_fee_jpy is none %}<span class="fee-unannounced"> {{ r.ev.spectator_fee_jpy | fee }}.</span>{% else %} {{ r.ev.spectator_fee_jpy | fee }}.{% endif %}{% if r.has_route %} Driven route.{% endif %}{% if r.cutoff_year %} Cars to {{ r.cutoff_year }}.{% endif %}</p>
+{# Each fact keeps its glyph on its own line when the row wraps. The full stops are hidden,
+   since the glyphs part the facts on screen, but a screen reader still hears each one end. #}
+                <p class="meta">{% if r.ev.name_ja %}<span lang="ja">{{ r.ev.name_ja }}</span><br>{% endif %}<span class="fact-list"><span class="fact">{{ pin_icon() }}{{ r.prefecture }}{{ stop }}</span><span class="fact{% if r.ev.spectator_fee_jpy is none %} fee-unannounced{% endif %}">{{ ticket_icon() }}{{ r.ev.spectator_fee_jpy | fee }}{{ stop }}</span>{% if r.has_route %}<span class="fact">{{ route_icon() }}Driven route{{ stop }}</span>{% endif %}{% if r.cutoff_year %}<span class="fact">{{ car_icon() }}Cars to {{ r.cutoff_year }}{{ stop }}</span>{% endif %}</span></p>
               </div>
 {% if r.dot %}
               <svg class="venue-map" viewBox="{{ map_box }}" width="96" height="{{ (96 * map_ratio) | round | int }}" aria-hidden="true" focusable="false"><use xlink:href="#japan" fill="#E0E0E0"/><circle cx="{{ r.dot[0] }}" cy="{{ r.dot[1] }}" r="6" stroke-width="1.5"{% if r.ed.status == "cancelled" %} class="off"{% endif %}/></svg>

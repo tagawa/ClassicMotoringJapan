@@ -2158,9 +2158,11 @@ class HomeRowFactsTests(unittest.TestCase):
         write_instance(data, "meet", 2026, instance_yaml("meet", 2026, "2026-11-08", "2026-11-08"))
         build.build(data, cls.tmp / "site")
         html = (cls.tmp / "site" / "index.html").read_text(encoding="utf-8")
-        cls.rows = {(name, when[:4]): " ".join(re.sub(r"<[^>]+>", " ", meta).split())
-                    for when, name, meta in re.findall(
-                        r'(?s)<li data-end="([^"]+)">.*?<a href="[^"]*">([^<]+)</a>.*?<p class="meta">(.*?)</p>', html)}
+        cls.markup = {(name, when[:4]): meta for when, name, meta in re.findall(
+            r'(?s)<li data-end="([^"]+)">.*?<a href="[^"]*">([^<]+)</a>.*?<p class="meta">(.*?)</p>', html)}
+        # As a screen reader hears it: the glyphs say nothing, the hidden full stops do.
+        cls.rows = {key: " ".join(re.sub(r"<[^>]+>", "", meta.replace("<br>", " ")).split())
+                    for key, meta in cls.markup.items()}
 
     @classmethod
     def tearDownClass(cls):
@@ -2192,6 +2194,17 @@ class HomeRowFactsTests(unittest.TestCase):
         self.assertIn("Cars to 1996.", self.rows["Show", "2026"])
         self.assertIn("Cars to 1988.", self.rows["Show", "2025"])
 
+    def test_each_fact_opens_with_a_glyph_of_its_own(self):
+        facts = re.findall(r'<span class="fact"><svg class="icon" [^>]*aria-hidden="true"[^>]*>(.*?)</svg>'
+                           r'([^<]+)<span class="visually-hidden">\. </span></span>', self.markup["Tour", "2026"])
+        self.assertEqual([text for _, text in facts], ["Shizuoka", "Free to watch", "Driven route", "Cars to 1975"])
+        self.assertEqual(len({glyph for glyph, _ in facts}), 4)
+
+    def test_the_place_has_the_map_links_pin(self):
+        glyph = re.search(r'<span class="fact"><svg [^>]*>(.*?)</svg>Shizuoka', self.markup["Tour", "2026"])
+        self.assertIsNotNone(glyph)
+        self.assertIn("M12 21s7-7.4 7-12A7 7 0 0 0 5 9c0 4.6 7 12 7 12z", glyph.group(1))
+
 
 class WeekdayDateTests(unittest.TestCase):
     """Dates a visitor plans a weekend by: the weekday first, the year only where it is needed."""
@@ -2214,6 +2227,25 @@ class WeekdayDateTests(unittest.TestCase):
     def test_days_across_new_year_always_name_both_years(self):
         # Under a December heading, "Thu 31 Dec to Fri 1 Jan" would leave the second year to guesswork.
         self.assertEqual(self.span("2026-12-31", "2027-01-01"), "Thu 31 Dec 2026 to Fri 1 Jan 2027")
+
+
+class DateLeafTests(unittest.TestCase):
+    """The home list's calendar leaf: weekdays on the band, days beneath, the month left to the heading."""
+
+    def leaf(self, start: str, end: str) -> tuple[str, str]:
+        return build.fmt_leaf(dt.date.fromisoformat(start), dt.date.fromisoformat(end))
+
+    def test_one_day(self):
+        self.assertEqual(self.leaf("2026-10-18", "2026-10-18"), ("Sun", "18"))
+
+    def test_days_in_one_month(self):
+        self.assertEqual(self.leaf("2026-10-24", "2026-10-25"), ("Sat–Sun", "24–25"))
+        self.assertEqual(self.leaf("2027-04-09", "2027-04-11"), ("Fri–Sun", "9–11"))
+
+    def test_days_across_two_months_name_both(self):
+        # "31–1" under a May heading would read as a typo.
+        self.assertEqual(self.leaf("2025-05-31", "2025-06-01"), ("Sat–Sun", "31 May–1 Jun"))
+        self.assertEqual(self.leaf("2026-12-31", "2027-01-01"), ("Thu–Fri", "31 Dec–1 Jan"))
 
 
 class EditionWhenTests(unittest.TestCase):
@@ -2258,7 +2290,8 @@ class HomeMonthGroupTests(unittest.TestCase):
         build.build(data, cls.tmp / "site")
         html = (cls.tmp / "site" / "index.html").read_text(encoding="utf-8")
         cls.list = re.search(r'(?s)<div id="upcoming-list">.*?</section>', html).group(0)
-        cls.days = re.findall(r'(?s)<li data-end="[^"]+">\s*<div class="day-when"><time datetime="[^"]+">(.*?)</time></div>(.*?)</ul>\s*</li>',
+        cls.days = re.findall(r'(?s)<li data-end="[^"]+">\s*<div class="day-when"><time datetime="[^"]+">'
+                              r'<span class="visually-hidden">(.*?)</span>.*?</time></div>(.*?)</ul>\s*</li>',
                               cls.list)
 
     @classmethod
@@ -2285,6 +2318,17 @@ class HomeMonthGroupTests(unittest.TestCase):
 
     def test_every_event_keeps_its_own_thumbnail(self):
         self.assertEqual(self.days[0][1].count('<svg class="venue-map"'), 2)
+
+    def test_each_date_is_drawn_as_a_leaf_that_a_screen_reader_skips(self):
+        # The hidden text above it already says the whole date, month included.
+        self.assertEqual(re.findall(r'<span class="leaf" aria-hidden="true"><span class="leaf-day">([^<]+)</span>'
+                                    r'<span class="leaf-date">([^<]+)</span></span></time>', self.list),
+                         [("Sun", "18"), ("Sun–Mon", "18–19"), ("Sat–Sun", "24–25"),
+                          ("Tue", "3"), ("Sat–Sun", "20–21")])
+
+    def test_a_past_leaf_is_grey_like_a_past_bar(self):
+        css = (ROOT / "static/style.css").read_text(encoding="utf-8")
+        self.assertRegex(css, r"(?m)^#past-list \.leaf-day \{ background: #5C5C5C; \}")
 
 
 class HomeHeadingTests(unittest.TestCase):
@@ -2394,7 +2438,7 @@ class UnannouncedFeeTests(unittest.TestCase):
     # edition page removes it in the browser once the edition has ended in Japan.
 
     def test_the_past_list_on_the_home_page_hides_it(self):
-        self.assertIn('Shizuoka.<span class="fee-unannounced"> Admission not announced.</span>', self.home_html)
+        self.assertRegex(self.home_html, r'<span class="fact fee-unannounced"><svg [^>]*>.*?</svg>Admission not announced<')
         css = (ROOT / "static/style.css").read_text(encoding="utf-8")
         self.assertRegex(css, r"(?m)^#past-list \.fee-unannounced \{ display: none; \}")
 
@@ -2611,7 +2655,7 @@ class EditionPrefectureTests(unittest.TestCase):
     def test_the_home_page_lists_the_edition_under_its_own_prefecture(self):
         self.build_with("venue_en: Another Field\nprefecture: Gifu\n" + CARS)
         html = self.page("index.html")
-        self.assertIn("Gifu.", html)
+        self.assertIn("</svg>Gifu<", html)
         self.assertNotIn("Shizuoka", html)
 
     def test_the_calendar_structured_data_and_feed_agree_with_the_page(self):
@@ -2673,7 +2717,7 @@ class JapanMapTests(unittest.TestCase):
 
     def test_an_entry_without_coordinates_has_no_thumbnail(self):
         entry = next(e for e in self.entries if "Unmapped Meet" in e)
-        self.assertNotIn("<svg", entry)
+        self.assertNotIn('<svg class="venue-map"', entry)
 
     def test_no_overview_map_tops_the_page(self):
         # Tried and dropped: at a readable size it pushed the Upcoming list off the first screen.
@@ -2909,7 +2953,8 @@ class HomeTimeAwareTests(unittest.TestCase):
         self.assertIn('"chart-today-label"', self.script)
 
     def test_each_date_sits_in_a_box_that_can_take_a_badge(self):
-        self.assertRegex(self.html, r'<div class="day-when"><time datetime="2026-10-18">Sun 18 to Mon 19 Oct</time></div>')
+        self.assertRegex(self.html, r'<div class="day-when"><time datetime="2026-10-18">'
+                                    r'<span class="visually-hidden">Sun 18 to Mon 19 Oct</span><span class="leaf"')
         self.assertIn('"This weekend"', self.script)
 
 

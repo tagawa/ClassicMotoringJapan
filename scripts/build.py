@@ -559,6 +559,19 @@ def fmt_span(start: dt.date, end: dt.date, year: bool = False) -> str:
     return f"{day(start)} {start:%b} to {day(end)} {end:%b}{tail}"
 
 
+def fmt_leaf(start: dt.date, end: dt.date) -> tuple[str, str]:
+    """A date as the home list's calendar leaf draws it: weekdays on the band, days beneath.
+
+    The month heading above names the month, so the days name one only when they cross into the next.
+    """
+    if start == end:
+        return f"{start:%a}", f"{start.day}"
+    weekdays = f"{start:%a}\u2013{end:%a}"
+    if (start.year, start.month) == (end.year, end.month):
+        return weekdays, f"{start.day}\u2013{end.day}"
+    return weekdays, f"{start.day} {start:%b}\u2013{end.day} {end:%b}"
+
+
 def _minutes(hhmm: str) -> int:
     hours, mins = hhmm.split(":")
     return int(hours) * 60 + int(mins)
@@ -1038,7 +1051,7 @@ def month_groups(rows: list[dict]) -> list[dict]:
         days = months[-1]["days"]
         day = next((d for d in days if (d["start"], d["end"]) == (start, end)), None)
         if day is None:
-            day = {"start": start, "end": end, "when": r["when_day"], "rows": []}
+            day = {"start": start, "end": end, "when": r["when_day"], "leaf": fmt_leaf(start, end), "rows": []}
             days.append(day)
         day["rows"].append(r)
     return months

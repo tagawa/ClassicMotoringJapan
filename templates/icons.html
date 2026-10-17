@@ -2,9 +2,28 @@
    carries it into dark mode. Drawn on a 24 grid at stroke-width 2, so at 16px the stroke
    lands on 1.33px. Sized in the markup
    so a missing stylesheet leaves a 16px pin rather than a full-width one. #}
+{% macro pin_icon() -%}
+<svg class="icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M12 21s7-7.4 7-12A7 7 0 0 0 5 9c0 4.6 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>
+{%- endmacro %}
+
 {% macro map_link(pin) %}
-{%- if pin %}<br><a class="map" href="{{ pin.url }}"><svg class="icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M12 21s7-7.4 7-12A7 7 0 0 0 5 9c0 4.6 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>Map</a>{% endif -%}
+{%- if pin %}<br><a class="map" href="{{ pin.url }}">{{ pin_icon() }}Map</a>{% endif -%}
 {% endmacro %}
+
+{# The home list's facts, one glyph each, on the same grid and stroke as the pin: a ticket
+   with its tear line for admission, a road between two ends for a driven route, and a car
+   in profile for the cutoff year. #}
+{% macro ticket_icon() -%}
+<svg class="icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"/><path d="M15 7v2M15 11v2M15 15v2"/></svg>
+{%- endmacro %}
+
+{% macro route_icon() -%}
+<svg class="icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M8.5 18H16a3 3 0 0 0 0-6H8a3 3 0 0 1 0-6h7.5"/></svg>
+{%- endmacro %}
+
+{% macro car_icon() -%}
+<svg class="icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 17H3v-4l3-1 2-4h7l3 4 3 1v4h-2M9 17h6"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+{%- endmacro %}
 
 {# A screen with a play mark, on the same grid and stroke as the pin. The triangle is
    filled because at 16px an outlined one closes up into a blot. #}
