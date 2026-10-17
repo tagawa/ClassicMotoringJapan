@@ -17,3 +17,27 @@
 {% macro cancelled_cross() -%}
 <svg class="cross" viewBox="0 0 8 8" width="8" height="8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M1 1l6 6M7 1L1 7"/></svg>
 {%- endmacro %}
+
+{# A month grid with its two rings, on the same grid and stroke as the pin. #}
+{% macro calendar_icon() -%}
+<svg class="icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+{%- endmacro %}
+
+{# One edition into the visitor's own calendar. The caller wraps it in a .calendar-links
+   element carrying data-hide-after, so drop_passed() removes it once the last day has ended. #}
+{% macro calendar_links(r, root) %}
+{%- if r.ics_path %}<a href="{{ root }}{{ r.ics_path }}" data-fathom="Calendar file downloaded">{{ calendar_icon() }}Add to Apple Calendar or Outlook</a><br><a href="{{ r.google_url }}" data-fathom="Google Calendar form opened">{{ calendar_icon() }}Add to Google Calendar</a>{% endif -%}
+{% endmacro %}
+
+{# The build never reads the clock, so what has passed is decided here, on Japan's date. #}
+{% macro drop_passed() %}
+<script>
+  (function () {
+    var todayInJapan = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+    var passed = document.querySelectorAll("[data-hide-after]");
+    for (var i = 0; i < passed.length; i++) {
+      if (passed[i].getAttribute("data-hide-after") < todayInJapan) passed[i].parentNode.removeChild(passed[i]);
+    }
+  })();
+</script>
+{% endmacro %}

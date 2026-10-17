@@ -47,13 +47,30 @@
 </main>
 <footer class="site-footer">
 {% block footer %}{% endblock %}
-  <p><a href="{{ webcal_url }}">Subscribe to all events in Apple Calendar or Outlook</a>. Dates update automatically.</p>
-  <details>
+  <p><a href="{{ webcal_url }}" data-fathom="Calendar feed subscribe clicked">Subscribe to all events in Apple Calendar or Outlook</a>. Dates update automatically.</p>
+  <details data-fathom="Google Calendar feed help opened">
     <summary>Google Calendar</summary>
     <p>Under Other calendars, choose From URL and paste <code>{{ ics_url }}</code></p>
   </details>
   <p><a href="{{ root }}about/">About this site</a></p>
 </footer>
 {% block scripts %}{% endblock %}
+<script>
+  (function () {
+    // Fathom counts only what is reported. Each counted element names its event in
+    // data-fathom; a name can never be changed in Fathom, so tests pin them.
+    function report(el) {
+      if (window.fathom) window.fathom.trackEvent(el.getAttribute("data-fathom"));
+    }
+    var counted = document.querySelectorAll("[data-fathom]");
+    for (var i = 0; i < counted.length; i++) {
+      if (counted[i].tagName === "DETAILS") {
+        counted[i].addEventListener("toggle", function (e) { if (e.target.open) report(e.target); });
+      } else {
+        counted[i].addEventListener("click", function (e) { report(e.currentTarget); });
+      }
+    }
+  })();
+</script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "icons.html" import map_link, cancelled_cross %}
+{% from "icons.html" import map_link, cancelled_cross, calendar_links, drop_passed %}
 {% block main %}
 <h1>{{ ev.name_en }}</h1>
 {% if ev.name_ja %}<p class="ja" lang="ja">{{ ev.name_ja }}</p>{% endif %}
@@ -27,6 +27,10 @@
     </tbody>
   </table>
 </div>
+{# Under the table, not in it: a phone leaves the Dates column too narrow for them. #}
+{% for r in rows if r.ics_path %}
+<p class="calendar-links" data-hide-after="{{ r.ed.end.isoformat() }}">{{ r.label }}, {{ r.when_day }}<br>{{ calendar_links(r, root) }}</p>
+{% endfor %}
 {% else %}
 <p>No dates announced yet.</p>
 {% endif %}
@@ -61,6 +65,9 @@
 {% endblock %}
 
 {% block scripts %}
+{% if rows | selectattr("ics_path") | list %}
+{{ drop_passed() }}
+{% endif %}
 {% if rows %}
 <script>
   (function () {

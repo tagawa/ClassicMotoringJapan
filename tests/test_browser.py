@@ -129,6 +129,47 @@ class MonthSplitTest(unittest.TestCase):
 
 
 @unittest.skipIf(sync_playwright is None, "playwright not installed")
+class CalendarLinksTest(unittest.TestCase):
+    """Add to calendar is offered until the edition's last day has ended in Japan."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = Path(tempfile.mkdtemp())
+        data = cls.tmp / "data"
+        write_event(data, "meet")
+        write_instance(data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-19", "2026-10-19"))
+        build.build(data, cls.tmp / "site")
+        cls.page = (cls.tmp / "site" / "events" / "meet" / "index.html").as_uri()
+        try:
+            cls.pw = sync_playwright().start()
+            cls.browser = cls.pw.chromium.launch()
+        except Exception as e:
+            shutil.rmtree(cls.tmp)
+            raise unittest.SkipTest(f"chromium unavailable: {e}")
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.browser.close()
+        cls.pw.stop()
+        shutil.rmtree(cls.tmp)
+
+    def links_at(self, utc_instant: str) -> int:
+        ctx = self.browser.new_context(timezone_id="Europe/London")
+        page = ctx.new_page()
+        page.clock.set_fixed_time(utc_instant)
+        page.goto(self.page)
+        count = page.locator(".calendar-links a").count()
+        ctx.close()
+        return count
+
+    def test_offered_until_midnight_in_japan(self):
+        self.assertEqual(self.links_at("2026-10-19T14:00:00Z"), 2)
+
+    def test_gone_once_the_day_has_ended_in_japan(self):
+        self.assertEqual(self.links_at("2026-10-19T15:30:00Z"), 0)
+
+
+@unittest.skipIf(sync_playwright is None, "playwright not installed")
 class YearStripTest(unittest.TestCase):
     """The strip shows this year and the ones ahead. Past years are the list's job, not its."""
 

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "icons.html" import map_link, video_icon %}
+{% from "icons.html" import map_link, video_icon, calendar_links, drop_passed %}
 {% macro video_figure(video) -%}
 <figure class="video">
   <div class="video-frame"><iframe src="{{ video.embed }}" title="{{ video.title }}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
@@ -25,7 +25,7 @@
 
 <dl class="facts">
   <dt>When</dt>
-  <dd>{{ r.when_full }}</dd>
+  <dd>{{ r.when_full }}{% if r.ics_path %}<span class="calendar-links" data-hide-after="{{ ed.end.isoformat() }}"><br>{{ calendar_links(r, root) }}</span>{% endif %}</dd>
   <dt>Where</dt>
   <dd>{{ r.venue }}, {{ r.prefecture }}{{ map_link(r.pin) }}</dd>
 {% if ev.spectator_fee_jpy is none %}
@@ -157,6 +157,9 @@
 {% endblock %}
 
 {% block scripts %}
+{% if r.ics_path %}
+{{ drop_passed() }}
+{% endif %}
 {% if ev.spectator_fee_jpy is none %}
 <script>
   (function () {

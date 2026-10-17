@@ -21,7 +21,7 @@ import shutil
 import sys
 import unicodedata
 from pathlib import Path
-from urllib.parse import quote
+from urllib.parse import quote, urlencode
 from xml.sax.saxutils import escape as xml_escape
 
 import yaml
@@ -50,6 +50,7 @@ INDEXNOW_KEY = "f257bb565b29833c5531031252154d80"
 # Thunderbird has never read X-WR-CALNAME (bugzilla 168176, open since 2002): it names a
 # subscribed calendar after the last path segment, so the file name has to read as a name.
 FEED_FILE = "classic-car-events.ics"
+GOOGLE_CALENDAR_URL = "https://calendar.google.com/calendar/render"
 
 ROOT = Path(__file__).resolve().parent.parent
 JST = dt.timezone(dt.timedelta(hours=9))
@@ -765,41 +766,71 @@ def ics_fold(line: str) -> str:
     return "\r\n ".join(parts)
 
 
-def build_ics(rows: list[dict]) -> str:
-    lines = [
-        "BEGIN:VCALENDAR", "VERSION:2.0", f"PRODID:-//{SITE_NAME}//Events//EN",
-        "CALSCALE:GREGORIAN", "METHOD:PUBLISH", f"X-WR-CALNAME:{ics_text(SITE_NAME)}",
-        # RFC 7986's spelling of the same thing. Neither reaches Thunderbird; see FEED_FILE.
-        f"NAME:{ics_text(SITE_NAME)}",
+def event_location(r: dict) -> str:
+    return f"{r['venue']}, {r['prefecture']}, Japan"
+
+
+def event_details(r: dict) -> str:
+    return "\n".join(filter(None, (r["ev"].get("name_ja"), r["abs_url"],
+                                   f"Last verified {r['ed']['last_verified']}")))
+
+
+def ics_event_lines(r: dict) -> list[str]:
+    ed = r["ed"]
+    lines = ["BEGIN:VEVENT", f"UID:{r['uid']}",
+             f"DTSTAMP:{ed['last_verified']:%Y%m%d}T000000Z",
+             f"SEQUENCE:{ed['sequence']}"]
+    if r["is_timed"]:
+        fmt = "%Y%m%dT%H%M%SZ"
+        lines += [f"DTSTART:{r['start_dt'].astimezone(dt.timezone.utc):{fmt}}",
+                  f"DTEND:{r['end_dt'].astimezone(dt.timezone.utc):{fmt}}"]
+    else:
+        lines += [f"DTSTART;VALUE=DATE:{ed['start']:%Y%m%d}",
+                  f"DTEND;VALUE=DATE:{ed['end'] + dt.timedelta(days=1):%Y%m%d}"]
+    lines += [
+        f"SUMMARY:{ics_text(r['display_name'])}",
+        f"LOCATION:{ics_text(event_location(r))}",
     ]
+    if r["pin"]:
+        lines.append(f"GEO:{r['pin']['lat']};{r['pin']['lon']}")
+    lines += [
+        f"URL:{r['abs_url']}",
+        f"DESCRIPTION:{ics_text(event_details(r))}",
+        f"STATUS:{ed['status'].upper()}",
+        "END:VEVENT",
+    ]
+    return lines
+
+
+def ics_calendar(header: list[str], rows: list[dict]) -> str:
+    lines = ["BEGIN:VCALENDAR", "VERSION:2.0", f"PRODID:-//{SITE_NAME}//Events//EN",
+             "CALSCALE:GREGORIAN", "METHOD:PUBLISH"] + header
     for r in rows:
-        ed, ev = r["ed"], r["ev"]
-        lines += ["BEGIN:VEVENT", f"UID:{r['uid']}",
-                  f"DTSTAMP:{ed['last_verified']:%Y%m%d}T000000Z",
-                  f"SEQUENCE:{ed['sequence']}"]
-        if r["is_timed"]:
-            fmt = "%Y%m%dT%H%M%SZ"
-            lines += [f"DTSTART:{r['start_dt'].astimezone(dt.timezone.utc):{fmt}}",
-                      f"DTEND:{r['end_dt'].astimezone(dt.timezone.utc):{fmt}}"]
-        else:
-            lines += [f"DTSTART;VALUE=DATE:{ed['start']:%Y%m%d}",
-                      f"DTEND;VALUE=DATE:{ed['end'] + dt.timedelta(days=1):%Y%m%d}"]
-        lines += [
-            f"SUMMARY:{ics_text(r['display_name'])}",
-            f"LOCATION:{ics_text(r['venue'] + ', ' + r['prefecture'] + ', Japan')}",
-        ]
-        if r["pin"]:
-            lines.append(f"GEO:{r['pin']['lat']};{r['pin']['lon']}")
-        lines += [
-            f"URL:{r['abs_url']}",
-            "DESCRIPTION:" + ics_text("\n".join(
-                filter(None, (ev.get("name_ja"), r["abs_url"],
-                              f"Last verified {ed['last_verified']}")))),
-            f"STATUS:{ed['status'].upper()}",
-            "END:VEVENT",
-        ]
+        lines += ics_event_lines(r)
     lines.append("END:VCALENDAR")
     return "".join(ics_fold(line) + "\r\n" for line in lines)
+
+
+def google_calendar_url(r: dict) -> str:
+    """Google's add-event form, filled in. Its Android app cannot open an .ics file at all."""
+    if r["is_timed"]:
+        fmt = "%Y%m%dT%H%M%SZ"
+        dates = (f"{r['start_dt'].astimezone(dt.timezone.utc):{fmt}}/"
+                 f"{r['end_dt'].astimezone(dt.timezone.utc):{fmt}}")
+    else:
+        # An exclusive end, as in the feed.
+        dates = f"{r['ed']['start']:%Y%m%d}/{r['ed']['end'] + dt.timedelta(days=1):%Y%m%d}"
+    return GOOGLE_CALENDAR_URL + "?" + urlencode(
+        {"action": "TEMPLATE", "text": r["display_name"], "dates": dates,
+         "location": event_location(r), "details": event_details(r)}, quote_via=quote)
+
+
+def build_ics(rows: list[dict]) -> str:
+    return ics_calendar([
+        f"X-WR-CALNAME:{ics_text(SITE_NAME)}",
+        # RFC 7986's spelling of the same thing. Neither reaches Thunderbird; see FEED_FILE.
+        f"NAME:{ics_text(SITE_NAME)}",
+    ], rows)
 
 
 # Structured data
@@ -923,6 +954,8 @@ def make_rows(events: dict, editions: list, makes: dict | None = None) -> list[d
             "label": f"{edition} {year}" if edition else str(year),
             "has_page": has_page, "sections": sections, "page_parts": page_parts, "parts_phrase": parts_phrase, "event_notes": event_notes_phrase(ev), "path": path, "abs_url": f"{SITE_URL}/{path}",
             "uid": f"{slug}-{ed_id}@{UID_DOMAIN}",
+            # A saved copy never updates, so only a date that should not move is offered as one.
+            "ics_path": f"events/{slug}/{ed_id}.ics" if ed["status"] == "confirmed" else None,
             "is_timed": is_timed,
             "venue": ed.get("venue_en") or ev["venue_en"],
             "prefecture": ed.get("prefecture") or ev["prefecture"],
@@ -931,6 +964,7 @@ def make_rows(events: dict, editions: list, makes: dict | None = None) -> list[d
             "has_route": bool(present["route"]),
             "cutoff_year": ed.get("cutoff_year") or ev.get("cutoff_year"),
             "when": fmt_range(ed["start"], ed["end"]),
+            "when_day": fmt_span(ed["start"], ed["end"]),
             # A list published before the event can still change, but once we have
             # re-checked the source after the event ended, what we show is the last word.
             "chart": route_chart(ed.get("route")),
@@ -960,6 +994,7 @@ def make_rows(events: dict, editions: list, makes: dict | None = None) -> list[d
             r["when_full"] = fmt_span(ed["start"], ed["end"], year=True)
         if r["pin"]:
             r["dot"] = map_point(r["pin"]["lat"], r["pin"]["lon"])
+        r["google_url"] = google_calendar_url(r) if r["ics_path"] else None
         r["jsonld"] = build_jsonld(r)
         rows.append(r)
     rows.sort(key=lambda r: (r["ed"]["start"], r["slug"], r["id"]))
@@ -991,7 +1026,7 @@ def month_groups(rows: list[dict]) -> list[dict]:
         days = months[-1]["days"]
         day = next((d for d in days if (d["start"], d["end"]) == (start, end)), None)
         if day is None:
-            day = {"start": start, "end": end, "when": fmt_span(start, end), "rows": []}
+            day = {"start": start, "end": end, "when": r["when_day"], "rows": []}
             days.append(day)
         day["rows"].append(r)
     return months
@@ -1221,6 +1256,10 @@ def build(data_dir: Path, out_dir: Path,
         events=sorted(events.values(), key=lambda e: e["name_en"].casefold()), jsonld=[]))
 
     write(FEED_FILE, build_ics(rows))
+    # No calendar name, so the app adds the event to one the visitor already has.
+    for r in rows:
+        if r["ics_path"]:
+            write(r["ics_path"], ics_calendar([], [r]))
     write("robots.txt", f"User-agent: *\nContent-Signal: {CONTENT_SIGNAL}\nAllow: /\n\n"
                         f"Sitemap: {SITE_URL}/sitemap.xml\n"
                         f"Agentmap: {SITE_URL}/{ARD_PATH}\n")
