@@ -1239,11 +1239,8 @@ def build(data_dir: Path, out_dir: Path,
 
     all_verified = [e["last_verified"] for e in events.values()] + [x["data"]["last_verified"] for x in editions]
     latest = max(all_verified) if all_verified else None
-    max_year = max((r["year"] for r in rows), default=None)
-    title = f"Classic Car Events in Japan {max_year}" if max_year else "Classic Car Events in Japan"
-
     write("index.html", env.get_template("home.html").render(
-        **common, root="", canonical=f"{SITE_URL}/", title=f"{title} | {SITE_NAME}",
+        **common, root="", canonical=f"{SITE_URL}/", title=f"Classic car events in Japan | {SITE_NAME}",
         description=SITE_LEDE, months=month_groups(rows), years=year_chart(rows), latest=latest, jsonld=[],
         japan=japan_path() if any(r["dot"] for r in rows) else None,
         map_box=f"0 0 {MAP_WIDTH:g} {MAP_HEIGHT:g}", map_ratio=MAP_HEIGHT / MAP_WIDTH))

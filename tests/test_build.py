@@ -468,8 +468,8 @@ class BuildOutputTests(unittest.TestCase):
         for rel in files1:
             self.assertEqual((self.out / rel).read_bytes(), (out2 / rel).read_bytes(), str(rel))
 
-    def test_home_title_year_comes_from_data(self):
-        self.assertIn("<title>Classic Car Events in Japan 2027 | Classic Motoring Japan</title>",
+    def test_home_title_is_fixed_text(self):
+        self.assertIn("<title>Classic car events in Japan | Classic Motoring Japan</title>",
                       self.pages["index.html"])
 
     # Crawler and browser files
