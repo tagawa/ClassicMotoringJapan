@@ -951,17 +951,55 @@ class VerifiedPlacementTests(unittest.TestCase):
         return re.search(r'(?s)<dl class="facts">.*?</dl>', html).group(0)
 
     def test_an_edition_page_gives_the_date_and_links_the_source_among_its_facts(self):
+        # Named by its domain: a source is often a listing, a blog or a video, not the organiser.
         self.assertRegex(self.facts(self.edition),
-                         r'<dt>Last verified</dt>\s*<dd>2026-09-20, against the '
-                         r'<a href="https://example.com/autumn-rally/2026/">organiser\'s announcement</a></dd>')
+                         r'<dt>Last verified</dt>\s*<dd>2026-09-20, against '
+                         r'<a href="https://example.com/autumn-rally/2026/">example.com</a></dd>')
 
     def test_on_an_edition_page_it_comes_before_the_entry_list_and_route(self):
         self.assertLess(self.edition.index("Last verified"), self.edition.index("<h2"))
 
-    def test_an_event_page_gives_the_date_beside_the_official_site(self):
+    def test_an_event_page_gives_the_date_beside_the_source(self):
+        # The date is the latest check of the event or any edition, so it names no one source.
         self.assertRegex(self.facts(self.event),
-                         r'(?s)<dt>Official site</dt>.*?</dd>\s*<dt>Last verified</dt>\s*'
-                         r'<dd>2026-09-20, against the official site</dd>')
+                         r'<dt>Source</dt>\s*<dd><a href="https://example.com/autumn-rally/">example.com</a> '
+                         r'\(Japanese\)</dd>\s*<dt>Last verified</dt>\s*<dd>2026-09-20</dd>')
+
+    def test_no_page_calls_a_source_the_organisers(self):
+        # official_url and source_url are often a tourism listing, a blog post or a video.
+        for path in self.out.rglob("*"):
+            if path.suffix in (".html", ".json", ".txt"):
+                text = path.read_text(encoding="utf-8")
+                for claim in ("organiser's announcement", "official site", "organiser's page"):
+                    self.assertNotIn(claim, text.lower(), path)
+
+    def page(self, event_extra="", url="https://example.com/meet/", status="confirmed") -> tuple[str, str]:
+        tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, tmp)
+        write_event(tmp / "data", "meet", extra=event_extra)
+        text = instance_yaml("meet", 2026, "2026-10-18", "2026-10-18", status=status, extra=CARS)
+        write_instance(tmp / "data", "meet", 2026, text.replace("https://example.com/meet/2026/", url))
+        build.build(tmp / "data", tmp / "site")
+        return ((tmp / "site/events/meet/index.html").read_text(encoding="utf-8"),
+                (tmp / "site/events/meet/2026/index.html").read_text(encoding="utf-8"))
+
+    def test_the_organiser_is_plain_text_not_the_source_link(self):
+        event, _ = self.page("organizer: Test Club\n")
+        self.assertRegex(self.facts(event), r'<dt>Organiser</dt>\s*<dd>Test Club</dd>\s*<dt>Source</dt>')
+        self.assertNotIn(">Test Club</a>", event)
+
+    def test_no_organiser_row_without_an_organiser(self):
+        event, _ = self.page()
+        self.assertNotIn("<dt>Organiser</dt>", event)
+
+    def test_the_domain_drops_www(self):
+        _, edition = self.page(url="https://www.listing.example.org/events/123")
+        self.assertIn('against <a href="https://www.listing.example.org/events/123">listing.example.org</a>', edition)
+
+    def test_a_tentative_edition_names_its_source_by_domain(self):
+        _, edition = self.page(url="https://listing.example.org/1", status="tentative")
+        self.assertIn('<p class="note"><a href="https://listing.example.org/1">listing.example.org</a> '
+                      'does not confirm these dates yet.</p>', edition)
 
     def test_the_footer_no_longer_repeats_it(self):
         for html in (self.edition, self.event):
@@ -1476,7 +1514,7 @@ class SiteCopyTests(unittest.TestCase):
 
     def test_a_tentative_edition_says_so_without_advising(self):
         html = self.html("events/hill-climb/2027-spring/index.html")
-        self.assertIn('The <a href="https://example.com/hill-climb/2027/">organiser\'s announcement</a> '
+        self.assertIn('<a href="https://example.com/hill-climb/2027/">example.com</a> '
                       "does not confirm these dates yet.", html)
         self.assertNotIn("booking", html)
 

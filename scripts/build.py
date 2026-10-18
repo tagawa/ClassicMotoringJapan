@@ -21,7 +21,7 @@ import shutil
 import sys
 import unicodedata
 from pathlib import Path
-from urllib.parse import quote, urlencode
+from urllib.parse import quote, urlencode, urlparse
 from xml.sax.saxutils import escape as xml_escape
 
 import yaml
@@ -708,6 +708,13 @@ def fmt_weekday(d: dt.date) -> str:
     return f"{d:%A} {d.day} {d:%B}"
 
 
+def fmt_domain(url: str) -> str:
+    # A source is named by where it is, since it is often a listing, a blog or a video
+    # rather than the organiser's own page, and a domain is true of all of them.
+    host = urlparse(url).netloc
+    return host[4:] if host.startswith("www.") else host
+
+
 def fmt_fee(fee: int | None) -> str:
     # Self-describing, because the home page prints it with no label beside it.
     if fee is None:
@@ -1162,7 +1169,7 @@ def build_ard_catalog() -> str:
              "url": f"{SITE_URL}/api/events.json",
              "description": "Every classic car event edition on the site: dates, venue, prefecture, "
                             "coordinates, admission, entry list and route, each with the date it was "
-                            "last checked against the organiser's page.",
+                            "last checked against its source.",
              "tags": ["classic-cars", "japan", "events"],
              "representativeQueries": [
                  "classic car events in Japan in 2026",
@@ -1228,6 +1235,7 @@ def build(data_dir: Path, out_dir: Path,
                       trim_blocks=True, lstrip_blocks=True, keep_trailing_newline=True)
     env.globals["countries"] = COUNTRIES
     env.filters["fee"] = fmt_fee
+    env.filters["domain"] = fmt_domain
     env.filters["prose"] = prose_html
     env.filters["weekday"] = fmt_weekday
     host = SITE_URL.split("://", 1)[1]

@@ -6,6 +6,10 @@ end: 2026-04-05
 source_url: https://vecchiobambino.com/2026_1/schedule/
 last_verified: 2026-10-05
 sequence: 0
+videos:
+  # The channel gives no Latin-script name; TSCテレビせとうち is the broadcaster TV Setouchi.
+  - youtube_id: Ev0S5kzKN3s
+    label_en: Both days of the rally (video by TV Setouchi)
 route_en: >
   The 27th running. Saturday's leg left Okayama Gokoku Shrine for Tsuyama,
   Hiruzen, Shinjo and Fukiya, finishing at Brazilian Park Washuzan Highland in

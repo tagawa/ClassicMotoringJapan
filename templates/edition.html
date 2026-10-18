@@ -18,7 +18,7 @@
 {% if ev.name_ja %}<p class="ja" lang="ja">{{ ev.name_ja }}</p>{% endif %}
 
 {% if ed.status == "tentative" %}
-<p class="note">The <a href="{{ ed.source_url }}">organiser's announcement</a> does not confirm these dates yet.</p>
+<p class="note"><a href="{{ ed.source_url }}">{{ ed.source_url | domain }}</a> does not confirm these dates yet.</p>
 {% elif ed.status == "cancelled" %}
 <p class="note cancelled">This edition is cancelled.</p>
 {% endif %}
@@ -36,7 +36,7 @@
   <dd>{{ ev.spectator_fee_jpy | fee }}</dd>
 {% endif %}
   <dt>Last verified</dt>
-  <dd>{{ ed.last_verified.isoformat() }}, against the <a href="{{ ed.source_url }}">organiser's announcement</a></dd>
+  <dd>{{ ed.last_verified.isoformat() }}, against <a href="{{ ed.source_url }}">{{ ed.source_url | domain }}</a></dd>
 </dl>
 {% if r.next %}
 <p><a href="{{ root }}{{ r.next.path }}">Next edition: {{ r.next.when }}</a>{% if r.next.ed.status == "tentative" %} (dates not confirmed){% elif r.next.ed.status == "cancelled" %} (cancelled){% endif %}</p>

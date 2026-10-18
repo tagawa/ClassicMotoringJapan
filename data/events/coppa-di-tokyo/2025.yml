@@ -14,11 +14,14 @@ end: 2025-11-22
 #   column (I, GB, D, F, USA).
 # - The result sheet has no entry 8 and adds a 68 (an MGB, no year); neither change
 #   is made here, since this is the list as published before the day.
+# The 19th edition. No route_en: the organiser's site carries no route or timetable
+# for it, and the field alone would give the page a Route section with no route.
 source_url: https://www.coppa-di-tokyo.com/imgentrylist/entrylist2025.jpg
 last_verified: 2026-10-13
 sequence: 0
-route_en: >
-  The 19th edition. The organiser's site carries no route or timetable for it.
+videos:
+  - youtube_id: hKtor-vuD_Q
+    label_en: The start at Shiodome (video by Tokyo Vibes)
 list_as_of: 2025-11-19
 cars:
   - entry_no: "0"

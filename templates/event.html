@@ -60,10 +60,15 @@
   <dt>What you'll see</dt>
   <dd>{% if ev.typical_scale %}{{ ev.typical_scale }}{% endif %}{% if ev.typical_scale and ev.typical_eras %}<br>{% endif %}{% for era in ev.typical_eras or [] %}<span class="chip">{{ era }}</span>{% endfor %}</dd>
 {% endif %}
-  <dt>Official site</dt>
-  <dd><a href="{{ ev.official_url }}">{{ ev.organizer or ev.official_url }}</a> (Japanese)</dd>
+{% if ev.organizer %}
+  <dt>Organiser</dt>
+  <dd>{{ ev.organizer }}</dd>
+{% endif %}
+{# Not "Official site": official_url is often a tourism listing, a blog post or a venue's page. #}
+  <dt>Source</dt>
+  <dd><a href="{{ ev.official_url }}">{{ ev.official_url | domain }}</a> (Japanese)</dd>
   <dt>Last verified</dt>
-  <dd>{{ verified.isoformat() }}, against the official site</dd>
+  <dd>{{ verified.isoformat() }}</dd>
 </dl>
 {% endblock %}
 
