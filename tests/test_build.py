@@ -495,6 +495,16 @@ class BuildOutputTests(unittest.TestCase):
 
     # Crawler and browser files
 
+    def test_llms_txt_links_every_sitemap_page(self):
+        # So a new kind of page cannot reach the sitemap and miss the index. The root is the
+        # site llms.txt itself describes, so it is the one page not linked from it.
+        llms = self.out_text("llms.txt")
+        urls = re.findall(r"<loc>([^<]+)</loc>", self.out_text("sitemap.xml"))
+        self.assertGreater(len(urls), 5)
+        for url in urls:
+            if url != f"{build.SITE_URL}/":
+                self.assertIn(f"({url})", llms)
+
     def test_robots_txt_allows_everything_and_points_at_the_sitemap(self):
         robots = (self.out / "robots.txt").read_text(encoding="utf-8")
         self.assertIn("User-agent: *", robots)
