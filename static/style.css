@@ -48,7 +48,7 @@ a:focus-visible, summary:focus-visible {
 
 /* The home list as a calendar: a ruled heading per month, then each date once with its
    events beside it, every event keeping its own thumbnail. */
-.month h3 { margin-bottom: 0; padding-bottom: 8px; border-bottom: 2px solid #1C1C1C; }
+.month h3, .month h2 { margin-bottom: 0; padding-bottom: 8px; border-bottom: 2px solid #1C1C1C; }
 .events, .events > li > ul { list-style: none; margin: 0; padding: 0; }
 .events > li {
   display: grid;
@@ -60,6 +60,17 @@ a:focus-visible, summary:focus-visible {
 .events > li > ul > li { display: grid; grid-template-columns: 1fr 96px; gap: 0 16px; }
 .events > li > ul > li + li { margin-top: 16px; }
 .events time { font-weight: 600; font-variant-numeric: tabular-nums; }
+/* /ja/: one plain list per month. Its month headings are h2 under the h1, sized as the home page's h3. */
+.month h2 { font-size: 20px; margin-top: 32px; }
+.ja-events { list-style: none; margin: 0; padding: 0; }
+.ja-events > li { padding: 16px 0; border-bottom: 1px solid #E0E0E0; }
+.ja-events p { margin: 0; }
+.ja-events .meta { margin-top: 4px; color: #5C5C5C; }
+.ja-when { font-weight: 600; font-variant-numeric: tabular-nums; }
+/* Japanese breaks between any two characters; keep the links whole, and the heading to its <wbr>s. */
+.ja-events a { white-space: nowrap; }
+h1:lang(ja) { word-break: keep-all; }
+.language { margin-left: 16px; }
 /* Filled, unlike the status badges, because it is the one thing on the list to act on first. */
 .badge.weekend { background: #8C1C24; color: #FFFFFF; }
 /* The space goes after the date, not before the badge: beside it on a phone, flush under it
@@ -265,6 +276,9 @@ summary { cursor: pointer; font-weight: 600; }
   .strips .chart-rest .chart-when { color: #A8A8A8; }
   .all-cars { border-top-color: #333333; border-bottom-color: #333333; }
   .events .meta { color: #A8A8A8; }
+  .month h2 { border-bottom-color: #EBEBEB; }
+  .ja-events > li { border-bottom-color: #333333; }
+  .ja-events .meta { color: #A8A8A8; }
   .badge { background: #3A300F; color: #F3D98B; }
   .badge.cancelled { background: #3A1C16; color: #F2A493; }
   .note { background: #3A300F; color: #F3D98B; }

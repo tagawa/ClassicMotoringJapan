@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% from "icons.html" import pin_icon, ticket_icon, route_icon, car_icon %}
 {% set stop = '<span class="visually-hidden">. </span>' | safe %}
+{% block header_extra %}<a class="language" href="ja/" lang="ja" hreflang="ja">日本語</a>{% endblock %}
 {% block main %}
 <h1>Classic car events in Japan</h1>
 <p class="lede">{{ site_lede }}</p>

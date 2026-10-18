@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% from "icons.html" import drop_passed %}
+{% block header_extra %}<a class="language" href="../" lang="en" hreflang="en">English</a>{% endblock %}
+{% block main %}
+<h1>日本の<wbr>クラシックカー<wbr>イベント</h1>
+<p class="lede">{{ description }}</p>
+{# Every edition, oldest first; drop_passed() removes each once its last day has ended in
+   Japan, and a month with its last one, so no empty heading is left. #}
+{% for month in months %}
+<div class="month" data-hide-after="{{ (month.days | map(attribute='end') | max).isoformat() }}">
+  <h2>{{ month.key | month_ja }}</h2>
+  <ul class="ja-events">
+{% for day in month.days %}
+{% for r in day.rows %}
+    <li data-hide-after="{{ r.ed.end.isoformat() }}">
+      <p class="ja-when"><time datetime="{{ r.ed.start.isoformat() }}">{{ r.ed.start | span_ja(r.ed.end) }}</time>{% if r.is_timed %} {{ r.ed.start_time }}〜{{ r.ed.end_time }}{% if r.rrule %}（各日）{% endif %}{% endif %}</p>
+{# A Latin-only name is marked English, or a screen reader reads it with Japanese rules. #}
+      <p class="ja-name">{% if r.ev.name_ja %}{{ r.ev.name_ja }}{% else %}<span lang="en">{{ r.display_name }}</span>{% endif %}
+{% if r.ed.status == "tentative" %}
+        <span class="badge">日程未確定</span>
+{% elif r.ed.status == "cancelled" %}
+        <span class="badge cancelled">中止</span>
+{% endif %}
+      </p>
+      <p class="meta">{{ r.prefecture | pref_ja }}・{{ r.ev.spectator_fee_jpy | fee_ja }}</p>
+{# 情報元, not 公式サイト: official_url is often a tourism listing or a blog, as event.html says. #}
+      <p class="meta">情報元：<a href="{{ r.ev.official_url }}">{{ r.ev.official_url | domain }}</a>・<a href="{{ root }}{{ r.path }}">詳細（英語）</a></p>
+    </li>
+{% endfor %}
+{% endfor %}
+  </ul>
+</div>
+{% endfor %}
+{% endblock %}
+{% block footer %}
+{% if latest %}
+  <p>Most recent check: {{ latest.isoformat() }}</p>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+{{ drop_passed() }}
+{% endblock %}

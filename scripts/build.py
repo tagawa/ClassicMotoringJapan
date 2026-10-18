@@ -155,6 +155,28 @@ def _stripes(colours, across: bool) -> str:
         for i, c in enumerate(colours))
 
 
+# The /ja/ page's lede and meta description, the same sentence, as on the home page.
+JA_LEDE = ("日本各地のクラシックカーイベントの日程です。"
+           "ルート、エントリーリスト、動画などの詳細は英語のページにあります。")
+
+# The /ja/ page's prefecture names, keyed by the romanised form the data uses (no macrons).
+# Validation rejects any other value, so a typo or a first event in a new prefecture
+# fails the build here rather than printing nothing on that page.
+PREFECTURES_JA = {
+    "Hokkaido": "北海道", "Aomori": "青森県", "Iwate": "岩手県", "Miyagi": "宮城県",
+    "Akita": "秋田県", "Yamagata": "山形県", "Fukushima": "福島県", "Ibaraki": "茨城県",
+    "Tochigi": "栃木県", "Gunma": "群馬県", "Saitama": "埼玉県", "Chiba": "千葉県",
+    "Tokyo": "東京都", "Kanagawa": "神奈川県", "Niigata": "新潟県", "Toyama": "富山県",
+    "Ishikawa": "石川県", "Fukui": "福井県", "Yamanashi": "山梨県", "Nagano": "長野県",
+    "Gifu": "岐阜県", "Shizuoka": "静岡県", "Aichi": "愛知県", "Mie": "三重県",
+    "Shiga": "滋賀県", "Kyoto": "京都府", "Osaka": "大阪府", "Hyogo": "兵庫県",
+    "Nara": "奈良県", "Wakayama": "和歌山県", "Tottori": "鳥取県", "Shimane": "島根県",
+    "Okayama": "岡山県", "Hiroshima": "広島県", "Yamaguchi": "山口県", "Tokushima": "徳島県",
+    "Kagawa": "香川県", "Ehime": "愛媛県", "Kochi": "高知県", "Fukuoka": "福岡県",
+    "Saga": "佐賀県", "Nagasaki": "長崎県", "Kumamoto": "熊本県", "Oita": "大分県",
+    "Miyazaki": "宮崎県", "Kagoshima": "鹿児島県", "Okinawa": "沖縄県",
+}
+
 # Where an organiser's list says a car was built: ISO 3166 code, the name read out in place
 # of the flag, and the flag itself. Drawn here, not fetched, so the site still ships no image
 # files and needs no emoji font, which Windows lacks for flags. Colours are each country's own.
@@ -437,6 +459,13 @@ def load_makes(data_dir: Path) -> dict:
     return makes
 
 
+def _check_prefecture(item: dict, rel: str, errors: list[str]) -> None:
+    value = item.get("prefecture")
+    if isinstance(value, str) and value not in PREFECTURES_JA:
+        errors.append(f"{rel}: prefecture {value!r} is not one of the 47 in PREFECTURES_JA "
+                      f"(romanised without macrons, e.g. Hyogo)")
+
+
 def load_and_validate(data_dir: Path) -> tuple[dict, list]:
     """Return (events by slug, editions). Raise ValidationError listing every problem."""
     errors: list[str] = []
@@ -456,6 +485,7 @@ def load_and_validate(data_dir: Path) -> tuple[dict, list]:
             continue
         _check_combined_prose(ev, rel, errors)
         _check_coords(ev, rel, errors)
+        _check_prefecture(ev, rel, errors)
         events[path.stem] = ev
 
     for path in sorted(events_dir.glob("*/*.yml")):
@@ -484,15 +514,17 @@ def load_and_validate(data_dir: Path) -> tuple[dict, list]:
             if _is_int(ed.get("year")) and start.year != ed["year"]:
                 errors.append(f"{rel}: start {start} is not in year {ed['year']}")
         _check_coords(ed, rel, errors)
+        _check_prefecture(ed, rel, errors)
         if "prefecture" in ed and "venue_en" not in ed:
             # Alone it would print the event's venue in a prefecture that venue is not in.
             errors.append(f"{rel}: prefecture on an edition needs venue_en too")
         has_st, has_et = "start_time" in ed, "end_time" in ed
         if has_st != has_et:
             errors.append(f"{rel}: give start_time and end_time together, or neither")
-        elif has_st and start == end and isinstance(ed["start_time"], str) and isinstance(ed["end_time"], str):
+        elif has_st and isinstance(ed["start_time"], str) and isinstance(ed["end_time"], str):
+            # Each day's hours, however many days the edition spans.
             if ed["end_time"] <= ed["start_time"]:
-                errors.append(f"{rel}: end_time must be after start_time on a one-day event")
+                errors.append(f"{rel}: end_time must be after start_time")
         cars = ed.get("cars")
         if ("cars" in ed) != ("list_as_of" in ed):
             errors.append(f"{rel}: cars and list_as_of must be given together")
@@ -722,6 +754,34 @@ def fmt_fee(fee: int | None) -> str:
     return "Free to watch" if fee == 0 else f"\u00a5{fee:,}"
 
 
+# Weekdays from a fixed string, never the locale, which differs between this Mac and the Actions runner.
+WEEKDAYS_JA = "月火水木金土日"
+
+
+def fmt_span_ja(start: dt.date, end: dt.date) -> str:
+    """fmt_span for the /ja/ page: the month heading carries the year unless the span crosses it."""
+    def day(d: dt.date) -> str:
+        return f"{d.day}日({WEEKDAYS_JA[d.weekday()]})"
+    if start.year != end.year:
+        return f"{start.year}年{start.month}月{day(start)}〜{end.year}年{end.month}月{day(end)}"
+    if start == end:
+        return f"{start.month}月{day(start)}"
+    if start.month == end.month:
+        return f"{start.month}月{day(start)}〜{day(end)}"
+    return f"{start.month}月{day(start)}〜{end.month}月{day(end)}"
+
+
+def fmt_month_ja(key: str) -> str:
+    year, month = key.split("-")
+    return f"{year}年{int(month)}月"
+
+
+def fmt_fee_ja(fee: int | None) -> str:
+    if fee is None:
+        return "入場料未発表"
+    return "入場無料" if fee == 0 else f"入場料 {fee:,}円"
+
+
 def fmt_edition(edition: str) -> str:
     return edition.replace("-", " ").capitalize()
 
@@ -805,7 +865,9 @@ def ics_event_lines(r: dict) -> list[str]:
     if r["is_timed"]:
         fmt = "%Y%m%dT%H%M%SZ"
         lines += [f"DTSTART:{r['start_dt'].astimezone(dt.timezone.utc):{fmt}}",
-                  f"DTEND:{r['end_dt'].astimezone(dt.timezone.utc):{fmt}}"]
+                  f"DTEND:{r['day_end_dt'].astimezone(dt.timezone.utc):{fmt}}"]
+        if r["rrule"]:
+            lines.append(f"RRULE:{r['rrule']}")
     else:
         lines += [f"DTSTART;VALUE=DATE:{ed['start']:%Y%m%d}",
                   f"DTEND;VALUE=DATE:{ed['end'] + dt.timedelta(days=1):%Y%m%d}"]
@@ -835,16 +897,21 @@ def ics_calendar(header: list[str], rows: list[dict]) -> str:
 
 def google_calendar_url(r: dict) -> str:
     """Google's add-event form, filled in. Its Android app cannot open an .ics file at all."""
-    if r["is_timed"]:
+    details = event_details(r)
+    if r["is_timed"] and not r["rrule"]:
         fmt = "%Y%m%dT%H%M%SZ"
         dates = (f"{r['start_dt'].astimezone(dt.timezone.utc):{fmt}}/"
-                 f"{r['end_dt'].astimezone(dt.timezone.utc):{fmt}}")
+                 f"{r['day_end_dt'].astimezone(dt.timezone.utc):{fmt}}")
     else:
-        # An exclusive end, as in the feed.
+        # An exclusive end, as in the feed. Google's form documents no repeat rule, so a
+        # multi-day timed edition goes as all-day with its daily hours written out.
         dates = f"{r['ed']['start']:%Y%m%d}/{r['ed']['end'] + dt.timedelta(days=1):%Y%m%d}"
+        if r["is_timed"]:
+            details = (f"{r['ed']['start_time']} to {r['ed']['end_time']} Japan time each day\n"
+                       + details)
     return GOOGLE_CALENDAR_URL + "?" + urlencode(
         {"action": "TEMPLATE", "text": r["display_name"], "dates": dates,
-         "location": event_location(r), "details": event_details(r)}, quote_via=quote)
+         "location": event_location(r), "details": details}, quote_via=quote)
 
 
 def build_ics(rows: list[dict]) -> str:
@@ -1023,14 +1090,16 @@ def make_rows(events: dict, editions: list, makes: dict | None = None) -> list[d
                                  and ed["last_verified"] <= ed["end"]),
         }
         if is_timed:
+            # The times are each day's hours. JSON-LD spans first opening to last closing;
+            # calendars get the first day's hours repeated, never one block through the nights.
             r["start_dt"] = _local_dt(ed["start"], ed["start_time"])
             r["end_dt"] = _local_dt(ed["end"], ed["end_time"])
-            if ed["start"] == ed["end"]:
-                r["when_full"] = (f"{fmt_span(ed['start'], ed['end'], year=True)}, "
-                                  f"{ed['start_time']} to {ed['end_time']} Japan time")
-            else:
-                r["when_full"] = (f"{fmt_span(ed['start'], ed['start'], year=True)} {ed['start_time']} to "
-                                  f"{fmt_span(ed['end'], ed['end'], year=True)} {ed['end_time']}, Japan time")
+            r["day_end_dt"] = _local_dt(ed["start"], ed["end_time"])
+            days = (ed["end"] - ed["start"]).days + 1
+            r["rrule"] = f"FREQ=DAILY;COUNT={days}" if days > 1 else None
+            r["when_full"] = (f"{fmt_span(ed['start'], ed['end'], year=True)}, "
+                              f"{ed['start_time']} to {ed['end_time']} Japan time"
+                              + (" each day" if days > 1 else ""))
         else:
             r["when_full"] = fmt_span(ed["start"], ed["end"], year=True)
         if r["pin"]:
@@ -1142,6 +1211,8 @@ def build_llms_txt(rows: list[dict], events: dict) -> str:
     lines += ["", "## Site", "",
               f"- [About]({SITE_URL}/about/): where the facts come from, how they are checked, "
               "and where to report an error.",
+              f"- [Japanese timetable]({SITE_URL}/ja/): every edition's dates, hours, prefecture "
+              "and admission, in Japanese.",
               "", "## Data", "",
               f"- [Events as JSON]({SITE_URL}/api/events.json): every edition above, with venue, "
               "dates, admission, coordinates, entry list and route.",
@@ -1238,6 +1309,10 @@ def build(data_dir: Path, out_dir: Path,
     env.filters["domain"] = fmt_domain
     env.filters["prose"] = prose_html
     env.filters["weekday"] = fmt_weekday
+    env.filters["span_ja"] = fmt_span_ja
+    env.filters["month_ja"] = fmt_month_ja
+    env.filters["fee_ja"] = fmt_fee_ja
+    env.filters["pref_ja"] = PREFECTURES_JA.__getitem__
     host = SITE_URL.split("://", 1)[1]
     common = {"site_name": SITE_NAME, "site_url": SITE_URL, "site_lede": SITE_LEDE,
               "ard_path": ARD_PATH, "ard_predecessor_path": ARD_PREDECESSOR_PATH,
@@ -1257,12 +1332,17 @@ def build(data_dir: Path, out_dir: Path,
     all_verified = [e["last_verified"] for e in events.values()] + [x["data"]["last_verified"] for x in editions]
     latest = max(all_verified) if all_verified else None
     write("index.html", env.get_template("home.html").render(
-        **common, root="", canonical=f"{SITE_URL}/", title=f"Classic car events in Japan | {SITE_NAME}",
+        **common, root="", canonical=f"{SITE_URL}/", title=f"Classic car events in Japan | {SITE_NAME}", hreflang=True,
         description=SITE_LEDE, months=month_groups(rows), years=year_chart(rows), latest=latest, jsonld=[build_website_jsonld()],
         japan=japan_path() if any(r["dot"] for r in rows) else None,
         map_box=f"0 0 {MAP_WIDTH:g} {MAP_HEIGHT:g}", map_ratio=MAP_HEIGHT / MAP_WIDTH))
 
-    sitemap = [(f"{SITE_URL}/", latest)]
+    write("ja/index.html", env.get_template("ja.html").render(
+        **common, root="../", canonical=f"{SITE_URL}/ja/", lang="ja", hreflang=True,
+        title=f"日本のクラシックカーイベント | {SITE_NAME}", description=JA_LEDE,
+        months=month_groups(rows), latest=latest, jsonld=[]))
+
+    sitemap = [(f"{SITE_URL}/", latest), (f"{SITE_URL}/ja/", latest)]
     for slug, ev in sorted(events.items()):
         ev_rows = [r for r in rows if r["slug"] == slug]
         verified = max([ev["last_verified"]] + [r["ed"]["last_verified"] for r in ev_rows])

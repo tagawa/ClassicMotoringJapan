@@ -256,8 +256,13 @@ class BuildOutputTests(unittest.TestCase):
 
     def test_ics_timed_event_is_utc(self):
         self.assertIn("DTSTART:20261017T230000Z", self.ics)
-        self.assertIn("DTEND:20261019T070000Z", self.ics)
+        self.assertIn("DTEND:20261018T070000Z", self.ics)
         self.assertFalse(any(line.startswith("BEGIN:VTIMEZONE") for line in self.ics))
+
+    def test_ics_timed_edition_over_several_days_repeats_its_hours_daily(self):
+        # The times are each day's hours: one 32-hour block would claim the rally runs overnight.
+        self.assertIn("RRULE:FREQ=DAILY;COUNT=2", self.ics)
+        self.assertNotIn("DTEND:20261019T070000Z", self.ics)
 
     def test_ics_uid_dtstamp_sequence_status(self):
         self.assertIn("UID:autumn-rally-2026@classicmotoringjapan.com", self.ics)
@@ -1808,6 +1813,25 @@ class ValidationTests(unittest.TestCase):
                           extra='start_time: 10:30\nend_time: "16:00"\n'),
             '"10:30"')
 
+    def test_hours_ending_before_they_start_are_rejected_on_a_multi_day_edition(self):
+        # The times are each day's hours, so 16:00 to 10:00 is never a day.
+        self.assert_rejected(
+            instance_yaml("meet", 2026, "2026-10-18", "2026-10-19",
+                          extra='start_time: "16:00"\nend_time: "10:00"\n'),
+            "end_time must be after start_time")
+
+    def test_an_unknown_event_prefecture_is_rejected(self):
+        # write_event hard-codes Shizuoka; a second prefecture key via extra would be a YAML duplicate.
+        ev = self.data / "events" / "meet.yml"
+        ev.write_text(ev.read_text(encoding="utf-8").replace("prefecture: Shizuoka", "prefecture: Shizuokaa"),
+                      encoding="utf-8")
+        write_instance(self.data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-18"))
+        self.assert_build_fails("Shizuokaa")
+
+    def test_an_unknown_edition_prefecture_is_rejected(self):
+        self.assert_rejected(instance_yaml("meet", 2026, "2026-10-18", "2026-10-18",
+                                           extra="venue_en: Other Park\nprefecture: Tokio\n"), "Tokio")
+
     def test_bare_no_key_is_rejected(self):
         extra = "list_as_of: 2026-09-15\ncars:\n  - no: 12\n    year: 1929\n    make: Bentley\n    model: Blower\n"
         self.assert_rejected(instance_yaml("meet", 2026, "2026-10-18", "2026-10-18", extra=extra), "entry_no")
@@ -2326,7 +2350,7 @@ class EditionWhenTests(unittest.TestCase):
 
     def test_a_timed_edition_over_several_days(self):
         html = self.page("2026-10-18", "2026-10-19", extra='start_time: "08:00"\nend_time: "16:00"\n')
-        self.assertIn("<dd>Sun 18 Oct 2026 08:00 to Mon 19 Oct 2026 16:00, Japan time<", html)
+        self.assertIn("<dd>Sun 18 to Mon 19 Oct 2026, 08:00 to 16:00 Japan time each day<", html)
 
 
 class HomeMonthGroupTests(unittest.TestCase):
@@ -2435,7 +2459,8 @@ class LatinOnlyNameTests(unittest.TestCase):
         for name, html in (("event", self.event_html), ("edition", self.edition_html),
                            ("home", self.home_html)):
             with self.subTest(page=name):
-                self.assertNotRegex(html, r'lang="ja"[^>]*>\s*<')
+                # Whitespace first, so the home page's hreflang="ja" link is not taken for one.
+                self.assertNotRegex(html, r'\slang="ja"[^>]*>\s*<')
 
     def test_the_name_is_not_printed_twice_in_the_body(self):
         main = re.search(r"<main.*?</main>", self.event_html, re.S).group(0)
@@ -2746,6 +2771,143 @@ class EditionPrefectureTests(unittest.TestCase):
         self.assertIn("venue_en", str(ctx.exception))
 
 
+class JapaneseFormatTests(unittest.TestCase):
+    """The /ja/ page's wording, made in code so no event ever needs a translation."""
+
+    def test_one_day(self):
+        self.assertEqual(build.fmt_span_ja(dt.date(2026, 10, 18), dt.date(2026, 10, 18)), "10月18日(日)")
+
+    def test_days_in_one_month(self):
+        self.assertEqual(build.fmt_span_ja(dt.date(2026, 10, 24), dt.date(2026, 10, 25)), "10月24日(土)〜25日(日)")
+
+    def test_days_across_a_month_name_both_months(self):
+        self.assertEqual(build.fmt_span_ja(dt.date(2026, 10, 31), dt.date(2026, 11, 1)), "10月31日(土)〜11月1日(日)")
+
+    def test_days_across_the_new_year_name_both_years(self):
+        # The month heading carries one year only, as in fmt_span.
+        self.assertEqual(build.fmt_span_ja(dt.date(2026, 12, 31), dt.date(2027, 1, 1)),
+                         "2026年12月31日(木)〜2027年1月1日(金)")
+
+    def test_month_heading(self):
+        self.assertEqual(build.fmt_month_ja("2026-10"), "2026年10月")
+
+    def test_fees(self):
+        self.assertEqual(build.fmt_fee_ja(0), "入場無料")
+        self.assertEqual(build.fmt_fee_ja(1000), "入場料 1,000円")
+        self.assertEqual(build.fmt_fee_ja(None), "入場料未発表")
+
+    def test_every_prefecture_has_its_suffix(self):
+        self.assertEqual(len(build.PREFECTURES_JA), 47)
+        self.assertEqual(len(set(build.PREFECTURES_JA.values())), 47)
+        self.assertEqual(build.PREFECTURES_JA["Tokyo"], "東京都")
+        self.assertEqual(build.PREFECTURES_JA["Hokkaido"], "北海道")
+        self.assertEqual(build.PREFECTURES_JA["Osaka"], "大阪府")
+        self.assertEqual(build.PREFECTURES_JA["Kyoto"], "京都府")
+        self.assertEqual(build.PREFECTURES_JA["Shizuoka"], "静岡県")
+        for name in build.PREFECTURES_JA.values():
+            self.assertRegex(name, r"^.+[都道府県]$")
+
+
+class JapanesePageTests(unittest.TestCase):
+    """/ja/: every edition in Japanese, from fields the data already has."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = Path(tempfile.mkdtemp())
+        data = cls.tmp / "data"
+        write_event(data, "meet", name_en="Meet")
+        write_instance(data, "meet", 2025, instance_yaml("meet", 2025, "2025-10-19", "2025-10-19", status="cancelled"))
+        write_instance(data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-19"))
+        write_instance(data, "meet", 2027, instance_yaml("meet", 2027, "2027-10-17", "2027-10-17", status="tentative"))
+        write_event(data, "show", name_en="Show", name_ja=None, fee=None)
+        write_instance(data, "show", 2026, instance_yaml("show", 2026, "2026-11-07", "2026-11-08",
+                                                         extra='start_time: "10:00"\nend_time: "17:00"\n'))
+        write_event(data, "fair", name_en="Fair", fee=1000)
+        write_instance(data, "fair", 2026, instance_yaml("fair", 2026, "2026-11-03", "2026-11-03",
+                                                         extra='start_time: "09:00"\nend_time: "16:00"\n'))
+        cls.out = cls.tmp / "site"
+        build.build(data, cls.out)
+        cls.html = (cls.out / "ja" / "index.html").read_text(encoding="utf-8")
+        cls.home = (cls.out / "index.html").read_text(encoding="utf-8")
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.tmp)
+
+    def row(self, start: str) -> str:
+        """The list item for the edition starting on that date."""
+        return re.search(r'<li data-hide-after="[^"]+">(?:(?!</li>).)*?<time datetime="%s">.*?</li>' % start,
+                         self.html, re.S).group(0)
+
+    def test_the_page_is_japanese_and_its_english_parts_say_so(self):
+        self.assertTrue(self.html.startswith('<!doctype html>\n<html lang="ja">'))
+        self.assertIn('<footer class="site-footer" lang="en">', self.html)
+        # The logo's accessible name is the English site name.
+        self.assertIn('<a class="brand" href="../" lang="en">', self.html)
+
+    def test_title_heading_and_lede(self):
+        self.assertIn("<title>日本のクラシックカーイベント | Classic Motoring Japan</title>", self.html)
+        # Break points for word-break: keep-all, or the heading splits mid-word on a phone.
+        self.assertIn("<h1>日本の<wbr>クラシックカー<wbr>イベント</h1>", self.html)
+        lede = "日本各地のクラシックカーイベントの日程です。ルート、エントリーリスト、動画などの詳細は英語のページにあります。"
+        self.assertIn(f'<p class="lede">{lede}</p>', self.html)
+        self.assertIn(f'<meta name="description" content="{lede}">', self.html)
+
+    def test_a_japanese_name_is_shown_and_a_latin_one_is_marked_english(self):
+        self.assertIn("テストイベント", self.row("2026-10-18"))
+        self.assertIn('<span lang="en">Show</span>', self.row("2026-11-07"))
+
+    def test_dates_months_and_prefecture(self):
+        self.assertIn("<h2>2026年10月</h2>", self.html)
+        self.assertIn("10月18日(日)〜19日(月)", self.row("2026-10-18"))
+        self.assertIn("静岡県", self.row("2026-10-18"))
+
+    def test_hours_only_on_a_timed_edition_and_marked_daily_over_several_days(self):
+        self.assertIn("10:00〜17:00（各日）", self.row("2026-11-07"))
+        self.assertIn("09:00〜16:00", self.row("2026-11-03"))
+        self.assertNotIn("（各日）", self.row("2026-11-03"))
+        self.assertNotIn(":", re.sub(r'<[^>]+>', "", self.row("2026-10-18")).replace("情報元：", ""))
+
+    def test_admission(self):
+        self.assertIn("入場無料", self.row("2026-10-18"))
+        self.assertIn("入場料 1,000円", self.row("2026-11-03"))
+        self.assertIn("入場料未発表", self.row("2026-11-07"))
+
+    def test_status_badges_and_a_cancelled_edition_stays_listed(self):
+        self.assertIn("中止", self.row("2025-10-19"))
+        self.assertIn("日程未確定", self.row("2027-10-17"))
+        self.assertNotIn("中止", self.row("2026-10-18"))
+
+    def test_links_to_the_source_and_the_english_page(self):
+        row = self.row("2026-10-18")
+        self.assertIn('情報元：<a href="https://example.com/meet/">example.com</a>', row)
+        self.assertIn('<a href="../events/meet/">詳細（英語）</a>', row)
+
+    def test_past_editions_and_emptied_months_drop_out_in_the_browser(self):
+        self.assertIn('<li data-hide-after="2026-10-19">', self.row("2026-10-18"))
+        # A month goes with its last edition, so no empty heading is left behind.
+        self.assertIn('<div class="month" data-hide-after="2026-11-08">', self.html)
+        self.assertIn('querySelectorAll("[data-hide-after]")', self.html)
+
+    def test_home_and_ja_name_each_other_and_no_other_page_does(self):
+        pair = ('<link rel="alternate" hreflang="en" href="https://classicmotoringjapan.com/">\n'
+                '<link rel="alternate" hreflang="ja" href="https://classicmotoringjapan.com/ja/">')
+        self.assertIn(pair, self.html)
+        self.assertIn(pair, self.home)
+        for page in self.out.rglob("*.html"):
+            if page.relative_to(self.out).as_posix() not in ("index.html", "ja/index.html"):
+                self.assertNotIn("hreflang", page.read_text(encoding="utf-8"), page)
+
+    def test_the_header_links_each_language(self):
+        self.assertIn('<a class="language" href="ja/" lang="ja" hreflang="ja">日本語</a>', self.home)
+        self.assertIn('<a class="language" href="../" lang="en" hreflang="en">English</a>', self.html)
+
+    def test_listed_in_the_sitemap_and_llms_txt(self):
+        self.assertIn("<loc>https://classicmotoringjapan.com/ja/</loc>",
+                      (self.out / "sitemap.xml").read_text(encoding="utf-8"))
+        self.assertIn("(https://classicmotoringjapan.com/ja/)", (self.out / "llms.txt").read_text(encoding="utf-8"))
+
+
 class JapanMapTests(unittest.TestCase):
     """The home page maps: one coastline and one projection, so a dot cannot drift off its venue."""
 
@@ -2846,6 +3008,9 @@ class AddToCalendarTests(unittest.TestCase):
         write_event(data, "show", name_en="Show")
         write_instance(data, "show", 2026, instance_yaml("show", 2026, "2026-11-03", "2026-11-03",
                                                          extra='start_time: "09:00"\nend_time: "17:00"\n'))
+        write_event(data, "fair", name_en="Fair")
+        write_instance(data, "fair", 2026, instance_yaml("fair", 2026, "2026-11-07", "2026-11-08",
+                                                         extra='start_time: "10:00"\nend_time: "17:00"\n'))
         cls.out = cls.tmp / "site"
         build.build(data, cls.out)
 
@@ -2940,6 +3105,17 @@ class AddToCalendarTests(unittest.TestCase):
     def test_google_gets_a_timed_edition_in_utc(self):
         q = self.google(self.links("events/show/index.html")["google"][0])
         self.assertEqual(q["dates"], "20261103T000000Z/20261103T080000Z")
+        self.assertNotIn("recur", q)
+
+    def test_google_gets_a_timed_edition_over_several_days_as_all_day_with_its_hours_in_the_details(self):
+        # Google's form documents no repeat rule, and a block from first opening to last closing runs overnight.
+        q = self.google(self.links("events/fair/index.html")["google"][0])
+        self.assertEqual(q["dates"], "20261107/20261109")
+        self.assertNotIn("recur", q)
+        self.assertIn("10:00 to 17:00 Japan time each day", q["details"])
+
+    def test_a_one_day_timed_edition_does_not_repeat(self):
+        self.assertNotIn("RRULE", self.html("events/show/2026.ics"))
 
 
 class FathomEventTests(unittest.TestCase):
@@ -3051,7 +3227,7 @@ class SiteFooterLinkTests(unittest.TestCase):
 
     def test_every_footer_links_the_channel_the_issues_and_about(self):
         for rel, html in self.pages.items():
-            footer = html[html.index('<footer class="site-footer">'):]
+            footer = html[html.index('<footer class="site-footer"'):]
             links = re.search(r'(?s)<p class="site-links">(.*?)</p>', footer)
             self.assertIsNotNone(links, rel)
             self.assertEqual([text for _, text in re.findall(r'<a href="([^"]+)">([^<]+)</a>', links.group(1))],

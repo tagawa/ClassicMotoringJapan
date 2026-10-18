@@ -3,13 +3,11 @@ year: 2026
 status: confirmed
 start: 2026-10-24
 end: 2026-10-25
-start_time: "11:00"
-end_time: "15:00"
 # The 5th running. The bonnet bus rides are cancelled this year. In 2024 the
 # demonstration run was on 26 October, the day before the show.
 source_url: https://sites.google.com/view/kuraiyama-fes
 last_verified: 2026-10-16
-sequence: 0
+sequence: 1
 route_en: >
   On Saturday a demonstration run leaves the roadside station at about 11:00 and
   drives through Takayama, past the station and the Jinya, to stand at the Takayama
