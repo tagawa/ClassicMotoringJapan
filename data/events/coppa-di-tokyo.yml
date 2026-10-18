@@ -21,7 +21,8 @@ access_notes_en: >
   about 550 metres from JR Shimbashi. The organiser asks people coming to watch
   to use public transport: only registered cars may enter the park, and there
   is little paid parking nearby.
-typical_scale: Up to 77 cars in 2026 (70, plus 7 bubble cars)
+# 84 on the 2025 entry list; the 2026 guide allows 77 (70, plus 7 bubble cars).
+typical_scale: About 80 cars
 # The organiser's site states no admission. Free is from Stripes Japan's listing for
 # the 2024 edition ("Admission: Free"); the venue is a public park and public roads.
 spectator_fee_jpy: 0

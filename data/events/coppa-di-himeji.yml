@@ -14,7 +14,8 @@ venue_en: Himeji Otemae Park (start and finish)
 lat: 34.8351
 lon: 134.6933
 nearest_station: Sanyo-Himeji, about 800 metres away in a straight line, or JR Himeji, about 1.1 km
-typical_scale: 126 cars on the 2026 entry list
+# 126 on the 2026 entry list; Nishiwaki's report of the day says about 130.
+typical_scale: About 130 cars
 # No source states an admission.
 spectator_fee_jpy: null
 last_verified: 2026-10-13

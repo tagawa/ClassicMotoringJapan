@@ -18,7 +18,8 @@ nearest_station: Kiryu (JR Ryomo line)
 access_notes_en: >
   Orihime buses from the north exit reach the Gunma Daigaku Kiryu Seimon-mae stop
   in about 7 minutes.
-typical_scale: About 200 cars, plus 60 on the rally
+# 2025 had about 100 on the rally; the current site gives 60.
+typical_scale: About 200 cars on display, plus 60 to 100 on the rally
 spectator_fee_jpy: null
 spectator_notes_en: >
   The festival runs in rain. At 15:00 the cars leave by the main gate and drive

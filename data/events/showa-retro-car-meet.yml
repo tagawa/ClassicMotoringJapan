@@ -17,7 +17,8 @@ access_notes_en: >
   Thirty minutes on foot from the west exit. A free shuttle bus to Harbour City
   Soga leaves about every 15 minutes and takes about 15. Nearby roads are
   expected to be congested.
-typical_scale: 167 cars listed for 2026, with more on the day
+# The 2026 list has 162 cars; the organiser's outline gives 167.
+typical_scale: Over 160 cars, with more joining on the day
 spectator_fee_jpy: 1500
 spectator_notes_en: >
   ¥1,200 in advance until the day before, ¥1,500 at the gate. Free for junior high
