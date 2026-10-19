@@ -580,6 +580,11 @@ class BuildOutputTests(unittest.TestCase):
         self.assertIn("User-agent: *", group)
         self.assertIn("Content-Signal: search=yes, ai-input=yes, ai-train=no", group)
 
+    def test_robots_txt_states_the_same_preferences_in_the_ietf_vocabulary(self):
+        # draft-ietf-aipref-attach's Content-Usage rule, in the same group as Content-Signal.
+        group = self.out_text("robots.txt").split("\n\n", 1)[0].splitlines()
+        self.assertIn("Content-Usage: search=y, ai-use=y, train-ai=n", group)
+
     def test_events_json_carries_one_record_per_edition_in_date_order(self):
         self.assertEqual([e["id"] for e in self.out_json("api/events.json")["events"]],
                          ["hill-climb-2026-spring", "autumn-rally-2026", "hill-climb-2026-autumn",
@@ -671,6 +676,14 @@ class BuildOutputTests(unittest.TestCase):
                          [f"{build.SITE_URL}/api/events.json", f"{build.SITE_URL}/{build.FEED_FILE}"])
         for entry in linkset:
             self.assertEqual(entry["service-doc"][0]["type"], "text/html")
+
+    def test_api_catalog_service_doc_is_a_page_that_links_the_feed(self):
+        # service-doc is the feed's documentation: a page that never mentions it is not that.
+        for entry in self.out_json(".well-known/api-catalog")["linkset"]:
+            href = entry["service-doc"][0]["href"]
+            page = href.removeprefix(build.SITE_URL + "/") + "index.html"
+            links = [urljoin(href, h) for h in re.findall(r'<a href="([^"]*)"', self.pages[page])]
+            self.assertIn(entry["anchor"], links, href)
 
     def test_every_url_the_catalogs_advertise_is_a_file_the_build_wrote(self):
         linkset = self.out_json(".well-known/api-catalog")["linkset"]
@@ -2282,6 +2295,12 @@ class HomeRowFactsTests(unittest.TestCase):
         self.assertIn("Cars to 1996.", self.rows["Show", "2026"])
         self.assertIn("Cars to 1988.", self.rows["Show", "2025"])
 
+    def test_events_json_gives_the_cutoff_year_the_row_shows_and_none_where_it_shows_none(self):
+        feed = json.loads((self.tmp / "site" / "api/events.json").read_text(encoding="utf-8"))
+        cutoffs = {e["id"]: e.get("cutoff_year") for e in feed["events"]}
+        self.assertEqual(cutoffs, {"tour-2026": 1975, "parade-2026": None, "show-2025": 1988,
+                                   "show-2026": 1996, "meet-2026": None})
+
     def test_each_fact_opens_with_a_glyph_of_its_own(self):
         facts = re.findall(r'<span class="fact"><svg class="icon" [^>]*aria-hidden="true"[^>]*>(.*?)</svg>'
                            r'([^<]+)<span class="visually-hidden">\. </span></span>', self.markup["Tour", "2026"])
@@ -2768,6 +2787,10 @@ class EditionPrefectureTests(unittest.TestCase):
         events = [b for b in jsonld_blocks(self.page("events/meet/2026/index.html")) if b["@type"] == "Event"]
         self.assertEqual([b["location"]["address"]["addressRegion"] for b in events], ["Gifu"])
         self.assertEqual([e["prefecture"] for e in json.loads(self.page("api/events.json"))["events"]], ["Gifu"])
+
+    def test_llms_txt_names_the_prefecture_beside_an_edition_held_elsewhere(self):
+        self.build_with("venue_en: Another Field\nprefecture: Gifu\n" + CARS)
+        self.assertIn("): Shizuoka. 18 Oct 2026 (Gifu).", self.page("llms.txt"))
 
     def test_without_one_the_edition_takes_the_event_s(self):
         self.build_with(CARS)

@@ -40,6 +40,9 @@ ISSUES_URL = "https://github.com/tagawa/ClassicMotoringJapan/issues"
 YOUTUBE_CHANNEL_URL = "https://www.youtube.com/@ClassicMotoringJapan"
 # Crawling is allowed; training on the text is not. Declared where a crawler already looks.
 CONTENT_SIGNAL = "search=yes, ai-input=yes, ai-train=no"
+# The same three preferences in the IETF AIPREF vocabulary (draft-ietf-aipref-vocab), for
+# crawlers that read that working group's Content-Usage rule rather than Cloudflare's.
+CONTENT_USAGE = "search=y, ai-use=y, train-ai=n"
 # ARD renamed its manifest; the old path is still what scanners and older consumers read.
 ARD_PATH = ".well-known/ard.json"
 ARD_PREDECESSOR_PATH = ".well-known/ai-catalog.json"
@@ -1177,6 +1180,7 @@ def build_api(rows: list[dict]) -> str:
             "official_url": ev["official_url"],
             "source_url": ed["source_url"],
             "last_verified": ed["last_verified"],
+            "cutoff_year": r["cutoff_year"],
             "cars_as_of": ed.get("list_as_of"),
             "cars": r["cars"],
             "route": ed.get("route"),
@@ -1201,8 +1205,11 @@ def build_llms_txt(rows: list[dict], events: dict) -> str:
         dates = []
         for r in ev_rows:
             when = f"{r['edition']}: {r['when']}" if r["edition"] else r["when"]
-            status = r["ed"]["status"]
-            dates.append(when if status == "confirmed" else f"{when} ({status})")
+            # The line opens with the event's prefecture, so an edition held elsewhere says where.
+            notes = [r["prefecture"]] if r["prefecture"] != ev["prefecture"] else []
+            if r["ed"]["status"] != "confirmed":
+                notes.append(r["ed"]["status"])
+            dates.append(f"{when} ({', '.join(notes)})" if notes else when)
         lines.append(f"- [{ev['name_en']}]({SITE_URL}/events/{slug}/): "
                      f"{ev['prefecture']}. {'; '.join(dates)}.")
         for r in ev_rows:
@@ -1276,9 +1283,9 @@ def build_ard_catalog() -> str:
 
 
 def build_api_catalog() -> str:
-    """RFC 9727 API catalog. The site documents the data, so service-doc points at it;
+    """RFC 9727 API catalog. The About page lists the feeds, so service-doc points at it;
     there is no OpenAPI description to offer as service-desc and none is claimed."""
-    doc = [{"href": f"{SITE_URL}/", "type": "text/html", "title": SITE_NAME}]
+    doc = [{"href": f"{SITE_URL}/about/", "type": "text/html", "title": f"About {SITE_NAME}"}]
     linkset = [{"anchor": f"{SITE_URL}/api/events.json", "service-doc": doc},
                {"anchor": f"{SITE_URL}/{FEED_FILE}", "service-doc": doc}]
     return json.dumps({"linkset": linkset}, indent=2, ensure_ascii=False) + "\n"
@@ -1379,7 +1386,7 @@ def build(data_dir: Path, out_dir: Path,
     for r in rows:
         if r["ics_path"]:
             write(r["ics_path"], ics_calendar([], [r]))
-    write("robots.txt", f"User-agent: *\nContent-Signal: {CONTENT_SIGNAL}\nAllow: /\n\n"
+    write("robots.txt", f"User-agent: *\nContent-Signal: {CONTENT_SIGNAL}\nContent-Usage: {CONTENT_USAGE}\nAllow: /\n\n"
                         f"Sitemap: {SITE_URL}/sitemap.xml\n"
                         f"Agentmap: {SITE_URL}/{ARD_PATH}\n")
     write("api/events.json", build_api(rows))
