@@ -18,6 +18,7 @@
 <meta property="og:title" content="{{ title }}">
 <meta property="og:description" content="{{ description }}">
 <meta property="og:url" content="{{ canonical }}">
+<meta property="og:locale" content="{{ "ja_JP" if lang == "ja" else "en_GB" }}">
 {% endif %}
 {% block head %}{% endblock %}
 <link rel="stylesheet" href="{{ root }}static/style.css">

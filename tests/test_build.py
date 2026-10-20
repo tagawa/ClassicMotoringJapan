@@ -845,6 +845,22 @@ class PageDescriptionTests(unittest.TestCase):
             self.assertEqual(head.meta["og:type"], "website", rel)
             self.assertEqual(head.meta["og:site_name"], build.SITE_NAME, rel)
 
+    def test_event_and_edition_titles_leave_the_brand_to_the_search_result(self):
+        # Google shows the site name on its own line, and the suffix pushed most titles past 60 characters.
+        self.assertEqual(self.head("events/tour/index.html").title, "Test Tour: Visitor Guide")
+        self.assertEqual(self.head("events/tour/2026/index.html").title, "Test Tour 2026: Route")
+
+    def test_site_level_titles_keep_the_brand(self):
+        # "About" alone names nothing.
+        for rel in ("index.html", "about/index.html", "ja/index.html", "404.html"):
+            self.assertTrue(self.head(rel).title.endswith(f" | {build.SITE_NAME}"), rel)
+
+    def test_link_previews_name_the_page_language(self):
+        # Left out, a preview assumes en_US.
+        for rel in ("index.html", "about/index.html", "events/tour/index.html", "events/tour/2026/index.html"):
+            self.assertEqual(self.head(rel).meta["og:locale"], "en_GB", rel)
+        self.assertEqual(self.head("ja/index.html").meta["og:locale"], "ja_JP")
+
     def test_the_site_has_no_images_so_no_preview_image_is_claimed(self):
         for rel in ("index.html", "events/tour/2026/index.html"):
             self.assertNotIn("og:image", self.head(rel).meta, rel)
@@ -1468,7 +1484,7 @@ class PastEditionTests(unittest.TestCase):
                          ["Route", "Entry list", "From the 2026 edition"])
 
     def test_the_title_names_the_sections_in_page_order(self):
-        self.assertIn("<title>Test Event 2026: Videos, entry list and route |", self.page(2026))
+        self.assertIn("<title>Test Event 2026: Videos, entry list and route</title>", self.page(2026))
 
     def test_an_edition_links_forward_to_the_next_one(self):
         self.assertIn('<a href="../../../events/meet/2027/">Next edition: 18–19 Oct 2027</a>',
@@ -1578,7 +1594,8 @@ class ProseLengthTests(unittest.TestCase):
         shutil.rmtree(self.tmp)
 
     def build_with_summary(self, words: int):
-        write_event(self.data, "meet", extra=f"summary_en: {' word' * words}\n".replace("  ", " "))
+        # One word per sentence, so the first sentence stays inside the description cap.
+        write_event(self.data, "meet", extra=f"summary_en:{' Word.' * words}\n")
         write_instance(self.data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-18"))
         build.build(self.data, self.tmp / "site")
 
@@ -1596,6 +1613,44 @@ class ProseLengthTests(unittest.TestCase):
         message = str(ctx.exception)
         for way in ("bullet", "table", "diagram"):
             self.assertIn(way, message.lower(), f"the fix hint should mention {way}s")
+
+
+class DescriptionLengthTests(unittest.TestCase):
+    """An event page's snippet is its summary's first sentence, so that sentence has to fit one."""
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.data = self.tmp / "data"
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp)
+
+    def build_with_first_sentence(self, chars: int):
+        sentence = "A" + "a" * (chars - 2) + "."
+        write_event(self.data, "meet", extra=f"summary_en: {sentence} Then a second sentence.\n")
+        write_instance(self.data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-18"))
+        build.build(self.data, self.tmp / "site")
+
+    def test_a_first_sentence_at_the_cap_is_accepted(self):
+        self.build_with_first_sentence(build.DESCRIPTION_MAX_CHARS)
+
+    def test_a_first_sentence_over_the_cap_is_rejected_by_event_and_field(self):
+        with self.assertRaises(build.ValidationError) as ctx:
+            self.build_with_first_sentence(build.DESCRIPTION_MAX_CHARS + 1)
+        message = str(ctx.exception)
+        self.assertIn("events/meet.yml", message)
+        self.assertIn("summary_en", message)
+
+    def test_an_edition_description_is_never_capped(self):
+        # Built only from facts: shortening one would mean shortening a venue name.
+        write_event(self.data, "meet")
+        write_instance(self.data, "meet", 2026, instance_yaml(
+            "meet", 2026, "2026-10-18", "2026-10-18", status="tentative",
+            extra=f"venue_en: {'Long Venue Name ' * 10}\n" + CARS))
+        build.build(self.data, self.tmp / "site")
+        html = (self.tmp / "site/events/meet/2026/index.html").read_text(encoding="utf-8")
+        description = HeadParser(html).meta["description"]
+        self.assertGreater(len(description), build.DESCRIPTION_MAX_CHARS)
 
 
 class CombinedProseTests(unittest.TestCase):
@@ -1769,7 +1824,7 @@ class ProseLinkTests(unittest.TestCase):
         self.assertEqual(block["description"], "It fills a car park inside Fuji Speedway on the day.")
 
     def test_urls_do_not_count_towards_the_word_cap(self):
-        words = " ".join(["word"] * (build.PROSE_MAX_WORDS - 2))
+        words = " ".join(["Word."] * (build.PROSE_MAX_WORDS - 2))
         self.build_with_prose(f"{words} [Fuji Speedway](https://en.fujispeedway.jp/a-very/long/path)")
 
     def test_advice_inside_link_text_is_still_caught(self):

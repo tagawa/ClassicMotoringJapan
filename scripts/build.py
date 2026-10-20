@@ -85,6 +85,9 @@ URL_RE = re.compile(r"^https?://\S+$")
 LINK_RE = re.compile(r"\[([^\[\]]+)\]\((https://[^\s()]+)\)")
 # Long prose buries the facts inside it, and a skim-reader never finds them.
 PROSE_MAX_WORDS = 75
+# An event page's meta description, about what a result snippet shows. Edition descriptions
+# are built only from facts such as the venue name, so they are left uncapped (spec 8).
+DESCRIPTION_MAX_CHARS = 160
 # Advice, not facts. Cutting one of these loses nothing a visitor came for: the page
 # says what is true and lets the reader draw the conclusion. Deliberately narrow, so a
 # match is always a real one; judgement calls the list cannot make are in CLAUDE.md.
@@ -383,6 +386,18 @@ def _check_combined_prose(ev: dict, rel: str, errors: list[str]) -> None:
             )
 
 
+def _check_description(ev: dict, rel: str, errors: list[str]) -> None:
+    if not ev.get("summary_en"):
+        return
+    description = event_description(ev)
+    if len(description) > DESCRIPTION_MAX_CHARS:
+        errors.append(
+            f"{rel}: the first sentence of summary_en is the page's search snippet and runs to "
+            f"{len(description)} characters (limit {DESCRIPTION_MAX_CHARS}). Shorten that sentence, "
+            f"or split it in two"
+        )
+
+
 def _check_coords(obj: dict, rel: str, errors: list[str]) -> None:
     """Half a pair points nowhere, so the build refuses it rather than dropping the link."""
     if ("lat" in obj) != ("lon" in obj):
@@ -487,6 +502,7 @@ def load_and_validate(data_dir: Path) -> tuple[dict, list]:
             errors.append(f"{rel}: slug {ev.get('slug')!r} must match the file name {path.stem!r}")
             continue
         _check_combined_prose(ev, rel, errors)
+        _check_description(ev, rel, errors)
         _check_coords(ev, rel, errors)
         _check_prefecture(ev, rel, errors)
         events[path.stem] = ev
@@ -1355,7 +1371,7 @@ def build(data_dir: Path, out_dir: Path,
         verified = max([ev["last_verified"]] + [r["ed"]["last_verified"] for r in ev_rows])
         write(f"events/{slug}/index.html", env.get_template("event.html").render(
             **common, root="../../", canonical=f"{SITE_URL}/events/{slug}/",
-            title=f"{ev['name_en']}: Visitor Guide | {SITE_NAME}", description=event_description(ev),
+            title=f"{ev['name_en']}: Visitor Guide", description=event_description(ev),
             ev=ev, rows=ev_rows, verified=verified, pin=venue_pin(ev),
             jsonld=[r["jsonld"] for r in ev_rows if not r["has_page"]]))
         sitemap.append((f"{SITE_URL}/events/{slug}/", verified))
@@ -1365,7 +1381,7 @@ def build(data_dir: Path, out_dir: Path,
             ed = r["ed"]
             write(f"{r['path']}index.html", env.get_template("edition.html").render(
                 **common, root="../../../", canonical=r["abs_url"],
-                title=f"{r['full_name']}: {r['parts_phrase']} | {SITE_NAME}",
+                title=f"{r['full_name']}: {r['parts_phrase']}",
                 description=edition_description(r),
                 ev=ev, r=r, ed=ed, jsonld=[r["jsonld"], build_breadcrumbs(r)]))
             sitemap.append((r["abs_url"], ed["last_verified"]))
