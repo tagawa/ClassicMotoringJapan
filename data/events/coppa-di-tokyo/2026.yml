@@ -7,7 +7,7 @@ end: 2026-11-21
 # whose text is outlined, so it has to be rendered to read. It gives the timetable as
 # planned (予定): reception from 8:30, start from 10:00, finish from 12:00.
 source_url: https://www.coppa-di-tokyo.com/
-last_verified: 2026-10-13
+last_verified: 2026-10-27
 sequence: 0
 # From the 2026 guide. On the edition, not the event: the 2025 entry list has
 # later cars and no source gives that year's limit.
