@@ -6,8 +6,12 @@ end: 2026-10-18
 start_time: "09:30"
 end_time: "15:00"
 source_url: https://retrocar.yaesu-net.co.jp/2026_soga/?p=outline
-last_verified: 2026-10-06
+last_verified: 2026-10-27
 sequence: 0
+videos:
+  # From Old-timer, the magazine whose publisher runs the meet, so the organiser's own.
+  - youtube_id: 6YE9ZM4Svrk
+    label_en: The day, and the special exhibits' engines started
 # The organiser lists these in two classes, retro and neo-classic. The table has no
 # class column, so they are grouped by marque here, which is what Make implies.
 list_as_of: 2026-10-06

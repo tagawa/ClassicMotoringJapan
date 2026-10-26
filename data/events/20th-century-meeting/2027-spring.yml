@@ -1,0 +1,13 @@
+slug: 20th-century-meeting
+year: 2027
+status: confirmed
+start: 2027-04-11
+end: 2027-04-11
+start_time: "10:00"
+end_time: "15:00"
+# From the listing and the flyer it links. Entries open on 2026-11-20, for 130 cars and
+# 40 motorcycles. The flyer's limit is 2010, so it is set on this edition only.
+source_url: https://niigata-kankou.or.jp/event/detail_44046.html
+last_verified: 2026-10-27
+sequence: 0
+cutoff_year: 2010

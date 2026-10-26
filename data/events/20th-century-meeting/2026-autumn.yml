@@ -6,5 +6,8 @@ end: 2026-10-11
 start_time: "10:00"
 end_time: "15:00"
 source_url: https://niigata-kankou.or.jp/event/detail_44046.html
-last_verified: 2026-10-08
+last_verified: 2026-10-27
 sequence: 0
+videos:
+  - youtube_id: 18T9AMqg48k
+    label_en: The cars on show (video by P Channel)
