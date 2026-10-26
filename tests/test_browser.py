@@ -52,7 +52,7 @@ class PastEventsTest(unittest.TestCase):
             "upcoming": page.locator("#upcoming-list a").all_inner_texts(),
             # textContent: Past is folded, and a closed details renders none of its text.
             "past": page.locator("#past-list a").all_text_contents(),
-            "past_count": page.locator("#past-count").text_content(),
+            "past_summary": page.locator("#past-show").text_content(),
             "past_visible": page.locator("#past").is_visible(),
             "heading": page.locator("#upcoming-h").inner_text(),
         }
@@ -65,7 +65,7 @@ class PastEventsTest(unittest.TestCase):
         self.assertEqual(s["past"], ["Past Meet"])
         self.assertEqual(s["upcoming"], ["Next Meet"])
         self.assertTrue(s["past_visible"])
-        self.assertEqual(s["past_count"], "1")
+        self.assertEqual(s["past_summary"], "Show 1 event")
 
     def test_the_sorted_list_is_headed_upcoming(self):
         # The markup says Events, for a reader whose browser never runs the script.

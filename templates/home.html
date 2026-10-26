@@ -68,10 +68,12 @@
   </div>
 </section>
 
-{# Folded: it grows all year, and the page is for what is still to come. #}
+{# Folded: it grows all year, and the page is for what is still to come. The heading sits
+   outside the fold, so the past months' h3s are not taken for part of Upcoming. #}
 <section id="past" aria-labelledby="past-h" hidden>
+  <h2 id="past-h">Past events</h2>
   <details>
-    <summary id="past-h">Past events (<span id="past-count"></span>)</summary>
+    <summary id="past-show">Show past events</summary>
     <div id="past-list"></div>
   </details>
 </section>
@@ -113,7 +115,8 @@
       if (!months[j].querySelector("li[data-end]")) months[j].parentNode.removeChild(months[j]);
     }
     if (moved) {
-      document.getElementById("past-count").textContent = past.querySelectorAll("li li").length;
+      var count = past.querySelectorAll("li li").length;
+      document.getElementById("past-show").textContent = "Show " + count + (count === 1 ? " event" : " events");
       document.getElementById("past").hidden = false;
     }
     document.getElementById("upcoming-h").textContent = "Upcoming";
@@ -143,10 +146,11 @@
     var strip = document.getElementById("years");
     var yearsAhead = 0;
     if (strip) {
-      strip.querySelectorAll("li[data-year]").forEach(function (li) {
-        if (li.dataset.year < thisYear) li.hidden = true;
+      var yearRows = strip.querySelectorAll("li[data-year]");
+      for (var y = 0; y < yearRows.length; y++) {
+        if (yearRows[y].getAttribute("data-year") < thisYear) yearRows[y].hidden = true;
         else yearsAhead += 1;
-      });
+      }
       if (!yearsAhead) strip.hidden = true;
       // Grey for a date that has gone, as for one that was cancelled: neither is one to keep.
       var bars = strip.querySelectorAll("i[data-end]");

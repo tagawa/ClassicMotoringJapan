@@ -3278,11 +3278,14 @@ class HomeTimeAwareTests(unittest.TestCase):
     def tearDownClass(cls):
         shutil.rmtree(cls.tmp)
 
-    def test_past_events_fold_under_a_summary_the_script_counts(self):
-        self.assertRegex(self.html, r'<section id="past" aria-labelledby="past-h" hidden>\s*<details>\s*'
-                                    r'<summary id="past-h">Past events \(<span id="past-count"></span>\)</summary>\s*'
+    def test_past_events_fold_under_a_heading_and_a_summary_the_script_counts(self):
+        # A real h2, so the past months' h3s are not taken for part of Upcoming (WCAG 1.3.1).
+        self.assertRegex(self.html, r'<section id="past" aria-labelledby="past-h" hidden>\s*'
+                                    r'<h2 id="past-h">Past events</h2>\s*<details>\s*'
+                                    r'<summary id="past-show">Show past events</summary>\s*'
                                     r'<div id="past-list"></div>')
-        self.assertIn('getElementById("past-count").textContent', self.script)
+        self.assertIn('getElementById("past-show").textContent = "Show " + count + (count === 1 ? " event" : " events");',
+                      self.script)
 
     def test_each_strip_bar_carries_its_last_day_so_the_past_can_be_greyed(self):
         self.assertRegex(self.html, r'<i data-end="2026-04-12" style="left: [\d.]+%')
@@ -3399,6 +3402,170 @@ class OutputFolderTests(unittest.TestCase):
         (out / "stale.html").write_text("old", encoding="utf-8")
         build.build(self.data, out)
         self.assertFalse((out / "stale.html").exists())
+
+
+# Hiragana, katakana, CJK punctuation and ideographs, and full-width forms.
+JAPANESE_CHAR = re.compile("[　-ヿ㐀-鿿＀-￯]")
+
+
+def unmarked_japanese(html: str) -> list[str]:
+    """Text holding Japanese whose nearest lang is not ja, so a screen reader voices it as English."""
+
+    class Walker(HTMLParser):
+        VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta",
+                "source", "track", "wbr"}
+
+        def __init__(self):
+            super().__init__()
+            self.stack, self.found = [], []
+
+        def handle_starttag(self, tag, attrs):
+            if tag not in self.VOID:
+                self.stack.append((tag, dict(attrs)))
+
+        def handle_startendtag(self, tag, attrs):
+            pass
+
+        def handle_endtag(self, tag):
+            for i in range(len(self.stack) - 1, -1, -1):
+                if self.stack[i][0] == tag:
+                    del self.stack[i:]
+                    break
+
+        def handle_data(self, data):
+            if any(tag in ("script", "style", "title") or a.get("aria-hidden") == "true"
+                   for tag, a in self.stack):
+                return
+            lang = next((a["lang"] for _, a in reversed(self.stack) if "lang" in a), "")
+            if JAPANESE_CHAR.search(data) and not lang.startswith("ja"):
+                self.found.append(data.strip())
+
+    walker = Walker()
+    walker.feed(html)
+    return walker.found
+
+
+class JapaneseRunTests(unittest.TestCase):
+    """Japanese inside an English field is marked lang="ja", so a screen reader switches voice (WCAG 3.1.2)."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = Path(tempfile.mkdtemp())
+        data = cls.tmp / "data"
+        write_event(data, "meet", extra=(
+            "organizer: テスト実行委員会 (Test Committee)\n"
+            "street_address: 1-1 Test, Shizuoka (静岡県テスト市1-1)\n"
+            "summary_en: Held at [テスト公園](https://example.com/park/), with times given as planned (予定).\n"))
+        write_instance(data, "meet", 2026, instance_yaml(
+            "meet", 2026, "2026-11-22", "2026-11-22",
+            extra="route_en: From the park to the harbour, times as planned (予定).\n" + ROUTE_ONE_DAY))
+        build.build(data, cls.tmp / "site")
+        cls.event = (cls.tmp / "site/events/meet/index.html").read_text(encoding="utf-8")
+        cls.edition = (cls.tmp / "site/events/meet/2026/index.html").read_text(encoding="utf-8")
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.tmp)
+
+    def test_the_checker_finds_japanese_left_unmarked(self):
+        # Proves the page tests below can fail.
+        html = '<html lang="en"><p>テスト <span lang="ja">公園</span></p><p aria-hidden="true">日</p></html>'
+        self.assertEqual(unmarked_japanese(html), ["テスト"])
+
+    def test_event_and_edition_pages_leave_no_japanese_unmarked(self):
+        for name, html in (("event", self.event), ("edition", self.edition)):
+            with self.subTest(page=name):
+                self.assertEqual(unmarked_japanese(html), [])
+
+    def test_a_mixed_field_marks_only_its_japanese(self):
+        self.assertIn('<span lang="ja">テスト実行委員会</span> (Test Committee)', self.event)
+        self.assertIn('(<span lang="ja">静岡県テスト市1-1</span>)', self.event)
+        self.assertIn('<a href="https://example.com/park/"><span lang="ja">テスト公園</span></a>', self.event)
+
+    def test_latin_letters_between_japanese_stay_in_one_run(self):
+        self.assertEqual(str(build.mark_ja("クラシックカーフェスティバルin桐生実行委員会 (Committee)")),
+                         '<span lang="ja">クラシックカーフェスティバルin桐生実行委員会</span> (Committee)')
+        self.assertEqual(str(build.mark_ja("Fujioka オールディーズ実行委員会")),
+                         'Fujioka <span lang="ja">オールディーズ実行委員会</span>')
+        self.assertEqual(str(build.mark_ja("コッパ ディ 小海 実行委員会")),
+                         '<span lang="ja">コッパ ディ 小海 実行委員会</span>')
+
+    def test_everything_else_is_still_escaped(self):
+        self.assertEqual(str(build.mark_ja("A & <b> 公園")), 'A &amp; &lt;b&gt; <span lang="ja">公園</span>')
+
+    def test_no_page_of_the_real_site_leaves_japanese_unmarked(self):
+        out = self.tmp / "real-site"
+        build.build(ROOT / "data", out)
+        pages = sorted(out.rglob("*.html"))
+        self.assertGreater(len(pages), 10)
+        for page in pages:
+            with self.subTest(page=str(page.relative_to(out))):
+                self.assertEqual(unmarked_japanese(page.read_text(encoding="utf-8")), [])
+
+
+class ScrollableTableTests(unittest.TestCase):
+    """A table wider than a phone scrolls in its own box, which a keyboard can reach only if the box takes focus (WCAG 2.1.1)."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = Path(tempfile.mkdtemp())
+        make_fixture(cls.tmp / "data")
+        write_event(cls.tmp / "data", "tour")
+        write_instance(cls.tmp / "data", "tour", 2026,
+                       instance_yaml("tour", 2026, "2026-10-18", "2026-10-19", extra=ROUTE + CARS))
+        build.build(cls.tmp / "data", cls.tmp / "site")
+        cls.pages = {p.relative_to(cls.tmp / "site").as_posix(): p.read_text(encoding="utf-8")
+                     for p in (cls.tmp / "site").rglob("*.html")}
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.tmp)
+
+    def test_every_table_box_is_a_named_focusable_region(self):
+        boxes = [(name, box) for name, html in self.pages.items()
+                 for box in re.findall(r'<div class="table-wrap"[^>]*>', html)]
+        self.assertGreater(len(boxes), 3)
+        for name, box in boxes:
+            with self.subTest(page=name, box=box):
+                self.assertRegex(box, r'^<div class="table-wrap" tabindex="0" role="region" aria-label="[^"]+">$')
+
+    def test_each_box_is_named_after_what_it_holds(self):
+        self.assertIn('<div class="table-wrap" tabindex="0" role="region" aria-label="Dates">',
+                      self.pages["events/autumn-rally/index.html"])
+        edition = self.pages["events/tour/2026/index.html"]
+        self.assertRegex(edition, r'aria-label="Day 1: [^"]+"')
+        self.assertIn('aria-label="Entry list"', edition)
+
+    def test_the_focused_box_is_ringed_in_both_themes(self):
+        css = (ROOT / "static/style.css").read_text(encoding="utf-8")
+        light, dark = css.split("@media (prefers-color-scheme: dark)")
+        for scope, block in (("light", light), ("dark", dark)):
+            with self.subTest(theme=scope):
+                self.assertRegex(block, r"\.table-wrap:focus-visible[^{]*\{[^}]*outline")
+
+
+def old_browser_breakers(js: str) -> list[str]:
+    """Syntax and APIs that stop a script dead on the old phones and PCs the site supports."""
+    js = re.sub(r"//[^\n]*", "", js)
+    rules = {"arrow function": r"=>", "let or const": r"\b(let|const)\s", "class": r"\bclass\s+\w",
+             "template literal": "`", "NodeList forEach": r"\.forEach\(", "dataset": r"\.dataset\b"}
+    return [name for name, pattern in rules.items() if re.search(pattern, js)]
+
+
+class ScriptSyntaxTests(unittest.TestCase):
+    """Inline scripts are ES5 with no newer DOM methods: newer ones fail outright, taking the rest of the script with them."""
+
+    def test_the_check_catches_each_breaker(self):
+        js = "const a = 1; let b = () => `x`; class C {} els.forEach(f); el.dataset.year"
+        self.assertEqual(len(old_browser_breakers(js)), 6)
+
+    def test_no_template_script_uses_one(self):
+        scripts = [(t.name, body) for t in sorted((ROOT / "templates").glob("*.html"))
+                   for body in re.findall(r"<script>(.*?)</script>", t.read_text(encoding="utf-8"), re.S)]
+        self.assertGreater(len(scripts), 4)
+        for name, body in scripts:
+            with self.subTest(template=name):
+                self.assertEqual(old_browser_breakers(body), [])
 
 
 if __name__ == "__main__":

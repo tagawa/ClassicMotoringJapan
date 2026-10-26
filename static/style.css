@@ -34,7 +34,8 @@ h3 { font-size: 20px; line-height: 1.3; margin: 32px 0 8px; }
 
 a { color: #8C1C24; }
 code { overflow-wrap: anywhere; }
-a:focus-visible, summary:focus-visible {
+/* A table box takes focus so a keyboard can scroll a table wider than the screen. */
+a:focus-visible, summary:focus-visible, .table-wrap:focus-visible {
   outline: 2px solid #8C1C24;
   outline-offset: 2px;
   border-radius: 4px;
@@ -84,7 +85,7 @@ h1:lang(ja) { word-break: keep-all; }
 .leaf-date { display: block; padding: 0 8px; border: 1px solid #E0E0E0; border-top: 0; border-radius: 0 0 8px 8px; font-size: 24px; line-height: 1.5; }
 /* Grey once it has gone, as the year strip greys a past bar. */
 #past-list .leaf-day { background: #5C5C5C; }
-#past summary { font-size: 24px; line-height: 1.3; }
+#past details { margin-top: 0; }
 .events .meta { margin: 4px 0 0; color: #5C5C5C; }
 /* Margins rather than flex gap, on the left so a fact that starts a wrapped line sits flush. */
 .fact-list { display: block; margin-left: -16px; }
@@ -270,7 +271,7 @@ summary { cursor: pointer; font-weight: 600; }
   .ja { color: #A8A8A8; }
   .breadcrumbs { color: #A8A8A8; }
   a { color: #D0636A; }
-  a:focus-visible, summary:focus-visible { outline-color: #D0636A; }
+  a:focus-visible, summary:focus-visible, .table-wrap:focus-visible { outline-color: #D0636A; }
   .month h3 { border-bottom-color: #EBEBEB; }
   .events > li { border-bottom-color: #333333; }
   .strips .chart-rest .chart-when { color: #A8A8A8; }

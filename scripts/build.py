@@ -248,14 +248,31 @@ def prose_text(v: str) -> str:
     return LINK_RE.sub(r"\1", v)
 
 
+# Kana, CJK punctuation, ideographs and full-width forms. A run keeps Latin letters, digits
+# and spaces that sit between them (クラシックカーフェスティバルin桐生) and an address's
+# closing number (中瀬2-1), so each name or address is one span.
+_JA_CHAR = "[　-ヿ㐀-鿿＀-￯]"
+JA_RUN_RE = re.compile(f"{_JA_CHAR}(?:{_JA_CHAR}|[ A-Za-z0-9-]+(?={_JA_CHAR}))*(?:[0-9](?:[0-9-]*[0-9])?)?")
+
+
+def mark_ja(v: str) -> Markup:
+    """Text for a page, escaped, with Japanese marked lang="ja" so a screen reader switches voice."""
+    out, pos = [], 0
+    for m in JA_RUN_RE.finditer(v):
+        out += [escape(v[pos:m.start()]), Markup('<span lang="ja">{}</span>').format(m.group(0))]
+        pos = m.end()
+    out.append(escape(v[pos:]))
+    return Markup("").join(out)
+
+
 def prose_html(v: str) -> Markup:
     """Prose for a page: escaped throughout, with each link made an anchor."""
     out, pos = [], 0
     for m in LINK_RE.finditer(v):
-        out += [escape(v[pos:m.start()]),
-                Markup('<a href="{}">{}</a>').format(m.group(2), m.group(1))]
+        out += [mark_ja(v[pos:m.start()]),
+                Markup('<a href="{}">{}</a>').format(m.group(2), mark_ja(m.group(1)))]
         pos = m.end()
-    out.append(escape(v[pos:]))
+    out.append(mark_ja(v[pos:]))
     return Markup("").join(out)
 
 
@@ -1331,6 +1348,7 @@ def build(data_dir: Path, out_dir: Path,
     env.filters["fee"] = fmt_fee
     env.filters["domain"] = fmt_domain
     env.filters["prose"] = prose_html
+    env.filters["mark_ja"] = mark_ja
     env.filters["weekday"] = fmt_weekday
     env.filters["span_ja"] = fmt_span_ja
     env.filters["month_ja"] = fmt_month_ja

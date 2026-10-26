@@ -80,7 +80,7 @@
 {% endif %}
 {% for day in ed.route or [] %}
 <h3>Day {{ loop.index }}: {{ day.date | weekday }}</h3>
-<div class="table-wrap">
+<div class="table-wrap" tabindex="0" role="region" aria-label="Day {{ loop.index }}: {{ day.date | weekday }}">
   <table>
     <thead><tr><th scope="col">Time</th><th scope="col">Place</th><th scope="col">Prefecture</th></tr></thead>
     <tbody>
@@ -137,7 +137,7 @@
 <details class="all-cars">
 <summary>{% if r.cars | length > 1 %}All {{ r.cars | length }} cars{% else %}1 car{% endif %}</summary>
 {% endif %}
-<div class="table-wrap">
+<div class="table-wrap" tabindex="0" role="region" aria-label="{{ r.cars_label }}">
   <table>
     <thead><tr>{% for col in r.car_columns %}<th scope="col">{{ col.label }}</th>{% endfor %}</tr></thead>
     <tbody>

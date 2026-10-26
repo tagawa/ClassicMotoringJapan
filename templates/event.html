@@ -10,7 +10,7 @@
 <h2>Dates</h2>
 {% if rows %}
 {% set show_details = rows | selectattr("has_page") | list %}
-<div class="table-wrap">
+<div class="table-wrap" tabindex="0" role="region" aria-label="Dates">
   <table>
     <thead><tr><th scope="col">Edition</th><th scope="col">Dates</th><th scope="col">Status</th>{% if show_details %}<th scope="col"><span class="visually-hidden">Details</span></th>{% endif %}</tr></thead>
     <tbody>
@@ -41,7 +41,7 @@
 <h2>Visiting</h2>
 <dl class="facts">
   <dt>Where</dt>
-  <dd>{{ ev.venue_en }}, {{ ev.prefecture }}{% if ev.street_address %}<br>{{ ev.street_address }}{% endif %}{{ map_link(pin) }}</dd>
+  <dd>{{ ev.venue_en }}, {{ ev.prefecture }}{% if ev.street_address %}<br>{{ ev.street_address | mark_ja }}{% endif %}{{ map_link(pin) }}</dd>
 {% if ev.nearest_station or ev.access_notes_en %}
   <dt>Getting there</dt>
   <dd>{% if ev.nearest_station %}Nearest station: {{ ev.nearest_station | prose }}{% endif %}{% if ev.nearest_station and ev.access_notes_en %}<br>{% endif %}{{ (ev.access_notes_en or "") | prose }}</dd>
@@ -62,7 +62,7 @@
 {% endif %}
 {% if ev.organizer %}
   <dt>Organiser</dt>
-  <dd>{{ ev.organizer }}</dd>
+  <dd>{{ ev.organizer | mark_ja }}</dd>
 {% endif %}
 {# Not "Official site": official_url is often a tourism listing, a blog post or a venue's page. #}
   <dt>Source</dt>
