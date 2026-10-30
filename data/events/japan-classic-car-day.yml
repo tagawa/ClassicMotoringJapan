@@ -1,0 +1,24 @@
+slug: japan-classic-car-day
+name_en: Japan Classic Car Day
+organizer: 日本クラシックカークラブ (Classic Car Club of Japan, CCCJ)
+# The club's anniversary event, held on 3 November, which the club calls Classic
+# Car Day. Its news posts carry each year's details.
+official_url: https://cccj.org/information/jccd2026japan-classic-car-day-2026%E9%96%8B%E5%82%AC/
+summary_en: >
+  The Classic Car Club of Japan marks its anniversary with a parade through Tokyo
+  and a display at the Tokyo Prince Hotel. The club was founded in 1956 and is
+  Japan's member of FIVA. In 2026, its 70th year, about 60 cars from the 1920s to 1996, owned by
+  guests and members, take part, with cars linked to the club and cars built in
+  1956 or earlier as the theme.
+prefecture: Tokyo
+venue_en: Tokyo Prince Hotel, car park 2
+street_address: 3-3-1 Shibakoen, Minato, Tokyo (東京都港区芝公園3-3-1)
+# GSI's pin for the hotel's address; OSM's reverse lookup names the hotel.
+lat: 35.6589
+lon: 139.7488
+typical_scale: About 60 cars
+spectator_fee_jpy: null
+spectator_notes_en: >
+  The display is open to the public; the club states no admission. A talk
+  session over lunch in the hotel, 12:00 to 14:00, is paid and booked in advance.
+last_verified: 2026-10-30

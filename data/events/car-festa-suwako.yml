@@ -1,0 +1,23 @@
+slug: car-festa-suwako
+name_en: Car Festa Suwako
+name_ja: カーフェスタ諏訪湖
+organizer: カーフェスタ諏訪湖実行委員会 (Car Festa Suwako executive committee)
+# The committee has no site of its own. This post reproduces its flyer and entry
+# form, which name a contact person; that name does not go here.
+official_url: https://minkara.carview.co.jp/userid/2251740/blog/49206173/
+summary_en: >
+  Old cars of the Showa era on the Lake Suwa shore, with a special display of
+  emergency vehicles, a flea market and food stalls. The flyer names no cutoff
+  year, and its entry form also takes cars registered in the Heisei era (from
+  1989). Backed by the Self-Defense Force's Nagano office.
+prefecture: Nagano
+venue_en: Suwako Event Hiroba, rear car park (former Toyo Valve site)
+street_address: 1-2-1 Takashima, Suwa, Nagano (長野県諏訪市高島1丁目2-1), the venue's entrance
+# GSI's pin for the entrance address the flyer gives; the event square itself is
+# in neither GSI nor OSM.
+lat: 36.0428
+lon: 138.1118
+spectator_fee_jpy: 0
+spectator_notes_en: >
+  Free to watch.
+last_verified: 2026-10-30

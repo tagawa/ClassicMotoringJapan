@@ -1,0 +1,24 @@
+slug: toda-classic-car-reunion
+name_en: Toda Classic Car Class Reunion
+name_ja: トダクラシックカー同窓会
+organizer: トダピース / トダくらし不動産 (Toda Peace / Toda Kurashi Fudosan)
+official_url: https://toda-classiccar.com/
+summary_en: >
+  More than 100 cars from the 1960s to the 1990s, from kei cars such as the Subaru
+  360 to sports cars, shown by decade. The cars belong to members of the clubs
+  that support it, among them Automobile Club Japan and Isuzu Sports; there is no
+  open entry. Held at Saiko-Doman Green Park from 2022 to 2025, and at Boat Race
+  Toda from 2026.
+prefecture: Saitama
+venue_en: Boat Race Toda, Win Win Square beside the west entrance gate (2nd floor)
+street_address: 8-22 Todakoen, Toda, Saitama (埼玉県戸田市戸田公園8-22)
+# GSI's pin for the stadium's address, 140 m from OSM's for its Mooovi building;
+# both reverse-geocode to Todakoen.
+lat: 35.8026
+lon: 139.6578
+typical_scale: More than 100 cars
+spectator_fee_jpy: 100
+spectator_notes_en: >
+  The only charge is the boat race stadium's ¥100 entry. No booking is needed,
+  and parking is free. Held in rain, cancelled in a storm. Drones are not allowed.
+last_verified: 2026-10-30

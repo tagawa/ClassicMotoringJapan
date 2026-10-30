@@ -1,0 +1,11 @@
+slug: kitamoto-classic-car-festival
+year: 2026
+status: confirmed
+start: 2026-11-14
+end: 2026-11-14
+# Show cars arrive 8:30-9:30 and leave 15:00-15:30.
+start_time: "10:00"
+end_time: "15:00"
+source_url: https://minkara.carview.co.jp/userid/2251740/blog/49158120/
+last_verified: 2026-10-30
+sequence: 0

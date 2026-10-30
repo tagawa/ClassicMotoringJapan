@@ -1,0 +1,12 @@
+slug: car-festa-suwako
+year: 2026
+status: confirmed
+start: 2026-11-01
+end: 2026-11-01
+# Show cars register from 7:00.
+start_time: "10:00"
+end_time: "15:00"
+# The 10th running.
+source_url: https://minkara.carview.co.jp/userid/2251740/blog/49206173/
+last_verified: 2026-10-30
+sequence: 0

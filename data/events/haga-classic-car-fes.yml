@@ -1,0 +1,27 @@
+slug: haga-classic-car-fes
+name_en: Haga Classic Car Fes
+name_ja: 芳賀クラシックカーフェス
+organizer: Team0082, with Haga Roman Kaihatsu
+# The club has no site of its own. This post reproduces its flyer and terms of
+# entry, which name the club's representative; that name does not go here.
+official_url: https://minkara.carview.co.jp/userid/2251740/blog/49179328/
+summary_en: >
+  Up to 150 cars, Japanese and imported, built in 1993 or earlier, in the car
+  park of the Roman no Yu hot spring beside Michi-no-eki Haga. Cars arrive from
+  8:00, the opening ceremony is at 10:00, the display opens at 10:30, and awards
+  and the closing ceremony are at 14:00.
+prefecture: Tochigi
+venue_en: Haga Roman no Yu, south car park (beside Michi-no-eki Haga)
+street_address: 160 Kaminobu, Haga, Tochigi (栃木県芳賀郡芳賀町上延生160)
+# OSM's pin for Michi-no-eki Haga, which the flyer says the car park adjoins; the
+# hot spring is not in OSM, and GSI's pin for the address is 260 m west. Both
+# reverse-geocode to Kaminobu.
+lat: 36.5524
+lon: 140.0579
+typical_scale: Up to 150 cars
+spectator_fee_jpy: null
+spectator_notes_en: >
+  Admission is not announced. Visitors park on the east side of Haga town hall
+  and walk to the venue. Held in rain.
+cutoff_year: 1993
+last_verified: 2026-10-30

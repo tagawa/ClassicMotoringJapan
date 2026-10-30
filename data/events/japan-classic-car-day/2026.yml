@@ -1,0 +1,25 @@
+slug: japan-classic-car-day
+year: 2026
+status: confirmed
+start: 2026-11-03
+end: 2026-11-03
+# The public display; the parade before it is in the route.
+start_time: "09:30"
+end_time: "14:00"
+source_url: https://cccj.org/information/jccd2026japan-classic-car-day-2026%E9%96%8B%E5%82%AC/
+last_verified: 2026-10-30
+sequence: 0
+route_en: >
+  The cars gather at the Daikanyama T-Site car park from 7:00 and drive through
+  central Tokyo for about an hour before the display.
+route:
+  - date: 2026-11-03
+    checkpoints:
+      - start_time: "08:30"
+        place_en: Daikanyama T-Site car park (start)
+        place_ja: 代官山蔦屋書店駐車場
+        prefecture: Tokyo
+      - start_time: "09:30"
+        place_en: Tokyo Prince Hotel (finish)
+        place_ja: 東京プリンスホテル
+        prefecture: Tokyo

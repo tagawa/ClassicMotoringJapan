@@ -1,0 +1,24 @@
+slug: kitamoto-classic-car-festival
+name_en: Classic Car Festival in Kitamoto
+name_ja: クラシックカーフェスティバル in 北本総合公園
+organizer: 北本市都市公園指定管理者 (the managers of Kitamoto's city parks)
+# The park's own site (kitamoto-sogokoen.com) has been suspended since 2026-10-23.
+# This post reproduces the organiser's terms of entry, entry form and park map.
+official_url: https://minkara.carview.co.jp/userid/2251740/blog/49158120/
+summary_en: >
+  Up to 150 cars and three-wheelers, Japanese and imported, built in 1996 or
+  earlier, on the outfield grass of the baseball ground in Kitamoto Sogo Koen.
+  Restored cars are accepted; replicas are not. A car contest runs alongside the
+  display.
+prefecture: Saitama
+venue_en: Kitamoto Sogo Koen (Kitamoto Park), baseball ground
+street_address: 1-167 Furuichiba, Kitamoto, Saitama (埼玉県北本市古市場1-167)
+# GSI's pin for the address; OSM's reverse lookup names the baseball ground.
+lat: 36.0432
+lon: 139.5506
+typical_scale: Up to 150 cars
+spectator_fee_jpy: null
+spectator_notes_en: >
+  Admission is not announced. Cancelled in rain, held in light rain.
+cutoff_year: 1996
+last_verified: 2026-10-30
