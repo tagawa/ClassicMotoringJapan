@@ -8,10 +8,12 @@ Abarth: IT
 Alfa Romeo: IT
 Alpine: FR
 Alvis: GB
+Amilcar: FR
 Arnolt: null  # an American firm's car on a British Bristol chassis with an Italian body
 Aston Martin: GB
 Austin: GB
 Austin-Healey: GB
+Autobianchi: IT
 Bandini: IT
 Bentley: GB
 Birkin: null  # a Seven replica; its maker's country has not been checked
@@ -37,6 +39,7 @@ Ferrari: IT
 Fiat: IT
 Fiat-Abarth: IT
 Ford: null  # Mustangs in America, Anglias in Britain; set `country` on the car
+Giaur: IT
 Gilco-Fiat: IT
 GT Development: null  # a GT40 replica; its maker's country has not been checked
 Healey: GB
@@ -86,6 +89,7 @@ Toyota: JP
 Triumph: GB
 TVR: GB
 Unknown: null  # the organiser's list did not name the make
+Vanden Plas: GB
 Volkswagen: DE
 Volvo: SE
 Westfield: GB
