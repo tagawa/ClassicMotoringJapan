@@ -9,6 +9,7 @@ source_url: https://info-gunma.com/events/%E7%AC%AC%E4%B8%89%E5%9B%9Efujioka%E3%
 last_verified: 2026-10-26
 sequence: 0
 videos:
-  # The organiser's own guide, published before the edition: activities, parking and notes.
-  - youtube_id: moQdhsdDtKA
-    label_en: Organiser's guide to the day
+  # The site's own film, made from the owner's footage. The organiser's pre-event guide
+  # (moQdhsdDtKA) was removed once the edition had run, being useful only beforehand.
+  - youtube_id: 2UpX2Xzwt4M
+    label_en: The cars on show on Chuo-dori, Fujioka
