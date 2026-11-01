@@ -1,0 +1,17 @@
+slug: coppa-delle-auto-storiche
+year: 2025
+status: confirmed
+start: 2025-10-18
+end: 2025-10-19
+# Dates, hotels and stages from the outline page. The distance and the route's towns are
+# from the video's description. No entry list: none was found on the 2025 site.
+source_url: http://www.auto-storiche.jp/2025/coppa_delle/outline/index.php
+last_verified: 2026-11-01
+sequence: 0
+route_en: >
+  The 26th edition. About 300 km by way of Haruna and Maebashi to a night at NASPA
+  New Otani in Yuzawa, Niigata, with 54 timed stages: 36 on Saturday and 18 on
+  Sunday.
+videos:
+  - youtube_id: 5zjLcoE5-zI
+    label_en: Both days (video by strada)

@@ -1,0 +1,27 @@
+slug: coppa-delle-auto-storiche
+name_en: Coppa delle Auto Storiche
+name_ja: コッパ デッレ アウトストリケ
+organizer: アウトストリケ実行委員会 (Auto Storiche organising committee), based in Maebashi
+official_url: http://www.auto-storiche.jp/
+summary_en: >
+  A two-day regularity rally each autumn from Kitakaruizawa in Gunma; the 27th
+  ran on 17 and 18 October 2026, with 57 cars from 1929 to 1991. Cars are
+  scored on how precisely they pass timed checkpoints, not on speed. The night is
+  at a hotel in Niigata and the prize-giving is back at the start. Entry
+  rules match the spring Gran Premio Auto Storiche: models in production by 1974,
+  or earlier for some makes.
+prefecture: Gunma
+# Both the 2025 and 2026 outlines start and finish here. Its street address is
+# 大字北軽井沢 in Naganohara, read Kitakaruizawa in Japan Post's file. No lat/lon:
+# GSI's point for the golf course and its point for the lot number are 4 km apart,
+# and no official source for the hotel's lot was found.
+venue_en: Taiheiyo Club Karuizawa, Kitakaruizawa, Naganohara (start and finish)
+typical_eras: [Prewar, 1950s, 1960s, 1970s]
+# 57 on the 2026 entry list.
+typical_scale: About 55 cars
+# The site is written for entrants and says nothing about spectators.
+spectator_fee_jpy: null
+spectator_notes_en: >
+  The organiser publishes no route or checkpoint times for spectators.
+# No cutoff_year: the limit is per make, as on the Gran Premio.
+last_verified: 2026-11-01

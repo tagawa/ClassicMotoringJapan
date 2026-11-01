@@ -1,0 +1,27 @@
+slug: gran-premio-auto-storiche
+name_en: Gran Premio Auto Storiche
+name_ja: グランプレミオ アウトストリケ
+organizer: アウトストリケ実行委員会 (Auto Storiche organising committee), based in Maebashi
+official_url: http://www.auto-storiche.jp/
+summary_en: >
+  A two-day regularity rally in Nagano each spring or early summer; the 23rd ran
+  in June 2026. Cars leave at 30-second intervals and are scored on how
+  precisely they pass timed checkpoints, not on speed. The 2025 route was about
+  400 km between Tateshina and Hakuba. Entry is for up to 60 cars, of models in
+  production by 1974 or earlier for some makes.
+  Its autumn sister rally is the Coppa delle Auto Storiche.
+prefecture: Nagano
+# The 2025 edition started and finished at Exiv Tateshina; the 2026 notice gives only
+# the date, and the video of it the route's ends, Tateshina and Hakuba. No lat/lon:
+# no official source found for the hotel's street address.
+venue_en: Tateshina (start and finish)
+typical_eras: [Prewar, 1950s, 1960s, 1970s]
+# 39 on the 2025 entry list; the outline caps entries at 60.
+typical_scale: About 40 cars
+# The site is written for entrants and says nothing about spectators.
+spectator_fee_jpy: null
+spectator_notes_en: >
+  The organiser publishes no route or checkpoint times for spectators.
+# No cutoff_year: the limit is set per make, the year the model went into production,
+# from 1969 (Bentley, Jaguar, Mercedes-Benz) to 1974 (most others and any make not listed).
+last_verified: 2026-11-01

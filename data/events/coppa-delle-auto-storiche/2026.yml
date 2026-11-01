@@ -1,0 +1,306 @@
+slug: coppa-delle-auto-storiche
+year: 2026
+status: confirmed
+start: 2026-10-17
+end: 2026-10-18
+# First announced for 3 and 4 October (the organiser's notice of 19 November 2025), then
+# moved to 17 and 18 October by the outline of July 2026, before this site listed it,
+# so sequence stays 0. The cars are from the entry list page, updated 10 October 2026
+# by the site's own news. Each car's country is the list's own column, except four the
+# column has wrong: 12 (Austin-Healey, given as Germany), 20 (Porsche, Britain), 26
+# (Nissan, Italy) and 31 (Lancia, Germany). Spellings corrected from the list: Ballila to
+# Balilla (4), Bellet to Bellett (27), 2000GTR to 2000GT-R (26), Auto Bianchi to
+# Autobianchi (50), and the makes' and models' capitals to the house casing.
+source_url: http://www.auto-storiche.jp/2026/coppa_delle/outline/index.php
+last_verified: 2026-11-01
+sequence: 0
+route_en: >
+  The 27th edition. By way of Kitakaruizawa and Shiga Kogen to a night at Lotte
+  Arai Resort in Niigata, with 48 timed stages: 30 on Saturday and 18 on Sunday.
+list_as_of: 2026-10-10
+cars:
+  - entry_no: "1"
+    year: 1929
+    make: Bentley
+    model: "4½ Litre Blower"
+    country: GB
+  - entry_no: "2"
+    year: 1936
+    make: Lagonda
+    model: LG45 Rapide
+    country: GB
+  - entry_no: "3"
+    year: 1933
+    make: Morgan
+    model: "3 Wheeler"
+    country: GB
+  - entry_no: "4"
+    year: 1935
+    make: Fiat
+    model: Balilla
+    country: IT
+  - entry_no: "5"
+    year: 1954
+    make: Triumph
+    model: TR2
+    country: GB
+  - entry_no: "6"
+    year: 1954
+    make: Triumph
+    model: TR2
+    country: GB
+  - entry_no: "7"
+    year: 1957
+    make: Triumph
+    model: TR3
+    country: GB
+  - entry_no: "8"
+    year: 1954
+    make: Jaguar
+    model: XK120 OTS
+    country: GB
+  - entry_no: "9"
+    year: 1972
+    make: Vanden Plas
+    model: Princess 1300
+    country: GB
+  - entry_no: "10"
+    year: 1963
+    make: MG
+    model: MGB Mk I
+    country: GB
+  - entry_no: "11"
+    year: 1963
+    make: MG
+    model: Midget Mk I
+    country: GB
+  - entry_no: "12"
+    year: 1956
+    make: Austin-Healey
+    model: "100 BN2"
+    country: GB
+  - entry_no: "13"
+    year: 1956
+    make: Austin-Healey
+    model: "100/4 BN2"
+    country: GB
+  - entry_no: "14"
+    year: 1964
+    make: Austin-Healey
+    model: "3000 Mk III"
+    country: GB
+  - entry_no: "15"
+    year: 1958
+    make: Lotus
+    model: Seven Sr1 Type C
+    country: GB
+  - entry_no: "16"
+    year: 1966
+    make: Lotus
+    model: Elan S3 DHC
+    country: GB
+  - entry_no: "17"
+    year: 1955
+    make: MG
+    model: MGA
+    country: GB
+  - entry_no: "18"
+    year: 1953
+    make: Porsche
+    model: "356 Pre-A"
+    country: DE
+  - entry_no: "19"
+    year: 1964
+    make: Porsche
+    model: "356C"
+    country: DE
+  - entry_no: "20"
+    year: 1964
+    make: Porsche
+    model: "356SC"
+    country: DE
+  - entry_no: "21"
+    year: 1959
+    make: Porsche
+    model: "356B"
+    country: DE
+  - entry_no: "22"
+    year: 1972
+    make: Porsche
+    model: "911"
+    country: DE
+  - entry_no: "23"
+    year: 1973
+    make: Porsche
+    model: "911S"
+    country: DE
+  - entry_no: "24"
+    year: 1971
+    make: Mercedes-Benz
+    model: "280SL"
+    country: DE
+  - entry_no: "25"
+    year: 1969
+    make: Mazda
+    model: Cosmo Sport
+    country: JP
+  - entry_no: "26"
+    year: 1969
+    make: Nissan
+    model: Skyline 2000GT-R
+    country: JP
+  - entry_no: "27"
+    year: 1970
+    make: Isuzu
+    model: Bellett 1600GT-R
+    country: JP
+  - entry_no: "28"
+    year: 1953
+    make: Bandini
+    model: "750 Sport"
+    country: IT
+  - entry_no: "29"
+    year: 1952
+    make: Lancia
+    model: Aurelia B20GT
+    country: IT
+  - entry_no: "30"
+    year: 1956
+    make: Lancia
+    model: Aurelia B20GT
+    country: IT
+  - entry_no: "31"
+    year: 1957
+    make: Lancia
+    model: Appia
+    country: IT
+  - entry_no: "32"
+    year: 1957
+    make: Fiat-Abarth
+    model: "750 Zagato"
+    country: IT
+  - entry_no: "33"
+    year: 1960
+    make: Fiat-Abarth
+    model: "850SS Record Monza"
+    country: IT
+  - entry_no: "34"
+    year: 1963
+    make: Fiat-Abarth
+    model: Mono 1000
+    country: IT
+  - entry_no: "35"
+    year: 1956
+    make: Alfa Romeo
+    model: Giulietta Spider
+    country: IT
+  - entry_no: "36"
+    year: 1958
+    make: Alfa Romeo
+    model: Giulietta Spider
+    country: IT
+  - entry_no: "37"
+    year: 1961
+    make: Alfa Romeo
+    model: Giulietta SS
+    country: IT
+  - entry_no: "38"
+    year: 1963
+    make: Alfa Romeo
+    model: Giulia Spider
+    country: IT
+  - entry_no: "39"
+    year: 1963
+    make: Alfa Romeo
+    model: Giulia Spider
+    country: IT
+  - entry_no: "40"
+    year: 1964
+    make: Alfa Romeo
+    model: Giulia Spider Veloce
+    country: IT
+  - entry_no: "41"
+    year: 1966
+    make: Alfa Romeo
+    model: Giulia Super
+    country: IT
+  - entry_no: "42"
+    year: 1965
+    make: Alfa Romeo
+    model: Giulia Super
+    country: IT
+  - entry_no: "43"
+    year: 1969
+    make: Alfa Romeo
+    model: Spider
+    country: IT
+  - entry_no: "44"
+    year: 1969
+    make: Alfa Romeo
+    model: Giulia GTA Junior
+    country: IT
+  - entry_no: "45"
+    year: 1970
+    make: Alfa Romeo
+    model: "1750GTV"
+    country: IT
+  - entry_no: "46"
+    year: 1973
+    make: Alfa Romeo
+    model: GT1600 Junior
+    country: IT
+  - entry_no: "47"
+    year: 1966
+    make: Fiat
+    model: "600D"
+    country: IT
+  - entry_no: "48"
+    year: 1974
+    make: Lancia
+    model: Fulvia Coupé
+    country: IT
+  - entry_no: "49"
+    year: 1976
+    make: Lancia
+    model: Beta Monte Carlo
+    country: IT
+  - entry_no: "50"
+    year: 1977
+    make: Autobianchi
+    model: A112 Abarth
+    country: IT
+  - entry_no: "51"
+    year: 1991
+    make: Honda
+    model: Beat
+    country: JP
+  - entry_no: "52"
+    year: 1954
+    make: Citroën
+    model: Traction Avant
+    country: FR
+  - entry_no: "53"
+    year: 1971
+    make: Citroën
+    model: SM
+    country: FR
+  - entry_no: "54"
+    year: 1950
+    make: Giaur
+    model: "750S"
+    country: IT
+  - entry_no: "55"
+    year: 1951
+    make: Giaur
+    model: "750S"
+    country: IT
+  - entry_no: "56A"
+    year: 1949
+    make: Ferrari
+    model: "166 Inter Touring"
+    country: IT
+  - entry_no: "56B"
+    year: 1966
+    make: Fiat
+    model: Giannini 850
+    country: IT

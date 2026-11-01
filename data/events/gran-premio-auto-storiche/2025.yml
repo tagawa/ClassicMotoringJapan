@@ -1,0 +1,215 @@
+slug: gran-premio-auto-storiche
+year: 2025
+status: confirmed
+start: 2025-05-10
+end: 2025-05-11
+# Dates, hotels, distance and stages from the outline page. The cars are from the entry
+# list page (entry_list/index.html), which prints no date, so list_as_of is the day it
+# was read. Entry 39 is crossed out (×) on the list and left out. Each car's country is
+# the list's own column. Spellings corrected from the list: Speedstar to Speedster (16),
+# 365C to 356C (19), and the makes' and models' capitals to the house casing.
+source_url: http://www.auto-storiche.jp/2025/gran_premio/outline/index.html
+last_verified: 2026-11-01
+sequence: 0
+venue_en: Exiv Tateshina (start and finish)
+route_en: >
+  The 22nd edition. About 400 km on Nagano roads between Tateshina and Hakuba,
+  with 72 timed stages: 54 on Saturday and 18 on Sunday. The night was at the
+  Hakuba Tokyu Hotel.
+list_as_of: 2026-11-01
+cars:
+  - entry_no: "1"
+    year: 1927
+    make: Amilcar
+    model: CGSS
+    country: FR
+  - entry_no: "2"
+    year: 1954
+    make: Triumph
+    model: TR2
+    country: GB
+  - entry_no: "3"
+    year: 1957
+    make: Triumph
+    model: TR3
+    country: GB
+  - entry_no: "4"
+    year: 1958
+    make: Triumph
+    model: TR3
+    country: GB
+  - entry_no: "5"
+    year: 1956
+    make: Austin-Healey
+    model: "100 BN2"
+    country: GB
+  - entry_no: "6"
+    year: 1955
+    make: MG
+    model: MGA
+    country: GB
+  - entry_no: "7"
+    year: 1963
+    make: MG
+    model: Midget Mk I
+    country: GB
+  - entry_no: "8"
+    year: 1963
+    make: MG
+    model: MGB Mk I
+    country: GB
+  - entry_no: "9"
+    year: 1968
+    make: Lotus
+    model: Seven Sr3
+    country: GB
+  - entry_no: "10"
+    year: 1966
+    make: Lotus
+    model: Elan S3 DHC
+    country: GB
+  - entry_no: "11"
+    year: 1972
+    make: Vanden Plas
+    model: Princess 1300
+    country: GB
+  - entry_no: "12"
+    year: 1964
+    make: Bentley
+    model: "Continental 'Chinese Eye'"
+    country: GB
+  - entry_no: "13"
+    year: 1974
+    make: Jaguar
+    model: XJ6-C
+    country: GB
+  - entry_no: "14"
+    year: 1969
+    make: Mazda
+    model: Cosmo Sport
+    country: JP
+  - entry_no: "15"
+    year: 1969
+    make: Nissan
+    model: Skyline 2000GT-R
+    country: JP
+  - entry_no: "16"
+    year: 1958
+    make: Porsche
+    model: "356A Speedster Zagato"
+    country: DE
+  - entry_no: "17"
+    year: 1959
+    make: Porsche
+    model: "356"
+    country: DE
+  - entry_no: "18"
+    year: 1960
+    make: Porsche
+    model: "356B"
+    country: DE
+  - entry_no: "19"
+    year: 1964
+    make: Porsche
+    model: "356C Cabriolet"
+    country: DE
+  - entry_no: "20"
+    year: 1969
+    make: Porsche
+    model: "912"
+    country: DE
+  - entry_no: "21"
+    year: 1972
+    make: Porsche
+    model: "914/6"
+    country: DE
+  - entry_no: "22"
+    year: 1968
+    make: Mercedes-Benz
+    model: "280SL"
+    country: DE
+  - entry_no: "23"
+    year: 1973
+    make: Volkswagen
+    model: Karmann Ghia
+    country: DE
+  - entry_no: "24"
+    year: 1968
+    make: Citroën
+    model: DS21 Pallas
+    country: FR
+  - entry_no: "25"
+    year: 1954
+    make: Fiat
+    model: "1100/103TV"
+    country: IT
+  - entry_no: "26"
+    year: 1949
+    make: Ferrari
+    model: "166 Inter"
+    country: IT
+  - entry_no: "27"
+    year: 1955
+    make: Ferrari
+    model: "195S"
+    country: IT
+  - entry_no: "28"
+    year: 1972
+    make: Ferrari
+    model: Dino 246GT
+    country: IT
+  - entry_no: "29"
+    year: 1968
+    make: Lamborghini
+    model: Islero
+    country: IT
+  - entry_no: "30"
+    year: 1971
+    make: Lamborghini
+    model: Miura P400S
+    country: IT
+  - entry_no: "31"
+    year: 1960
+    make: Alfa Romeo
+    model: Giulietta Spider
+    country: IT
+  - entry_no: "32"
+    year: 1958
+    make: Alfa Romeo
+    model: Giulietta Spider Veloce
+    country: IT
+  - entry_no: "33"
+    year: 1964
+    make: Alfa Romeo
+    model: Giulia Sprint Speciale
+    country: IT
+  - entry_no: "34"
+    year: 1969
+    make: Alfa Romeo
+    model: Giulia 1300GT Junior
+    country: IT
+  - entry_no: "35"
+    year: 1964
+    make: Lancia
+    model: Fulvia
+    country: IT
+  - entry_no: "36"
+    year: 1976
+    make: Lancia
+    model: Beta Monte Carlo
+    country: IT
+  - entry_no: "37"
+    year: 1965
+    make: Alfa Romeo
+    model: Giulia 1600Ti
+    country: IT
+  - entry_no: "38"
+    year: 1968
+    make: Volvo
+    model: Amazon 123GT
+    country: SE
+  - entry_no: "40"
+    year: 1991
+    make: Honda
+    model: Beat
+    country: JP
