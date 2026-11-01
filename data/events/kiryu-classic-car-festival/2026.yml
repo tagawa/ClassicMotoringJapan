@@ -9,3 +9,7 @@ end_time: "15:00"
 source_url: https://www.ccf-kiryu.com/
 last_verified: 2026-10-26
 sequence: 0
+videos:
+  # The channel, 稀に暇な医療事務えみちゃん, gives no Latin form of its name, so the credit is romanised.
+  - youtube_id: alxATJkUKCo
+    label_en: Cars arriving (video by Mare ni Hima na Iryo Jimu Emi-chan)
