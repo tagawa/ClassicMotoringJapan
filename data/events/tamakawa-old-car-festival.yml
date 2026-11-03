@@ -1,0 +1,22 @@
+slug: tamakawa-old-car-festival
+name_en: Tamakawa Old Car Festival
+name_ja: TAMAKAWA オールドカーフェスティバル
+organizer: TAMAKAWA オールドカーフェスティバル実行委員会 (Tamakawa Old Car Festival Committee)
+# The committee publishes on Instagram, whose posts need a login to read.
+official_url: https://www.instagram.com/tamakawaoldcarfestival/
+# The last Sundays of October in 2024 and 2025 come from dated YouTube videos.
+summary_en: >
+  Owners from Fukushima and beyond bring their old cars to the car park of Boat
+  Pia Tamakawa, near Fukushima Airport. Held on the last Sunday of October in 2024,
+  2025 and 2026.
+prefecture: Fukushima
+venue_en: Boat Pia Tamakawa car park
+# No lat/lon: GSI matches only the sub-district and OSM does not know the venue.
+street_address: 116-2 Ganpoji, Tamakawa, Fukushima (福島県石川郡玉川村大字岩法寺字新屋敷116-2)
+nearest_station: Izumigo (JR Suigun line), about 5 minutes by car
+access_notes_en: >
+  About 2 minutes by car from Fukushima Airport and about 5 minutes from Tamakawa
+  IC on the Abukuma Kogen Road. Parking for 500 cars.
+# iwafu says free, but in an AI-written summary; the tourism page states no fee.
+spectator_fee_jpy: null
+last_verified: 2026-11-03

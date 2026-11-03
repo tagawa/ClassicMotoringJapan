@@ -1,0 +1,627 @@
+slug: tenri-yamanobe-classic-car-fes
+year: 2026
+status: confirmed
+start: 2026-10-18
+end: 2026-10-18
+start_time: "09:00"
+end_time: "15:00"
+source_url: https://classiccarfes.mahoratenri.com/
+last_verified: 2026-11-03
+sequence: 0
+# Stated for 2026 in the entry rules (/entry-rules/): models built or announced by then.
+cutoff_year: 1995
+videos:
+  - youtube_id: W6Kb1rhRSfs
+    label_en: The cars on show (video by SSLC caRS)
+# From /cars/. The site's last car announcement was 12 October. Numbers A23, A28, A48
+# and B20 are not on it. Entry F40 (D7) has no year there.
+list_as_of: 2026-10-12
+cars:
+  - entry_no: "A1"
+    year: 1987
+    make: Toyota
+    model: Crown Royal Saloon G
+    country: JP
+  - entry_no: "A2"
+    year: 1987
+    make: Toyota
+    model: Crown
+    country: JP
+  - entry_no: "A3"
+    year: 1969
+    make: Toyota
+    model: Crown
+    country: JP
+  - entry_no: "A4"
+    year: 1985
+    make: Toyota
+    model: Crown
+    country: JP
+  - entry_no: "A5"
+    year: 1971
+    make: Toyota
+    model: Carina 1600GT
+    country: JP
+  - entry_no: "A6"
+    year: 1985
+    make: Toyota
+    model: Carina 1.8SE
+    country: JP
+  - entry_no: "A7"
+    year: 1985
+    make: Toyota
+    model: Carina GT-R
+    country: JP
+  - entry_no: "A8"
+    year: 1985
+    make: Toyota
+    model: Sprinter Trueno 3-door 1600GT-APEX
+    country: JP
+  - entry_no: "A9"
+    year: 1973
+    make: Toyota
+    model: Sprinter Trueno J
+    country: JP
+  - entry_no: "A10"
+    year: 1989
+    make: Toyota
+    model: Land Cruiser 70 Wagon
+    country: JP
+  - entry_no: "A11"
+    year: 1980
+    make: Toyota
+    model: Land Cruiser
+    country: JP
+  - entry_no: "A12"
+    year: 1981
+    make: Toyota
+    model: Corolla Levin
+    country: JP
+  - entry_no: "A13"
+    year: 1981
+    make: Toyota
+    model: Corolla Levin
+    country: JP
+  - entry_no: "A14"
+    year: 1986
+    make: Toyota
+    model: Soarer 3.0GT Limited
+    country: JP
+  - entry_no: "A15"
+    year: 1986
+    make: Toyota
+    model: Corolla Van DX
+    country: JP
+  - entry_no: "A16"
+    year: 1989
+    make: Toyota
+    model: 70 Supra 2.5GT Twin Turbo R
+    country: JP
+  - entry_no: "A17"
+    year: 1998
+    make: Toyota
+    model: JZX100 Chaser
+    country: JP
+  - entry_no: "A18"
+    year: 1997
+    make: Toyota
+    model: Celsior
+    country: JP
+  - entry_no: "A19"
+    year: 1975
+    make: Toyota
+    model: Celica LB
+    country: JP
+  - entry_no: "A20"
+    year: 1993
+    make: Lexus
+    model: LS400 US
+    country: JP
+  - entry_no: "A21"
+    year: 1970
+    make: Nissan
+    model: Skyline 2000GT
+    country: JP
+  - entry_no: "A22"
+    year: 1971
+    make: Nissan
+    model: Skyline (Hakosuka)
+    country: JP
+  - entry_no: "A24"
+    year: 1972
+    make: Nissan
+    model: Skyline GT-R
+    country: JP
+  - entry_no: "A25"
+    year: 1995
+    make: Nissan
+    model: Skyline GT-R
+    country: JP
+  - entry_no: "A26"
+    year: 1984
+    make: Nissan
+    model: Skyline
+    country: JP
+  - entry_no: "A27"
+    year: 1971
+    make: Nissan
+    model: Skyline 2000GT-R
+    country: JP
+  - entry_no: "A29"
+    year: 1971
+    make: Nissan
+    model: Skyline
+    country: JP
+  - entry_no: "A30"
+    year: 1972
+    make: Nissan
+    model: Skyline
+    country: JP
+  - entry_no: "A31"
+    year: 1973
+    make: Nissan
+    model: Skyline (Kenmeri) 2000GT-R
+    country: JP
+  - entry_no: "A32"
+    year: 1970
+    make: Nissan
+    model: Skyline 2000GT
+    country: JP
+  - entry_no: "A33"
+    year: 1971
+    make: Nissan
+    model: Skyline 2000GT-R
+    country: JP
+  - entry_no: "A34"
+    year: 1998
+    make: Nissan
+    model: Skyline
+    country: JP
+  - entry_no: "A35"
+    year: 1970
+    make: Nissan
+    model: Fairlady Z432
+    country: JP
+  - entry_no: "A36"
+    year: 1969
+    make: Nissan
+    model: Fairlady
+    country: JP
+  - entry_no: "A37"
+    year: 1972
+    make: Nissan
+    model: Fairlady 240ZG Maroon
+    country: JP
+  - entry_no: "A38"
+    year: 1969
+    make: Nissan
+    model: Fairlady
+    country: JP
+  - entry_no: "A39"
+    year: 1985
+    make: Nissan
+    model: Gloria
+    country: JP
+  - entry_no: "A40"
+    year: 1980
+    make: Nissan
+    model: Gloria
+    country: JP
+  - entry_no: "A41"
+    year: 1976
+    make: Nissan
+    model: Gloria 4-door Hardtop 2800SGL
+    country: JP
+  - entry_no: "A42"
+    year: 1970
+    make: Nissan
+    model: Laurel HT 2000GX
+    country: JP
+  - entry_no: "A43"
+    year: 1980
+    make: Nissan
+    model: C231 Laurel
+    country: JP
+  - entry_no: "A44"
+    year: 1982
+    make: Nissan
+    model: Silvia RS
+    country: JP
+  - entry_no: "A45"
+    year: 1999
+    make: Nissan
+    model: Silvia
+    country: JP
+  - entry_no: "A46"
+    year: 1987
+    make: Nissan
+    model: Leopard Ultima Grand Selection
+    country: JP
+  - entry_no: "A47"
+    year: 1968
+    make: Nissan
+    model: Datsun Fairlady SR311
+    country: JP
+  - entry_no: "A49"
+    year: 1977
+    make: Nissan
+    model: Cedric 4-door Hardtop 2800SGL
+    country: JP
+  - entry_no: "A50"
+    year: 1972
+    make: Datsun
+    model: Sunny 4-door 1200 Deluxe
+    country: JP
+  - entry_no: "A51"
+    year: 1964
+    make: Honda
+    model: S600
+    country: JP
+  - entry_no: "A52"
+    year: 1991
+    make: Honda
+    model: Beat
+    country: JP
+  - entry_no: "A53"
+    year: 1993
+    make: Honda
+    model: NSX
+    country: JP
+  - entry_no: "A54"
+    year: 1994
+    make: Honda
+    model: Acty Crawler
+    country: JP
+  - entry_no: "A55"
+    year: 1974
+    make: Isuzu
+    model: 117 Coupe
+    country: JP
+  - entry_no: "A56"
+    year: 1971
+    make: Isuzu
+    model: Bellett
+    country: JP
+  - entry_no: "A57"
+    year: 1987
+    make: Suzuki
+    model: Alto Works RS-R (first generation)
+    country: JP
+  - entry_no: "A58"
+    year: 1994
+    make: Suzuki
+    model: Jimny
+    country: JP
+  - entry_no: "A59"
+    year: 1986
+    make: Suzuki
+    model: Mighty Boy
+    country: JP
+  - entry_no: "A60"
+    year: 1971
+    make: Mitsubishi
+    model: Colt Galant GTO-MR
+    country: JP
+  - entry_no: "A61"
+    year: 1985
+    make: Mitsubishi
+    model: Debonair
+    country: JP
+  - entry_no: "A62"
+    year: 1991
+    make: Daihatsu
+    model: Mira Walk-Through Van
+    country: JP
+  - entry_no: "A63"
+    year: 1967
+    make: Daihatsu
+    model: Midget
+    country: JP
+  - entry_no: "A64"
+    year: 1996
+    make: Mazda
+    model: Roadster
+    country: JP
+  - entry_no: "A65"
+    year: 1993
+    make: Mazda
+    model: Eunos Roadster
+    country: JP
+  - entry_no: "A66"
+    year: 1961
+    make: Mazda
+    model: R360 Coupe
+    country: JP
+  - entry_no: "A67"
+    year: 1992
+    make: Eunos
+    model: Roadster
+    country: JP
+  - entry_no: "A68"
+    year: 1988
+    make: Subaru
+    model: Rex Combi Supercharger
+    country: JP
+  - entry_no: "A69"
+    year: 1971
+    make: Subaru
+    model: Sambar
+    country: JP
+  - entry_no: "A70"
+    year: 1991
+    make: Suzuki
+    model: Cappuccino
+    country: JP
+  - entry_no: "A71"
+    year: 1981
+    make: Toyota
+    model: Corolla
+    country: JP
+  - entry_no: "A72"
+    year: 1985
+    make: Nissan
+    model: R30 Skyline
+    country: JP
+  - entry_no: "B1"
+    year: 1974
+    make: BMW
+    model: 2002 Turbo
+    country: DE
+  - entry_no: "B2"
+    year: 1967
+    make: Volkswagen
+    model: Type 1
+    country: DE
+  - entry_no: "B3"
+    year: 1969
+    make: Volkswagen
+    model: Karmann Ghia
+    country: DE
+  - entry_no: "B4"
+    year: 1988
+    make: Porsche
+    model: "911"
+    country: DE
+  - entry_no: "B5"
+    year: 1971
+    make: Porsche
+    model: 911T Narrow
+    country: DE
+  - entry_no: "B6"
+    year: 1993
+    make: Porsche
+    model: 911 Carrera 2
+    country: DE
+  - entry_no: "B7"
+    year: 1987
+    make: Porsche
+    model: 911 Carrera 3.2
+    country: DE
+  - entry_no: "B8"
+    year: 1996
+    make: Porsche
+    model: Carrera RS
+    country: DE
+  - entry_no: "B9"
+    year: 1971
+    make: Porsche
+    model: 911S Targa
+    country: DE
+  - entry_no: "B10"
+    year: 1985
+    make: Porsche
+    model: 911 (930)
+    country: DE
+  - entry_no: "B11"
+    year: 1968
+    make: Porsche
+    model: "911"
+    country: DE
+  - entry_no: "B12"
+    year: 1993
+    make: Porsche
+    model: 911 Turbo 2
+    country: DE
+  - entry_no: "B13"
+    year: 1980
+    make: Porsche
+    model: 930 Turbo
+    country: DE
+  - entry_no: "B14"
+    year: 1968
+    make: Porsche
+    model: "912"
+    country: DE
+  - entry_no: "B15"
+    year: 1966
+    make: Porsche
+    model: "912"
+    country: DE
+  - entry_no: "B16"
+    year: 1993
+    make: Beck
+    model: 550 Spyder
+  - entry_no: "B17"
+    year: 1970
+    make: Mercedes-Benz
+    model: 280SL
+    country: DE
+  - entry_no: "B18"
+    year: 1953
+    make: Mercedes-Benz
+    model: 170S
+    country: DE
+  - entry_no: "B19"
+    year: 1983
+    make: Mercedes-Benz
+    model: 300GD Cabriolet
+    country: DE
+  - entry_no: "B21"
+    year: 1963
+    make: Mercedes-Benz
+    model: W111 220SE Cabriolet
+    country: DE
+  - entry_no: "B22"
+    year: 1975
+    make: Porsche
+    model: "911"
+    country: DE
+  - entry_no: "C1"
+    year: 1979
+    make: MG
+    model: Midget
+    country: GB
+  - entry_no: "C2"
+    year: 1979
+    make: MG
+    model: Midget 1500
+    country: GB
+  - entry_no: "C3"
+    year: 1973
+    make: MG
+    model: MGB Mark III Roadster
+    country: GB
+  - entry_no: "C4"
+    year: 1999
+    make: Caterham
+    model: Super Seven 40th Anniversary
+    country: GB
+  - entry_no: "C5"
+    year: 1992
+    make: Caterham
+    model: Super Seven 1700 Super Sprint
+    country: GB
+  - entry_no: "C6"
+    year: 1986
+    make: Caterham
+    model: Super Seven
+    country: GB
+  - entry_no: "C7"
+    year: 1966
+    make: Ginetta
+    model: G4
+    country: GB
+  - entry_no: "C8"
+    year: 1965
+    make: Triumph
+    model: TR4A
+    country: GB
+  - entry_no: "C9"
+    year: 1995
+    make: Morgan
+    model: 4/4
+    country: GB
+  - entry_no: "C10"
+    year: 1962
+    make: Morgan
+    model: Plus 4
+    country: GB
+  - entry_no: "C11"
+    year: 1990
+    make: Lotus
+    model: Esprit Turbo HC
+    country: GB
+  - entry_no: "C12"
+    year: 1993
+    make: Lotus
+    model: Esprit S4
+    country: GB
+  - entry_no: "C13"
+    year: 1996
+    make: Rover
+    model: Mini Cooper
+    country: GB
+  - entry_no: "D1"
+    year: 1983
+    make: Autobianchi
+    model: A112 Abarth
+    country: IT
+  - entry_no: "D2"
+    year: 1968
+    make: Alfa Romeo
+    model: Giulia Super
+    country: IT
+  - entry_no: "D3"
+    year: 1963
+    make: Alfa Romeo
+    model: Giulia Spider
+    country: IT
+  - entry_no: "D4"
+    year: 1991
+    make: Alfa Romeo
+    model: 75 TS
+    country: IT
+  - entry_no: "D5"
+    year: 1999
+    make: Lamborghini
+    model: Diablo SV
+    country: IT
+  - entry_no: "D6"
+    year: 1969
+    make: Ferrari
+    model: Dino
+    country: IT
+  - entry_no: "D7"
+    make: Ferrari
+    model: F40
+    country: IT
+  - entry_no: "D8"
+    year: 1999
+    make: Ferrari
+    model: 355 F1 Berlinetta
+    country: IT
+  - entry_no: "E1"
+    year: 1944
+    make: Jeep
+    model: Willys
+    country: US
+  - entry_no: "E2"
+    year: 1957
+    make: Imperial
+    model: Southampton
+    country: US
+  - entry_no: "E3"
+    year: 1932
+    make: Ford
+    model: Model B
+    country: US
+  - entry_no: "E4"
+    year: 1932
+    make: Ford
+    model: Deuce Coupe
+    country: US
+  - entry_no: "E5"
+    year: 1969
+    make: Plymouth
+    model: Barracuda
+    country: US
+  - entry_no: "E6"
+    year: 1969
+    make: Chevrolet
+    model: Chevelle
+    country: US
+  - entry_no: "F1"
+    year: 1990
+    make: Citroën
+    model: 2CV6 Special
+    country: FR
+  - entry_no: "F2"
+    year: 1967
+    make: Citroën
+    model: DS19
+    country: FR
+  - entry_no: "F3"
+    year: 1989
+    make: Renault
+    model: "4"
+    country: FR
+  - entry_no: "G1"
+    year: 1971
+    make: Volvo
+    model: P1800E
+    country: SE
+  - entry_no: "S1"
+    year: 1967
+    make: Toyota
+    model: 2000GT
+    country: JP
