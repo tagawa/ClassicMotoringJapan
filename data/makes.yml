@@ -15,6 +15,7 @@ Austin: GB
 Austin-Healey: GB
 Autobianchi: IT
 Bandini: IT
+Beck: null  # builds replicas of other makes' cars; set `country` on the car only with a source
 Bentley: GB
 Birkin: null  # a Seven replica; its maker's country has not been checked
 BMW: DE
@@ -35,12 +36,14 @@ Datsun: JP
 Dino: IT
 DMC: US
 Ermini: IT
+Eunos: JP
 Ferrari: IT
 Fiat: IT
 Fiat-Abarth: IT
 Ford: null  # Mustangs in America, Anglias in Britain; set `country` on the car
 Giaur: IT
 Gilco-Fiat: IT
+Ginetta: GB
 GT Development: null  # a GT40 replica; its maker's country has not been checked
 Healey: GB
 Heinkel: null  # German, but its bubble car was also built in Britain as the Trojan
@@ -49,6 +52,7 @@ Imperial: US
 Isuzu: JP
 Jack Knight: GB
 Jaguar: GB
+Jeep: US
 Jensen: GB
 Lagonda: GB
 Lamborghini: IT
@@ -71,6 +75,7 @@ Nissan Diesel: JP
 OSCA: IT
 Packard: US
 Panhard: FR
+Plymouth: US
 Pontiac: US
 Porsche: DE
 Prince: JP
