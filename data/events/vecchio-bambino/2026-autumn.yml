@@ -7,6 +7,9 @@ source_url: https://vecchiobambino.com/schedule/
 last_verified: 2026-10-05
 sequence: 0
 videos:
+  # The channel gives no Latin-script name; TSCテレビせとうち is the broadcaster TV Setouchi.
+  - youtube_id: Nx2LVlcwtPE
+    label_en: Both days of the rally (video by TV Setouchi)
   - youtube_id: h9QdtjnC08I
     label_en: The start at Okayama Gokoku Shrine (video by Okatabi Channel)
   - youtube_id: vJERHS8x77U
