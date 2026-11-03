@@ -6,10 +6,14 @@ end: 2026-11-01
 start_time: "10:00"
 end_time: "15:00"
 # The 19th running, with an opening ceremony from 09:15. The 18th was on 2025-11-02.
+# Suzuki lent a Fronte 800 and a first-generation Alto for the special display.
 source_url: https://www.ccf-kiryu.com/
-last_verified: 2026-10-26
+last_verified: 2026-11-03
 sequence: 0
 videos:
+  # The channel, 前橋サンデーミーティング, gives no Latin form of its name, so the credit is romanised.
+  - youtube_id: GJgrly8_i8U
+    label_en: Cars on display, the rally and shop stalls (video by Maebashi Sunday Meeting)
   - youtube_id: UNHgSsRq79o
     label_en: The 19th festival at Gunma University's Kiryu campus (video by Jiji Nobo)
   # The channel, 稀に暇な医療事務えみちゃん, gives no Latin form of its name, so the credit is romanised.
