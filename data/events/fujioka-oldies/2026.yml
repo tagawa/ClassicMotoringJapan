@@ -6,10 +6,12 @@ end: 2026-11-01
 start_time: "10:00"
 end_time: "16:00"
 source_url: https://info-gunma.com/events/%E7%AC%AC%E4%B8%89%E5%9B%9Efujioka%E3%82%AA%E3%83%BC%E3%83%AB%E3%83%87%E3%82%A3%E3%83%BC%E3%82%BA/
-last_verified: 2026-10-26
+last_verified: 2026-11-03
 sequence: 0
 videos:
   # The site's own film, made from the owner's footage. The organiser's pre-event guide
   # (moQdhsdDtKA) was removed once the edition had run, being useful only beforehand.
   - youtube_id: 2UpX2Xzwt4M
     label_en: The cars on show on Chuo-dori, Fujioka
+  - youtube_id: O48fVpfMwqw
+    label_en: The parade from Fujioka city hall to the shopping street (video by nobo dake)

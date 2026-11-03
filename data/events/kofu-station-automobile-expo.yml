@@ -8,8 +8,9 @@ official_url: https://www.mogurahouse.com/release/
 summary_en: >
   Vintage cars and old motorcycles, Japanese and imported, built up to 1995, in
   the plaza outside Kofu station's north exit. Illegally modified vehicles are
-  refused. At 14:00 the cars leave on a parade through Kofu. There are also
-  talk and stage shows, a flea market and kitchen cars.
+  refused. There are also talk shows, a flea market and kitchen cars. The 25
+  October 2026 running was postponed to 3 January 2027. October's announcement
+  had a stage show and a 14:00 parade through Kofu; January's lists neither.
 prefecture: Yamanashi
 venue_en: Yocchabare Hiroba, Kofu station north exit
 street_address: 2-2-1 Kitaguchi, Kofu, Yamanashi (山梨県甲府市北口2丁目2-1)
@@ -18,9 +19,10 @@ street_address: 2-2-1 Kitaguchi, Kofu, Yamanashi (山梨県甲府市北口2丁�
 lat: 35.6677
 lon: 138.5701
 nearest_station: Kofu (JR Chuo line, Minobu line)
+# Free per the October 2026 post; the January post doesn't repeat it.
 spectator_fee_jpy: 0
 spectator_notes_en: >
   Free to watch. Show cars arrive between 8:30 and 9:30. Motorcycles enter on the
   day only.
 cutoff_year: 1995
-last_verified: 2026-10-16
+last_verified: 2026-11-03
