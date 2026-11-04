@@ -26,3 +26,353 @@ route:
         place_en: Tokyo Prince Hotel (finish)
         place_ja: 東京プリンスホテル
         prefecture: Tokyo
+# The club's post of 21 October says 68 cars; the list it links, updated on the 23rd, heads itself 69 and has 69.
+# Entries are from that post, cccj.org/information/jccd2026...エントリーリスト, country column included.
+list_as_of: 2026-10-23
+cars:
+  - entry_no: "1"
+    year: 1921
+    make: Vauxhall
+    model: 30/98 E-Type Velox Tourer
+    country: GB
+  - entry_no: "2"
+    year: 1924
+    make: Lagonda
+    model: 12/24 Tourer
+    country: GB
+  - entry_no: "3"
+    year: 1927
+    make: Lancia
+    model: Lambda
+    country: IT
+  - entry_no: "4"
+    year: 1926
+    make: Bugatti
+    model: Type 23 Brescia Modifié
+    country: FR
+  - entry_no: "5"
+    year: 1927
+    make: Bugatti
+    model: Type 35B
+    country: FR
+  - entry_no: "6"
+    year: 1928
+    make: Alvis
+    model: 12/50 FWD (2-seater Le Mans)
+    country: GB
+  - entry_no: "7"
+    year: 1938
+    make: Alvis
+    model: 4.3 Charlesworth Saloon
+    country: GB
+  - entry_no: "8"
+    year: 1930
+    make: Aston Martin
+    model: International
+    country: GB
+  - entry_no: "9"
+    year: 1931
+    make: Ford
+    model: Model A Cabriolet
+    country: US
+  - entry_no: "10"
+    year: 1935
+    make: Bentley
+    model: 3 1/2 Barker Coupé
+    country: GB
+  - entry_no: "11"
+    year: 1935
+    make: Singer
+    model: Nine Le Mans
+    country: GB
+  - entry_no: "12"
+    year: 1935
+    make: Lagonda
+    model: Rapier
+    country: GB
+  - entry_no: "13"
+    year: 1935
+    make: MG
+    model: PA
+    country: GB
+  - entry_no: "14"
+    year: 1936
+    make: MG
+    model: Airline Coupé
+    country: GB
+  - entry_no: "15"
+    year: 1937
+    make: Frazer Nash-BMW
+    model: "328"
+    country: GB
+  - entry_no: "16"
+    year: 1935
+    make: Fiat
+    model: Balilla 508S Coppa d'Oro
+    country: IT
+  - entry_no: "17"
+    year: 1935
+    make: Fiat
+    model: 508CS Berlinetta MM
+    country: IT
+  - entry_no: "18"
+    year: 1936
+    make: Fiat
+    model: Siata 508S Balilla MM
+    country: IT
+  - entry_no: "19"
+    year: 1939
+    make: Fiat
+    model: Siata 500 Pescara MM
+    country: IT
+  - entry_no: "20"
+    year: 1937
+    make: Datsun
+    model: Roadster
+    country: JP
+  - entry_no: "21"
+    year: 1938
+    make: Datsun
+    model: Phaeton
+    country: JP
+  - entry_no: "22"
+    year: 1948
+    make: Cisitalia
+    model: "204"
+    country: IT
+  - entry_no: "23"
+    year: 1949
+    make: OSCA
+    model: MT-4
+    country: IT
+  - entry_no: "24"
+    year: 1949
+    make: Siata
+    model: Amica
+    country: IT
+  - entry_no: "25"
+    year: 1950
+    make: Aston Martin
+    model: DB2 DHC
+    country: GB
+  - entry_no: "26"
+    year: 1954
+    make: Aston Martin
+    model: DB2/4 MK1
+    country: GB
+  - entry_no: "27"
+    year: 1954
+    make: Aston Martin
+    model: DB2/4 MK1 DHC
+    country: GB
+  - entry_no: "28"
+    year: 1952
+    make: Daimler
+    model: DE36 Straight-Eight Limousine
+    country: GB
+  - entry_no: "29"
+    year: 1953
+    make: MG
+    model: TF
+    country: GB
+  - entry_no: "30"
+    year: 1952
+    make: Datsun
+    model: Sport DC3
+    country: JP
+  - entry_no: "31"
+    year: 1953
+    make: Porsche
+    model: 356 Pre-A
+    country: DE
+  - entry_no: "32"
+    year: 1956
+    make: Porsche
+    model: 356 A Speedster
+    country: DE
+  - entry_no: "33"
+    year: 1956
+    make: Volkswagen
+    model: Type 1 Oval
+    country: DE
+  - entry_no: "34"
+    year: 1954
+    make: Jaguar
+    model: XK120
+    country: GB
+  - entry_no: "35"
+    year: 1956
+    make: Jaguar
+    model: XK140 FHC
+    country: GB
+  - entry_no: "36"
+    year: 1954
+    make: Siata
+    model: 1100TV
+    country: IT
+  - entry_no: "37"
+    year: 1955
+    make: Fiat
+    model: "600"
+    country: IT
+  - entry_no: "38"
+    year: 1956
+    make: Lancia
+    model: Aurelia B24S Convertible
+    country: IT
+  - entry_no: "39"
+    year: 1956
+    make: Ford
+    model: Thunderbird
+    country: US
+  - entry_no: "40"
+    year: 1965
+    make: Chevrolet
+    model: Corvette
+    country: US
+  - entry_no: "41"
+    year: 1956
+    make: Austin-Healey
+    model: BN2
+    country: GB
+  - entry_no: "42"
+    year: 1958
+    make: Datsun
+    model: "210"
+    country: JP
+  - entry_no: "43"
+    year: 1960
+    make: MG
+    model: MGA 1600
+    country: GB
+  - entry_no: "44"
+    year: 1961
+    make: Ferrari
+    model: 250GTE
+    country: IT
+  - entry_no: "45"
+    year: 1965
+    make: Ferrari
+    model: 330GT 2+2
+    country: IT
+  - entry_no: "46"
+    year: 1967
+    make: Ferrari
+    model: 330GTC
+    country: IT
+  - entry_no: "47"
+    year: 1967
+    make: Lamborghini
+    model: 400GT
+    country: IT
+  - entry_no: "48"
+    year: 1967
+    make: Lancia
+    model: Flavia Coupé
+    country: IT
+  - entry_no: "49"
+    year: 1964
+    make: Alfa Romeo
+    model: TZ-1
+    country: IT
+  - entry_no: "50"
+    year: 1961
+    make: Alfa Romeo
+    model: Giulietta Sprint
+    country: IT
+  - entry_no: "51"
+    year: 1966
+    make: Alfa Romeo
+    model: Spider Duetto
+    country: IT
+  - entry_no: "52"
+    year: 1986
+    make: Ferrari
+    model: 328GTB
+    country: IT
+  # The list gives 1965, though Citroen's Ami 8 arrived in 1969; which of the two is wrong isn't known.
+  - entry_no: "53"
+    year: 1965
+    make: Citroën
+    model: Ami 8
+    country: FR
+  - entry_no: "54"
+    year: 1975
+    make: Citroën
+    model: Ami 8
+    country: FR
+  - entry_no: "55"
+    year: 1963
+    make: Humber
+    model: Sceptre
+    country: GB
+  - entry_no: "56"
+    year: 1960
+    make: Lotus
+    model: Elite Series 1
+    country: GB
+  - entry_no: "57"
+    year: 1967
+    make: Lotus
+    model: S3 DHC S/E
+    country: GB
+  - entry_no: "58"
+    year: 1969
+    make: Lotus
+    model: Super Seven Series 3
+    country: GB
+  - entry_no: "59"
+    year: 1969
+    make: Triumph
+    model: Vitesse MK2
+    country: GB
+  - entry_no: "60"
+    year: 1971
+    make: Lotus
+    model: Elan Sprint DHC
+    country: GB
+  - entry_no: "61"
+    year: 1969
+    make: Honda
+    model: S800M
+    country: JP
+  - entry_no: "62"
+    year: 1970
+    make: Isuzu
+    model: 117 Coupé
+    country: JP
+  - entry_no: "63"
+    year: 1970
+    make: Toyota
+    model: 2000GT
+    country: JP
+  - entry_no: "64"
+    year: 1971
+    make: Nissan
+    model: Skyline GT-R
+    country: JP
+  - entry_no: "65"
+    year: 1968
+    make: Porsche
+    model: 911T
+    country: DE
+  - entry_no: "66"
+    year: 1972
+    make: Mercedes-Benz
+    model: "230"
+    country: DE
+  - entry_no: "67"
+    year: 1973
+    make: Mercedes-Benz
+    model: 280CE
+    country: DE
+  - entry_no: "68"
+    year: 1981
+    make: Volkswagen
+    model: Fusca
+    country: BR
+  - entry_no: "69"
+    year: 1995
+    make: Eunos
+    model: Roadster V Special
+    country: JP
