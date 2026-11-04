@@ -2222,6 +2222,10 @@ class EntryListFlagTests(unittest.TestCase):
         self.assertEqual(makes["Alfa Romeo"], "IT")
         self.assertIsNone(makes["Ford"], "Ford is in the table as a make with no single country")
 
+    def test_brazil_has_a_flag_for_the_beetle_built_there(self):
+        # Volkswagen's table entry is DE, so without its own code a Fusca would show Germany's flag.
+        self.assertEqual(build.COUNTRIES["BR"][0], "Brazil")
+
     def test_every_country_has_a_name_and_a_drawing_with_ids_of_its_own(self):
         ids = []
         for code, (name, art) in build.COUNTRIES.items():
