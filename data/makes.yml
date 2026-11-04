@@ -1,6 +1,6 @@
 # A make's home country, for a car whose entry list prints no country of its own.
 # One make per line in alphabetical order, with a code scripts/build.py has a flag for
-# (COUNTRIES there: DE, FR, GB, IT, JP, SE, US). null is a decision too: no one country
+# (COUNTRIES there: BR, DE, FR, GB, IT, JP, SE, US). null is a decision too: no one country
 # fits, so such a car shows no flag unless its edition file gives it a `country`.
 # A car's own `country` always wins over this table.
 # 56 of these pairings are the Coppa organisers' own, from their entry lists; the rest are ours.
@@ -41,6 +41,7 @@ Ferrari: IT
 Fiat: IT
 Fiat-Abarth: IT
 Ford: null  # Mustangs in America, Anglias in Britain; set `country` on the car
+Frazer Nash-BMW: GB
 Giaur: IT
 Gilco-Fiat: IT
 Ginetta: GB
@@ -49,6 +50,7 @@ Healey: GB
 Heinkel: null  # German, but its bubble car was also built in Britain as the Trojan
 Honda: JP
 Imperial: US
+Humber: GB
 Isuzu: JP
 Jack Knight: GB
 Jaguar: GB
@@ -86,6 +88,7 @@ Rover: GB
 Sammio: GB
 Siata: IT
 Simca: FR
+Singer: GB
 Stanguellini: IT
 Subaru: JP
 Suzuki: JP
@@ -95,6 +98,7 @@ Triumph: GB
 TVR: GB
 Unknown: null  # the organiser's list did not name the make
 Vanden Plas: GB
+Vauxhall: GB
 Volkswagen: DE
 Volvo: SE
 Westfield: GB
