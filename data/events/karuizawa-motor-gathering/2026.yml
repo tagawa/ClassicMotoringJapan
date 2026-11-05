@@ -1,0 +1,151 @@
+slug: karuizawa-motor-gathering
+year: 2026
+status: confirmed
+start: 2026-09-05
+end: 2026-09-06
+start_time: "10:00"
+end_time: "18:00"
+source_url: https://www.motor-gathering.com/archives/1556
+last_verified: 2026-11-05
+sequence: 0
+videos:
+  - youtube_id: XCIVjQjCbv4
+    label_en: Report from the event (video by nostalgiccar)
+  - youtube_id: WZZrZ0ZvODk
+    label_en: Cars on display on 5 September (video by Maebashi Sunday Meeting)
+# The Concours of Elegance entries, one post each on the organiser's site. Entries 14
+# and 32 were never posted. The wider display has no published list.
+list_as_of: 2026-09-01
+cars:
+  - entry_no: "1"
+    year: 1932
+    make: Ford
+    model: Model B Roadster
+    country: US
+  - entry_no: "2"
+    year: 1937
+    make: Aston Martin
+    model: 15/98 Long Chassis Tourer
+  - entry_no: "3"
+    year: 1949
+    make: Lagonda
+    model: Drop Head Coupé 2
+  - entry_no: "4"
+    year: 1963
+    make: Alfa Romeo
+    model: Giulia Spider
+  # A Beck Spyder converted by Garage 432, says the entry's post, so it can't date from
+  # 1955, the year the post gives.
+  - entry_no: "5"
+    year: 1955
+    make: Porsche
+    model: 550 Spyder BM11 (Beck Spyder conversion)
+  - entry_no: "6"
+    year: 1960
+    make: Lotus
+    model: Seven S1
+  - entry_no: "7"
+    year: 1962
+    make: Mercedes-Benz
+    model: 190SL
+  - entry_no: "8"
+    year: 1963
+    make: Jaguar
+    model: MK2 Drop Head
+  - entry_no: "9"
+    year: 1963
+    make: Jaguar
+    model: E-Type S1 DHC
+  - entry_no: "10"
+    year: 1965
+    make: Alfa Romeo
+    model: Giulia Spider Veloce
+  - entry_no: "11"
+    year: 1967
+    make: Jaguar
+    model: E-Type 4.2 DHC
+  - entry_no: "12"
+    year: 1968
+    make: Fiat
+    model: Vignale Gamine
+  - entry_no: "13"
+    year: 1968
+    make: Jaguar
+    model: E-Type Roadster
+  - entry_no: "15"
+    year: 1973
+    make: Morgan
+    model: 4/4
+  - entry_no: "16"
+    year: 1973
+    make: Jaguar
+    model: E-Type S3 OTS
+  - entry_no: "17"
+    year: 1974
+    make: Porsche
+    model: 914/4 2.0
+  - entry_no: "18"
+    year: 1983
+    make: Porsche
+    model: 911SC Targa
+  - entry_no: "19"
+    year: 1985
+    make: Subaru
+    model: BRAT GL
+  - entry_no: "20"
+    year: 1986
+    make: Mercedes-Benz
+    model: R107 560SL
+  - entry_no: "21"
+    year: 1989
+    make: Bentley
+    model: Continental
+  - entry_no: "22"
+    year: 1990
+    make: Porsche
+    model: 911 (964)
+  - entry_no: "23"
+    year: 1992
+    make: Lotus
+    model: Elan (M100)
+  # The post stops at "Plus", without saying which.
+  - entry_no: "24"
+    year: 1992
+    make: Morgan
+    model: Plus
+  - entry_no: "25"
+    year: 1998
+    make: Porsche
+    model: Boxster
+  - entry_no: "26"
+    year: 1998
+    make: Mercedes-Benz
+    model: SL320 (R129)
+  - entry_no: "27"
+    year: 2000
+    make: Lotus
+    model: Elise
+  - entry_no: "28"
+    year: 2002
+    make: BMW
+    model: Z3
+  - entry_no: "29"
+    year: 2004
+    make: Mercedes-Benz
+    model: SLK 230 (R170)
+  - entry_no: "30"
+    year: 2004
+    make: Alfa Romeo
+    model: Spider (916) 3.2 V6
+  - entry_no: "31"
+    year: 2006
+    make: Citroën
+    model: C3 Pluriel
+  - entry_no: "33"
+    year: 2022
+    make: Porsche
+    model: Turbo S Cabriolet
+  - entry_no: "34"
+    year: 1991
+    make: Eunos
+    model: NA6CE

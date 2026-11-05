@@ -6,10 +6,12 @@ end: 2026-11-03
 start_time: "09:00"
 end_time: "15:00"
 source_url: https://nostalgicdayout.com/
-last_verified: 2026-10-26
+last_verified: 2026-11-05
 sequence: 0
 videos:
   - youtube_id: ltCAFqbpocU
     label_en: The entered cars (video by LILY WORKS)
   - youtube_id: UNkSe9ge8XU
     label_en: Every car entered (video by SKYLINE E-HCR32)
+  - youtube_id: PfAxMICTzjE
+    label_en: The joint parade run (video by Kitaline)

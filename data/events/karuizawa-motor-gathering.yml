@@ -1,0 +1,23 @@
+slug: karuizawa-motor-gathering
+name_en: Karuizawa Motor Gathering
+name_ja: 軽井沢モーターギャザリング
+organizer: 軽井沢モーターギャザリング実行委員会 (Karuizawa Motor Gathering executive committee)
+official_url: https://www.motor-gathering.com/
+summary_en: >
+  Vintage and classic cars on the lawn at Karuizawa Prince Shopping Plaza, alongside
+  new models, test drives and lifestyle stands. First held in 2022, by a committee
+  including Culture Convenience Club and the publishers Geibunsha and Neko Publishing.
+  The 2026 Concours of Elegance, for open cars, ran from a 1932 Ford to a 2022
+  Porsche, and an auction was held on the Sunday.
+prefecture: Nagano
+venue_en: Karuizawa Prince Shopping Plaza, Garden Mall lawn
+# The organiser gives no street number.
+street_address: Karuizawa, Karuizawa, Kitasaku District, Nagano (長野県北佐久郡軽井沢町軽井沢)
+# OSM's pin for the plaza by name; GSI's is 300 m away, on the same plaza.
+lat: 36.3392
+lon: 138.6331
+nearest_station: Karuizawa (Hokuriku Shinkansen)
+access_notes_en: >
+  About 14 minutes by car from Usui-Karuizawa IC.
+spectator_fee_jpy: 0
+last_verified: 2026-11-05
