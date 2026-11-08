@@ -6,3 +6,7 @@ end: 2026-11-08
 source_url: https://shcc.info/news/archives/21
 last_verified: 2026-10-26
 sequence: 0
+videos:
+  # The site's own film, made from the owner's footage.
+  - youtube_id: nmMIb9Kqa8Y
+    label_en: Time trial runs and the paddock at Oiso Long Beach
