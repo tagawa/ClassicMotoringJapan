@@ -5,6 +5,7 @@
 # A car's own `country` always wins over this table.
 # 56 of these pairings are the Coppa organisers' own, from their entry lists; the rest are ours.
 Abarth: IT
+AC: GB
 Alfa Romeo: IT
 Alpine: FR
 Alvis: GB
@@ -34,6 +35,7 @@ Daihatsu: JP
 Daimler: GB
 Datsun: JP
 Dino: IT
+Diva: GB
 DMC: US
 Ermini: IT
 Eunos: JP
