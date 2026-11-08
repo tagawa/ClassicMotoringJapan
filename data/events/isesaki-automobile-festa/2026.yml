@@ -6,7 +6,10 @@ end: 2026-11-08
 start_time: "10:00"
 end_time: "15:00"
 source_url: https://1000-kaze.com/iamf/
-last_verified: 2026-10-26
+last_verified: 2026-11-09
 sequence: 0
 # Entries closed once the field was full and the organiser publishes no roster, so
 # there is no list of cars to give.
+videos:
+  - youtube_id: 4xPrLXZqKIs
+    label_en: A tour of the event (video by YOU-CarLifeChannel)
