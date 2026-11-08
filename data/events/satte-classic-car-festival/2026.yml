@@ -9,3 +9,7 @@ end_time: "15:00"
 source_url: https://minkara.carview.co.jp/userid/2251740/blog/49208302/
 last_verified: 2026-10-26
 sequence: 0
+videos:
+  # The channel's Latin-script name is not given; 蓬猫 (よもねこ) is romanised here.
+  - youtube_id: BfJF_w3AvRw
+    label_en: The cars on show, and visitors' cars (video by Yomoneko)
