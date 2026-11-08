@@ -1,0 +1,439 @@
+slug: la-festa-primavera
+year: 2026
+status: confirmed
+# The outline runs to 21 April, but the cars are on the road only until the 20th.
+start: 2026-04-17
+end: 2026-04-20
+source_url: https://www.lafesta-primavera.com/2026/schedule/
+last_verified: 2026-11-08
+sequence: 0
+videos:
+  # The organiser's own channel, linked from its site.
+  - youtube_id: wc6xXwLrBB4
+    label_en: Day 1
+route_en: >
+  The 17th running, about 1,100 km from Nagoya to Kyoto by way of Gifu,
+  Fukui and Ishikawa. Windows shift with traffic on the day.
+route:
+  - date: 2026-04-17
+    checkpoints:
+      - start_time: "08:00"
+        end_time: "11:30"
+        place_en: Atsuta Jingu, Nagoya (start)
+        place_ja: 名古屋市・熱田神宮
+        prefecture: Aichi
+      - start_time: "11:10"
+        end_time: "11:55"
+        place_en: NTP Nagoya Toyopet, Nagoya
+        place_ja: 名古屋市・NTP名古屋トヨペット
+        prefecture: Aichi
+      - start_time: "11:35"
+        end_time: "12:20"
+        place_en: Toyota Commemorative Museum of Industry and Technology, Nagoya
+        place_ja: 名古屋市・トヨタ産業技術記念館
+        prefecture: Aichi
+      - start_time: "12:30"
+        end_time: "13:15"
+        place_en: Mihama Circuit, Mihama
+        place_ja: 美浜町・美浜サーキット
+        prefecture: Aichi
+      - start_time: "12:45"
+        end_time: "13:30"
+        place_en: Shoku to Kenko no Yakata, Mihama
+        place_ja: 美浜町・食と健康の館
+        prefecture: Aichi
+      - start_time: "13:25"
+        end_time: "14:10"
+        place_en: Green space at Utsumi, Minamichita
+        place_ja: 南知多町・内海小桝緑地
+        prefecture: Aichi
+      - start_time: "13:40"
+        end_time: "14:25"
+        place_en: Mihama Circuit, Mihama
+        place_ja: 美浜町・美浜サーキット
+        prefecture: Aichi
+      - start_time: "14:30"
+        end_time: "15:45"
+        place_en: NTP Nagoya Toyopet Marina Rinku, Tokoname
+        place_ja: 常滑市・NTP名古屋トヨペット マリーナりんくう
+        prefecture: Aichi
+      - start_time: "16:30"
+        end_time: "17:15"
+        place_en: Naritasan Betsuin temple, Inuyama
+        place_ja: 犬山市・成田山別院
+        prefecture: Aichi
+      - start_time: "16:35"
+        end_time: "17:20"
+        place_en: Hotel Indigo Inuyama Urakuen, Inuyama
+        place_ja: 犬山市・ホテルインディゴ犬山有楽苑
+        prefecture: Aichi
+  - date: 2026-04-18
+    checkpoints:
+      - start_time: "07:00"
+        end_time: "07:30"
+        place_en: Hotel Indigo Inuyama Urakuen, Inuyama
+        place_ja: 犬山市・ホテルインディゴ犬山有楽苑
+        prefecture: Aichi
+      - start_time: "07:20"
+        end_time: "08:35"
+        place_en: Little World, Inuyama
+        place_ja: 犬山市・リトルワールド
+        prefecture: Aichi
+      - start_time: "08:25"
+        end_time: "09:10"
+        place_en: Kani City Tourist Exchange Centre, Kani
+        place_ja: 可児市・可児市観光交流館
+        prefecture: Gifu
+      - start_time: "09:10"
+        end_time: "09:55"
+        place_en: Michi-no-Eki Mino Shirakawa Piacere, Shirakawa
+        place_ja: 白川町・道の駅美濃白川ピアチェーレ
+        prefecture: Gifu
+      - start_time: "09:55"
+        end_time: "10:40"
+        place_en: Gero Onsen Gassho Village, Gero
+        place_ja: 下呂市・下呂温泉合掌村
+        prefecture: Gifu
+      - start_time: "10:45"
+        end_time: "11:55"
+        place_en: Meiho Ski Resort, Gujo
+        place_ja: 郡上市・めいほうスキー場
+        prefecture: Gifu
+      - start_time: "14:10"
+        end_time: "14:55"
+        place_en: Horossa fossil centre, Ono
+        place_ja: 大野市・化石発掘センターホロッサ
+        prefecture: Fukui
+      - start_time: "15:35"
+        end_time: "16:20"
+        place_en: Fukui Prefectural Dinosaur Museum, Katsuyama
+        place_ja: 勝山市・福井県立恐竜博物館
+        prefecture: Fukui
+      - start_time: "16:10"
+        end_time: "16:55"
+        place_en: Taniguchiya car park, Sakai
+        place_ja: 坂井市・谷口屋駐車場
+        prefecture: Fukui
+      - start_time: "16:35"
+        end_time: "17:20"
+        place_en: Ruriko hotel, Kaga
+        place_ja: 加賀市・瑠璃光
+        prefecture: Ishikawa
+  - date: 2026-04-19
+    checkpoints:
+      - start_time: "08:00"
+        end_time: "08:30"
+        place_en: Ruriko hotel, Kaga
+        place_ja: 加賀市・瑠璃光
+        prefecture: Ishikawa
+      - start_time: "08:35"
+        end_time: "09:20"
+        place_en: Ishikawa Aviation Plaza, Komatsu
+        place_ja: 小松市・石川県航空プラザ
+        prefecture: Ishikawa
+      - start_time: "08:55"
+        end_time: "09:40"
+        place_en: Kutani Pottery Village, Nomi
+        place_ja: 能美市・九谷陶芸村
+        prefecture: Ishikawa
+      - start_time: "09:55"
+        end_time: "10:40"
+        place_en: Kanazawa Monozukuri Kaikan, Kanazawa
+        place_ja: 金沢市・金沢ものづくり会館
+        prefecture: Ishikawa
+      - start_time: "10:05"
+        end_time: "10:50"
+        place_en: Kanazawa Racecourse, Kanazawa
+        place_ja: 金沢市・金沢競馬場
+        prefecture: Ishikawa
+      - start_time: "11:35"
+        end_time: "13:20"
+        place_en: Chirihama Nagisa Driveway, Hakui
+        place_ja: 羽咋市・千里浜なぎさドライブウェイ
+        prefecture: Ishikawa
+      - start_time: "13:35"
+        end_time: "14:20"
+        place_en: Michi-no-Eki Kurikara Juku, Tsubata
+        place_ja: 津幡町・道の駅 倶利伽羅塾
+        prefecture: Ishikawa
+      - start_time: "14:15"
+        end_time: "15:00"
+        place_en: Iozen Ski Area, Kanazawa
+        place_ja: 金沢市・医王山スキー場
+        prefecture: Ishikawa
+      - start_time: "16:00"
+        end_time: "17:05"
+        place_en: Japan Automobile Museum, Komatsu
+        place_ja: 小松市・日本自動車博物館
+        prefecture: Ishikawa
+      - start_time: "16:35"
+        end_time: "17:20"
+        place_en: Ruriko hotel, Kaga
+        place_ja: 加賀市・瑠璃光
+        prefecture: Ishikawa
+  - date: 2026-04-20
+    checkpoints:
+      - start_time: "07:00"
+        end_time: "07:30"
+        place_en: Ruriko hotel, Kaga
+        place_ja: 加賀市・瑠璃光
+        prefecture: Ishikawa
+      - start_time: "07:40"
+        end_time: "08:20"
+        place_en: Shibamasa World, Awara
+        place_ja: あわら市・芝政ワールド
+        prefecture: Fukui
+      - start_time: "09:00"
+        end_time: "09:45"
+        place_en: Eiheiji tourist information centre, Eiheiji
+        place_ja: 永平寺町・永平寺町観光案内所
+        prefecture: Fukui
+      - start_time: "09:15"
+        end_time: "10:00"
+        place_en: Ichijodani Asakura Family Ruins, Fukui City
+        place_ja: 福井市・一乗谷朝倉氏遺跡
+        prefecture: Fukui
+      - start_time: "09:50"
+        end_time: "10:35"
+        place_en: Megane Museum, Sabae
+        place_ja: 鯖江市・めがねミュージアム
+        prefecture: Fukui
+      - start_time: "10:30"
+        end_time: "11:15"
+        place_en: Echizen Crab Museum, Michi-no-Eki Echizen
+        place_ja: 越前町・道の駅 越前 越前がにミュージアム
+        prefecture: Fukui
+      - start_time: "11:20"
+        end_time: "13:00"
+        place_en: Kirameki Minatokan, Tsuruga
+        place_ja: 敦賀市・きらめきみなと館
+        prefecture: Fukui
+      - start_time: "12:35"
+        end_time: "13:20"
+        place_en: Kehi Jingu approach, Tsuruga
+        place_ja: 敦賀市・氣比神宮参道
+        prefecture: Fukui
+      - start_time: "13:40"
+        end_time: "14:45"
+        place_en: Kumagawa-juku, Wakasa
+        place_ja: 若狭町・熊川宿
+        prefecture: Fukui
+      - start_time: "15:00"
+        end_time: "15:45"
+        place_en: Michi-no-Eki Kutsuki Shinhonjin, Takashima
+        place_ja: 高島市・道の駅くつき新本陣
+        prefecture: Shiga
+      - start_time: "16:05"
+        end_time: "17:15"
+        place_en: Okazaki Park, Kyoto City (finish)
+        place_ja: 京都市・岡崎公園
+        prefecture: Kyoto
+      - start_time: "16:50"
+        end_time: "17:30"
+        place_en: The Westin Miyako Kyoto, Kyoto City
+        place_ja: 京都市・ウェスティン都ホテル京都
+        prefecture: Kyoto
+# From /2026/entrylist/, published 2026-03-27. Numbers 10, 20, 30, 40 and 50 are listed
+# as "xx", and 04 and 42 are not on it.
+list_as_of: 2026-11-08
+cars:
+  - entry_no: "01"
+    year: 1949
+    make: OSCA
+    model: MT4
+  - entry_no: "02"
+    year: 1928
+    make: Lancia
+    model: Lambda 221 Casaro
+  - entry_no: "03"
+    year: 1934
+    make: Aston Martin
+    model: 1.5 Litre Mk II
+  - entry_no: "05"
+    year: 1948
+    make: Cisitalia
+    model: Colombo Barchetta
+  - entry_no: "06"
+    year: 1947
+    make: Stanguellini
+    model: S1100
+  - entry_no: "07"
+    year: 1947
+    make: Cisitalia
+    model: 202 SC Cabriolet
+  - entry_no: "08"
+    year: 1949
+    make: MG
+    model: TC
+  - entry_no: "09"
+    year: 1949
+    make: Bristol
+    model: "400"
+  - entry_no: "11"
+    year: 1949
+    make: Healey
+    model: Silverstone D-Type
+  - entry_no: "12"
+    year: 1947
+    make: Stanguellini
+    model: 1100 Sport
+  - entry_no: "13"
+    year: 1955
+    make: Triumph
+    model: TR3
+  - entry_no: "14"
+    year: 1951
+    make: Jaguar
+    model: XK120
+  - entry_no: "15"
+    year: 1964
+    make: Diva
+    model: GT D-Type
+  - entry_no: "16"
+    year: 1953
+    make: Porsche
+    model: 356 Pre-A
+  - entry_no: "17"
+    year: 1953
+    make: Porsche
+    model: "356"
+  - entry_no: "18"
+    year: 1954
+    make: Triumph
+    model: TR2
+  - entry_no: "19"
+    year: 1956
+    make: Alfa Romeo
+    model: Giulietta Sprint Veloce Lightweight
+  - entry_no: "21"
+    year: 1954
+    make: Triumph
+    model: TR2
+  - entry_no: "22"
+    year: 1954
+    make: Triumph
+    model: TR2
+  - entry_no: "23"
+    year: 1955
+    make: Fiat
+    model: 1100TV Pinin Farina Berlinetta
+  - entry_no: "24"
+    year: 1955
+    make: Mercedes-Benz
+    model: 300SL
+  - entry_no: "25"
+    year: 1955
+    make: Porsche
+    model: 356 Speedster
+  - entry_no: "26"
+    year: 1956
+    make: Austin-Healey
+    model: 100 BN2
+  - entry_no: "27"
+    year: 1957
+    make: Triumph
+    model: TR3
+  - entry_no: "28"
+    year: 1953
+    make: Austin-Healey
+    model: 100/4
+  - entry_no: "29"
+    year: 1954
+    make: Jaguar
+    model: XK120 OTS
+  - entry_no: "31"
+    year: 1954
+    make: Austin-Healey
+    model: 100/4 BN1
+  - entry_no: "32"
+    year: 1955
+    make: Jaguar
+    model: XK140 SE OTS
+  - entry_no: "33"
+    year: 1954
+    make: Lancia
+    model: Aurelia B20S
+  - entry_no: "34"
+    year: 1950
+    make: Jaguar
+    model: XK120 OTS
+  - entry_no: "35"
+    year: 1954
+    make: Lancia
+    model: Ardea 750S Mariani Colombo
+  - entry_no: "36"
+    year: 1955
+    make: Jaguar
+    model: XK140
+  - entry_no: "37"
+    year: 1960
+    make: Alfa Romeo
+    model: Giulietta Spider
+  - entry_no: "38"
+    year: 1963
+    make: Austin-Healey
+    model: 3000 Mk II
+  - entry_no: "39"
+    year: 1964
+    make: Porsche
+    model: 356C
+  - entry_no: "41"
+    year: 1968
+    make: Toyota
+    model: 2000GT
+  - entry_no: "43"
+    year: 1969
+    make: Toyota
+    model: Sports 800
+  - entry_no: "44"
+    year: 1955
+    make: Porsche
+    model: 356 Pre-A Speedster
+  - entry_no: "45"
+    year: 1958
+    make: Mercedes-Benz
+    model: 190SL
+  - entry_no: "46"
+    year: 1957
+    make: AC
+    model: Ace
+  - entry_no: "47"
+    year: 1955
+    make: Triumph
+    model: TR2
+  - entry_no: "48"
+    year: 1956
+    make: Austin-Healey
+    model: 100M
+  - entry_no: "49"
+    year: 1957
+    make: Fiat-Abarth
+    model: 750 Zagato Corsa
+  - entry_no: "51"
+    year: 1960
+    make: Porsche
+    model: 356B
+  - entry_no: "52"
+    year: 1960
+    make: Jaguar
+    model: XK150
+  - entry_no: "53"
+    year: 1961
+    make: Chevrolet
+    model: Corvette
+  - entry_no: "54"
+    year: 1966
+    make: Honda
+    model: S800
+  - entry_no: "55"
+    year: 1966
+    make: Aston Martin
+    model: DB6
+  - entry_no: "56"
+    year: 1966
+    make: Alfa Romeo
+    model: 1600 Duetto Spider
+  - entry_no: "57"
+    year: 1965
+    make: Jaguar
+    model: E-Type Series 1

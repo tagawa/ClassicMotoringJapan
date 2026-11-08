@@ -1,0 +1,33 @@
+slug: la-festa-primavera
+name_en: La Festa Primavera
+name_ja: ラ フェスタ プリマベラ
+organizer: La Festa 1000 by FORZA S.p.A.
+official_url: https://www.lafesta-primavera.com/
+# 2027 is the 18th running; 2020 was cancelled for the pandemic.
+summary_en: >
+  A four-day touring rally of about 1,100 to 1,200 km, run every spring since
+  2009. About 50 to 60 cars leave Atsuta Jingu in Nagoya and finish at Okazaki
+  Park in Kyoto; the route between changes each year, through the Tokai, Kinki
+  and Hokuriku regions. Entry is for cars built between 1919 and 1972, plus any
+  the organising committee approves specially; replicas are not accepted. Its
+  autumn sister is [La Festa Autunno](https://classicmotoringjapan.com/events/la-festa-autunno/).
+prefecture: Aichi
+venue_en: Atsuta Jingu, Nagoya (start)
+street_address: 1-1-1 Jingu, Atsuta, Nagoya, Aichi (愛知県名古屋市熱田区神宮1-1-1)
+lat: 35.1259
+lon: 136.9109
+nearest_station: Jingu-mae (Meitetsu Nagoya Line), or Jingu-nishi on the Meijo subway line
+access_notes_en: >
+  The checkpoints after the start are spread over six or more prefectures and
+  change each year; most of them need a car to reach. The finish at Okazaki
+  Park is walkable from Higashiyama station on the Tozai subway line.
+typical_eras: [Prewar, 1940s, 1950s, 1960s]
+# 50 on the 2026 entry list; the 2027 outline expects about 60.
+typical_scale: About 50 to 60 cars
+# The organiser's pages give no spectator fee or rules.
+spectator_fee_jpy: null
+spectator_notes_en: >
+  About three weeks beforehand the organiser publishes a timetable giving an
+  arrival window for every checkpoint. Windows shift with traffic on the day.
+cutoff_year: 1972
+last_verified: 2026-11-08
