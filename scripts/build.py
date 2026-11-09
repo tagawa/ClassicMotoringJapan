@@ -14,6 +14,8 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import functools
+import hashlib
 import json
 import math
 import re
@@ -27,6 +29,7 @@ from xml.sax.saxutils import escape as xml_escape
 import yaml
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from markupsafe import Markup, escape
+from PIL import Image, ImageDraw, ImageFont, IptcImagePlugin
 
 SITE_NAME = "Classic Motoring Japan"
 SITE_URL = "https://classicmotoringjapan.com"
@@ -79,6 +82,29 @@ YOUTUBE_ID_RE = re.compile(r"^[A-Za-z0-9_-]{11}$")
 # The privacy-enhanced domain: YouTube sets no cookies until the visitor presses play.
 VIDEO_EMBED_URL = "https://www.youtube-nocookie.com/embed/"
 VIDEO_WATCH_URL = "https://www.youtube.com/watch?v="
+# Photos (spec 4.10): data/photos/<slug>.jpg, one per event, faces already blurred.
+PHOTOS_DIR = "photos"
+# Two to one, so a phone still shows the facts under the photo on the first screen.
+PHOTO_WIDTHS = (720, 1440)
+PHOTO_MIN_WIDTH = PHOTO_WIDTHS[-1]
+PHOTO_QUALITY = 80
+# Licences that allow cropping and need no more than a credit. ND forbids the crop; NC is
+# left out so the question of what counts as commercial never has to be answered.
+PHOTO_LICENSES = {
+    "CC0 1.0": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "CC BY 2.0": "https://creativecommons.org/licenses/by/2.0/",
+    "CC BY 3.0": "https://creativecommons.org/licenses/by/3.0/",
+    "CC BY 4.0": "https://creativecommons.org/licenses/by/4.0/",
+    "CC BY-SA 2.0": "https://creativecommons.org/licenses/by-sa/2.0/",
+    "CC BY-SA 3.0": "https://creativecommons.org/licenses/by-sa/3.0/",
+    "CC BY-SA 4.0": "https://creativecommons.org/licenses/by-sa/4.0/",
+}
+PHOTO_REQUIRED = {"alt_en": "str", "year": "int"}
+# Someone else's photo: all three, or none for the site's own.
+PHOTO_CREDIT = {"credit": "str", "license": "license", "source_url": "url"}
+# Share cards (spec 8.3): what a link preview shows.
+SHARE_SIZE = (1200, 630)
+FONTS = ROOT / "scripts" / "fonts"
 URL_RE = re.compile(r"^https?://\S+$")
 # The one piece of markup prose may carry. https only: the target is fixed at build time,
 # so there is no reason to link anywhere insecure, and nothing else can reach an href.
@@ -124,6 +150,7 @@ EVENT_OPTIONAL = {
     "lat": "lat", "lon": "lon",
     # The newest build year the organiser accepts, only where a source states one exactly.
     "cutoff_year": "int",
+    "photo": "photo",
 }
 EDITION_REQUIRED = {
     "slug": "str", "year": "int", "status": "status", "start": "date", "end": "date",
@@ -349,6 +376,16 @@ def _check_value(kind: str, v, where: str, errors: list[str]) -> None:
         if not isinstance(v, str) or not YOUTUBE_ID_RE.match(v):
             errors.append(f"{where}: must be the 11-character video ID, the part of the address "
                           f"after watch?v=, got {v!r}")
+    elif kind == "license":
+        if v not in PHOTO_LICENSES:
+            errors.append(f"{where}: must be one of {sorted(PHOTO_LICENSES)}, the licences that allow "
+                          f"cropping and ask only for a credit, got {v!r}")
+    elif kind == "photo":
+        if _check_fields(v, PHOTO_REQUIRED, PHOTO_CREDIT, where, errors):
+            given = [k for k in PHOTO_CREDIT if k in v]
+            if 0 < len(given) < len(PHOTO_CREDIT):
+                errors.append(f"{where}: give credit, license and source_url together for someone "
+                              f"else's photo, or none of them for the site's own")
     elif kind in ("cars", "route", "checkpoints", "videos"):
         if not isinstance(v, list) or not v:
             errors.append(f"{where}: must be a non-empty list")
@@ -524,6 +561,7 @@ def load_and_validate(data_dir: Path) -> tuple[dict, list]:
         _check_description(ev, rel, errors)
         _check_coords(ev, rel, errors)
         _check_prefecture(ev, rel, errors)
+        _check_photo(ev, data_dir, rel, errors)
         events[path.stem] = ev
 
     for path in sorted(events_dir.glob("*/*.yml")):
@@ -590,9 +628,83 @@ def load_and_validate(data_dir: Path) -> tuple[dict, list]:
                 _check_fields(video, VIDEO_REQUIRED, {}, f"{rel}: videos item {i}", errors)
         editions.append({"data": ed, "id": path.stem, "edition": name["edition"]})
 
+    for path in sorted((data_dir / PHOTOS_DIR).glob("*")):
+        rel = path.relative_to(data_dir).as_posix()
+        if path.name.startswith("."):
+            continue
+        if path.suffix != ".jpg":
+            errors.append(f"{rel}: photos must be JPEG files named <slug>.jpg")
+        elif not (events_dir / f"{path.stem}.yml").is_file():
+            errors.append(f"{rel}: no matching event file events/{path.stem}.yml")
+        elif path.stem in events and "photo" not in events[path.stem]:
+            # Otherwise a photo could go live with no alt text and no credit.
+            errors.append(f"{rel} has no photo field in events/{path.stem}.yml")
+
     if errors:
         raise ValidationError(errors)
     return events, editions
+
+
+def _open_photo(path: Path) -> Image.Image:
+    """The photo as RGB, keeping only its colour profile. tools/photo.py has already turned it."""
+    with Image.open(path) as raw:
+        icc = raw.info.get("icc_profile")
+        img = raw.convert("RGB")
+    img.info = {"icc_profile": icc} if icc else {}
+    return img
+
+
+def photo_metadata(path: Path) -> list[str]:
+    """The kinds of metadata a JPEG still carries: EXIF, XMP, IPTC, comment, in that order.
+
+    Each can hold the GPS position, the camera's serial number or the photographer's name;
+    a comment is plain text, which some cameras and editors fill with a name or a place.
+    tools/photo.py removes them all, and tools/pending.py and the build both call this.
+    """
+    with Image.open(path) as img:
+        found = []
+        if img.info.get("exif") or len(img.getexif()):
+            found.append("EXIF")
+        if img.info.get("xmp") or "XML:com.adobe.xmp" in img.info:
+            found.append("XMP")
+        if img.info.get("photoshop") or IptcImagePlugin.getiptcinfo(img):
+            found.append("IPTC")
+        if img.info.get("comment"):
+            found.append("comment")
+    return found
+
+
+def photos_with_metadata(data_dir: Path) -> list[str]:
+    """One line per photo in data/photos/ still carrying metadata, for tools/pending.py."""
+    return [f"{p.relative_to(data_dir).as_posix()} carries {', '.join(kinds)}: run it through tools/photo.py"
+            for p in sorted((data_dir / PHOTOS_DIR).glob("*.jpg")) if (kinds := photo_metadata(p))]
+
+
+def _check_photo(ev: dict, data_dir: Path, rel: str, errors: list[str]) -> None:
+    if not isinstance(ev.get("photo"), dict):
+        return
+    src = data_dir / PHOTOS_DIR / f"{ev['slug']}.jpg"
+    src_rel = src.relative_to(data_dir).as_posix()
+    if not src.is_file():
+        errors.append(f"{rel}: photo is given but {src_rel} does not exist")
+        return
+    try:
+        kinds = photo_metadata(src)
+        w, h = _open_photo(src).size
+    except OSError as e:
+        errors.append(f"{src_rel}: not a readable JPEG ({e})")
+        return
+    if kinds:
+        # By the time the build sees it, the file is in the public repository.
+        errors.append(f"{src_rel} still carries {', '.join(kinds)}, which can hold the GPS position, "
+                      f"the camera's serial number and the photographer's name. The file is already "
+                      f"public: run the original through tools/photo.py and upload the result")
+        return
+    # The hero is cropped to 2:1 and the share image to 1200x630, so both have to fit.
+    need_h = max(PHOTO_MIN_WIDTH // 2, SHARE_SIZE[1])
+    if w < PHOTO_MIN_WIDTH or h < need_h:
+        errors.append(f"{src_rel}: {w}x{h} is too small. It needs at least {PHOTO_MIN_WIDTH} wide and "
+                      f"{need_h} high, so the page stays sharp on a high-density screen")
 
 
 # Formatting
@@ -863,6 +975,200 @@ def japan_path() -> str:
     return " ".join("M" + " ".join("%g,%g" % map_point(lat, lon) for lon, lat in ring) + "Z"
                     for ring in rings)
 
+
+
+# Photos and share cards
+
+def _crop(img: Image.Image, ratio_w: int, ratio_h: int) -> Image.Image:
+    """The largest centred crop of img in the ratio ratio_w:ratio_h."""
+    w, h = img.size
+    if w * ratio_h > h * ratio_w:
+        nw = h * ratio_w // ratio_h
+        left = (w - nw) // 2
+        return img.crop((left, 0, left + nw, h))
+    nh = w * ratio_h // ratio_w
+    top = (h - nh) // 2
+    return img.crop((0, top, w, top + nh))
+
+
+def _save_jpeg(img: Image.Image, size: tuple[int, int], path: Path, icc: bytes | None) -> None:
+    # Saved without exif=, so nothing the camera wrote (GPS included) reaches the site. The
+    # colour profile stays: it holds no personal data, and a phone's Display P3 shot would
+    # otherwise come out duller.
+    path.parent.mkdir(parents=True, exist_ok=True)
+    extra = {"icc_profile": icc} if icc else {}
+    img.resize(size, Image.LANCZOS).save(path, "JPEG", quality=PHOTO_QUALITY, optimize=True,
+                                         progressive=True, **extra)
+
+
+def photo_info(ev: dict) -> dict | None:
+    """What the templates need for an event's photo. Paths are relative to the site root."""
+    ph = ev.get("photo")
+    if not ph:
+        return None
+    slug, own = ev["slug"], "credit" not in ph
+    return {"alt": ph["alt_en"], "year": ph["year"], "own": own,
+            "src": f"static/photos/{slug}-{PHOTO_WIDTHS[0]}.jpg",
+            "srcset": [(f"static/photos/{slug}-{w}.jpg", w) for w in PHOTO_WIDTHS],
+            "width": PHOTO_WIDTHS[0], "height": PHOTO_WIDTHS[0] // 2,
+            "credit": ph.get("credit"), "license": ph.get("license"),
+            "license_url": PHOTO_LICENSES.get(ph.get("license")), "source_url": ph.get("source_url"),
+            # A link preview has no room for the credit a licence asks for, so only the
+            # site's own photos are ever shared that way.
+            "share": f"static/photos/{slug}-share.jpg" if own else None}
+
+
+def write_photo(ev: dict, data_dir: Path, out_dir: Path) -> None:
+    info = photo_info(ev)
+    img = _open_photo(data_dir / PHOTOS_DIR / f"{ev['slug']}.jpg")
+    icc = img.info.get("icc_profile")
+    hero = _crop(img, 2, 1)
+    for src, w in info["srcset"]:
+        _save_jpeg(hero, (w, w // 2), out_dir / src, icc)
+    if info["share"]:
+        _save_jpeg(_crop(img, *SHARE_SIZE), SHARE_SIZE, out_dir / info["share"], icc)
+
+
+# Drawn at twice the size and halved, because Pillow does not antialias shapes.
+CARD_SCALE = 2
+CARD_PAD = 64
+CARD_TITLE_SIZES = (72, 60)
+CARD_TITLE_LINES = 3
+CARD_LINE_SIZE = 36
+CARD_MAP_HEIGHT = 400
+CARD_BAND = 16
+# The light theme's tokens (spec 6.5): a share card has no dark mode.
+CARD_COLOURS = {"ink": "#1C1C1C", "muted": "#5C5C5C", "rule": "#E0E0E0", "brand": "#8C1C24",
+                "background": "#FFFFFF"}
+
+
+@functools.lru_cache(maxsize=None)
+def _font(name: str, size: int) -> ImageFont.FreeTypeFont:
+    return ImageFont.truetype(str(FONTS / name), size * CARD_SCALE)
+
+
+@functools.lru_cache(maxsize=1)
+def _map_rings() -> tuple:
+    rings = json.loads(MAP_OUTLINE.read_text(encoding="utf-8"))
+    return tuple(tuple(map_point(lat, lon) for lon, lat in ring) for ring in rings)
+
+
+def _card_text_width() -> float:
+    map_w = MAP_WIDTH * CARD_MAP_HEIGHT / MAP_HEIGHT
+    return (SHARE_SIZE[0] - 2 * CARD_PAD - map_w - 48) * CARD_SCALE
+
+
+def _wrap(text: str, font: ImageFont.FreeTypeFont, width: float) -> list[str] | None:
+    """Greedy word wrap, or None when a single word is wider than the line."""
+    lines, line = [], ""
+    for word in text.split():
+        trial = f"{line} {word}".strip()
+        if font.getlength(trial) <= width:
+            line = trial
+        elif not line or font.getlength(word) > width:
+            return None
+        else:
+            lines.append(line)
+            line = word
+    return lines + [line]
+
+
+def card_layout(title: str, lines: list[tuple[str, str]]) -> dict | None:
+    """The title at the largest size that fits, or None when nothing fits.
+
+    Never shrunk past the last size: a smaller title would be unreadable in a feed, so the
+    fix is a shorter name, the same rule as the video captions.
+    """
+    width = _card_text_width()
+    small = _font("LiberationSans-Regular.ttf", CARD_LINE_SIZE)
+    if any(small.getlength(text) > width for text, _ in lines):
+        return None
+    for size in CARD_TITLE_SIZES:
+        wrapped = _wrap(title, _font("LiberationSans-Bold.ttf", size), width)
+        if wrapped and len(wrapped) <= CARD_TITLE_LINES:
+            return {"title": wrapped, "size": size, "lines": lines}
+    return None
+
+
+def draw_card(layout: dict, dots: list[tuple[float, float]], path: Path) -> None:
+    S, (W, H), c = CARD_SCALE, SHARE_SIZE, CARD_COLOURS
+    img = Image.new("RGB", (W * S, H * S), c["background"])
+    d = ImageDraw.Draw(img)
+    k = CARD_MAP_HEIGHT * S / MAP_HEIGHT
+    x0 = (W - CARD_PAD) * S - MAP_WIDTH * k
+    y0 = ((H - CARD_BAND) * S - CARD_MAP_HEIGHT * S) / 2
+    for ring in _map_rings():
+        d.polygon([(x0 + x * k, y0 + y * k) for x, y in ring], fill=c["rule"])
+    r = 12 * S
+    for lat, lon in dots:
+        x, y = map_point(lat, lon)
+        cx, cy = x0 + x * k, y0 + y * k
+        d.ellipse((cx - r, cy - r, cx + r, cy + r), fill=c["brand"], outline=c["background"], width=4 * S)
+    d.text((CARD_PAD * S, CARD_PAD * S), SITE_NAME, font=_font("LiberationSerif-Regular.ttf", 40), fill=c["brand"])
+    y = 160 * S
+    bold = _font("LiberationSans-Bold.ttf", layout["size"])
+    for line in layout["title"]:
+        d.text((CARD_PAD * S, y), line, font=bold, fill=c["ink"])
+        y += round(layout["size"] * 1.15) * S
+    y += 24 * S
+    small = _font("LiberationSans-Regular.ttf", CARD_LINE_SIZE)
+    for text, colour in layout["lines"]:
+        d.text((CARD_PAD * S, y), text, font=small, fill=c[colour])
+        y += round(CARD_LINE_SIZE * 1.4) * S
+    d.rectangle((0, (H - CARD_BAND) * S, W * S, H * S), fill=c["brand"])
+    path.parent.mkdir(parents=True, exist_ok=True)
+    # An exact halving: reduce averages each 2x2 block, the right filter and far faster than LANCZOS.
+    img.reduce(CARD_SCALE).save(path, "PNG")
+
+
+def plan_cards(events: dict, rows: list[dict]) -> tuple[dict, list, list[str]]:
+    """The share image for every page, the cards to draw, and any name too long for one.
+
+    Returns (og by page key, [(path, layout, dots)], errors). Page keys are "site", an event
+    slug, or an edition's path. Runs before the output folder is touched, so a name that
+    does not fit fails the build with the last site still in place.
+    """
+    og, todo, errors = {}, [], []
+
+    def card(key: str, rel: str, title: str, lines: list, dots: list, where: str) -> None:
+        layout = card_layout(title, lines)
+        if layout is None:
+            errors.append(f"{where}: {title!r} does not fit the share card in {CARD_TITLE_LINES} lines. "
+                          f"Shorten the name; the card never shrinks it further")
+            return
+        todo.append((rel, layout, dots))
+        alt = ". ".join([title] + [text for text, _ in lines]) + "."
+        og[key] = {"url": f"{SITE_URL}/{rel}", "alt": alt}
+
+    def pins(*pins) -> list:
+        return [(p["lat"], p["lon"]) for p in pins if p]
+
+    card("site", "static/cards/site.png", "Classic car events in Japan",
+         [("Japanese and imported", "muted"), ("Dates, access and admission", "muted")],
+         pins(*(venue_pin(ev) for _, ev in sorted(events.items()))), "SITE_NAME")
+    for slug, ev in sorted(events.items()):
+        photo = photo_info(ev)
+        shared = {"url": f"{SITE_URL}/{photo['share']}", "alt": photo["alt"]} if photo and photo["share"] else None
+        if shared:
+            og[slug] = shared
+        else:
+            lines = [(ev["prefecture"], "ink")]
+            if ev["spectator_fee_jpy"] is not None:
+                lines.append((fmt_fee(ev["spectator_fee_jpy"]), "muted"))
+            card(slug, f"static/cards/events/{slug}.png", ev["name_en"], lines, pins(venue_pin(ev)),
+                 f"events/{slug}.yml")
+        for r in rows:
+            if r["slug"] != slug or not r["has_page"]:
+                continue
+            if shared:
+                og[r["path"]] = shared
+                continue
+            status = {"tentative": "Dates not confirmed", "cancelled": "Cancelled"}.get(r["ed"]["status"])
+            lines = ([(status, "brand")] if status else []) + [
+                (fmt_span(r["ed"]["start"], r["ed"]["end"], year=True), "ink"), (r["prefecture"], "muted")]
+            card(r["path"], f"static/cards/{r['path'].rstrip('/')}.png", r["full_name"], lines,
+                 pins(r["pin"]), f"events/{slug}/{r['id']}.yml")
+    return og, todo, errors
 
 # iCalendar
 
@@ -1342,6 +1648,9 @@ def build(data_dir: Path, out_dir: Path,
           templates_dir: Path = ROOT / "templates", static_dir: Path = ROOT / "static") -> None:
     events, editions = load_and_validate(data_dir)
     rows = make_rows(events, editions, load_makes(data_dir))
+    og, cards, errors = plan_cards(events, rows)
+    if errors:
+        raise BuildError(errors)
 
     env = Environment(loader=FileSystemLoader(templates_dir),
                       autoescape=select_autoescape(["html"]),
@@ -1359,13 +1668,23 @@ def build(data_dir: Path, out_dir: Path,
     host = SITE_URL.split("://", 1)[1]
     common = {"site_name": SITE_NAME, "site_url": SITE_URL, "site_lede": SITE_LEDE,
               "ard_path": ARD_PATH, "ard_predecessor_path": ARD_PREDECESSOR_PATH,
-              "issues_url": ISSUES_URL, "youtube_channel_url": YOUTUBE_CHANNEL_URL, "feed_file": FEED_FILE, "ics_url": f"{SITE_URL}/{FEED_FILE}", "webcal_url": f"webcal://{host}/{FEED_FILE}"}
+              "issues_url": ISSUES_URL, "youtube_channel_url": YOUTUBE_CHANNEL_URL, "feed_file": FEED_FILE, "share_size": SHARE_SIZE, "ics_url": f"{SITE_URL}/{FEED_FILE}", "webcal_url": f"webcal://{host}/{FEED_FILE}"}
 
     reset_out_dir(out_dir)
     # Every other static file is served from static/, but browsers ask for /favicon.ico
     # by name with no link tag, so that one is copied to the site root instead.
     shutil.copytree(static_dir, out_dir / "static", ignore=shutil.ignore_patterns("favicon.ico"))
     shutil.copy2(static_dir / "favicon.ico", out_dir / "favicon.ico")
+    for ev in events.values():
+        if ev.get("photo"):
+            write_photo(ev, data_dir, out_dir)
+    for rel, layout, dots in cards:
+        draw_card(layout, dots, out_dir / rel)
+    for image in og.values():
+        # Platforms cache an image by its URL, so a card with new dates needs a new one.
+        if "?v=" not in image["url"]:
+            data = (out_dir / image["url"].removeprefix(f"{SITE_URL}/")).read_bytes()
+            image["url"] += f"?v={hashlib.sha256(data).hexdigest()[:8]}"
 
     def write(rel: str, text: str) -> None:
         p = out_dir / rel
@@ -1376,13 +1695,13 @@ def build(data_dir: Path, out_dir: Path,
     latest = max(all_verified) if all_verified else None
     write("index.html", env.get_template("home.html").render(
         **common, root="", canonical=f"{SITE_URL}/", title=f"Classic car events in Japan | {SITE_NAME}", hreflang=True,
-        description=SITE_LEDE, months=month_groups(rows), years=year_chart(rows), latest=latest, jsonld=[build_website_jsonld()],
+        description=SITE_LEDE, og_image=og["site"], months=month_groups(rows), years=year_chart(rows), latest=latest, jsonld=[build_website_jsonld()],
         japan=japan_path() if any(r["dot"] for r in rows) else None,
         map_box=f"0 0 {MAP_WIDTH:g} {MAP_HEIGHT:g}", map_ratio=MAP_HEIGHT / MAP_WIDTH))
 
     write("ja/index.html", env.get_template("ja.html").render(
         **common, root="../", canonical=f"{SITE_URL}/ja/", lang="ja", hreflang=True,
-        title=f"日本のクラシックカーイベント | {SITE_NAME}", description=JA_LEDE,
+        title=f"日本のクラシックカーイベント | {SITE_NAME}", description=JA_LEDE, og_image=og["site"],
         months=month_groups(rows), latest=latest, jsonld=[]))
 
     sitemap = [(f"{SITE_URL}/", latest), (f"{SITE_URL}/ja/", latest)]
@@ -1393,6 +1712,7 @@ def build(data_dir: Path, out_dir: Path,
             **common, root="../../", canonical=f"{SITE_URL}/events/{slug}/",
             title=f"{ev['name_en']}: Visitor Guide", description=event_description(ev),
             ev=ev, rows=ev_rows, verified=verified, pin=venue_pin(ev),
+            photo=photo_info(ev), og_image=og[slug],
             jsonld=[r["jsonld"] for r in ev_rows if not r["has_page"]]))
         sitemap.append((f"{SITE_URL}/events/{slug}/", verified))
         for r in ev_rows:
@@ -1403,12 +1723,13 @@ def build(data_dir: Path, out_dir: Path,
                 **common, root="../../../", canonical=r["abs_url"],
                 title=f"{r['full_name']}: {r['parts_phrase']}",
                 description=edition_description(r),
-                ev=ev, r=r, ed=ed, jsonld=[r["jsonld"], build_breadcrumbs(r)]))
+                ev=ev, r=r, ed=ed, photo=photo_info(ev), og_image=og[r["path"]],
+                jsonld=[r["jsonld"], build_breadcrumbs(r)]))
             sitemap.append((r["abs_url"], ed["last_verified"]))
 
     write("about/index.html", env.get_template("about.html").render(
         **common, root="../", canonical=f"{SITE_URL}/about/", title=f"About | {SITE_NAME}",
-        description=ABOUT_DESCRIPTION, jsonld=[]))
+        description=ABOUT_DESCRIPTION, og_image=og["site"], jsonld=[]))
     # The page describes the site, not the data, so no verified date stands behind it.
     sitemap.append((f"{SITE_URL}/about/", None))
 

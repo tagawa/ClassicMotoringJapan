@@ -861,9 +861,10 @@ class PageDescriptionTests(unittest.TestCase):
             self.assertEqual(self.head(rel).meta["og:locale"], "en_GB", rel)
         self.assertEqual(self.head("ja/index.html").meta["og:locale"], "ja_JP")
 
-    def test_the_site_has_no_images_so_no_preview_image_is_claimed(self):
+    def test_the_preview_image_is_always_the_sites_own(self):
+        # Never a YouTube thumbnail: those are not the site's to put in a share card.
         for rel in ("index.html", "events/tour/2026/index.html"):
-            self.assertNotIn("og:image", self.head(rel).meta, rel)
+            self.assertTrue(self.head(rel).meta["og:image"].startswith(f"{build.SITE_URL}/static/"), rel)
 
     def test_the_404_page_describes_nothing(self):
         head = self.head("404.html")

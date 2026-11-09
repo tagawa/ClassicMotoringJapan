@@ -240,6 +240,10 @@ summary { cursor: pointer; font-weight: 600; }
 .venue-map circle { fill: #8C1C24; stroke: #FFFFFF; }
 .venue-map circle.off { fill: #5C5C5C; }
 
+.hero { margin: 0 0 24px; }
+.hero img { display: block; width: 100%; height: auto; border-radius: 8px; }
+.hero figcaption { margin-top: 8px; color: #5C5C5C; }
+
 /* A 16:9 box held by padding, since the old browsers the site supports lack aspect-ratio.
    Vertical padding percentages are of the width, which is what makes the trick work. */
 .video { margin: 0 0 24px; }
@@ -270,6 +274,7 @@ summary { cursor: pointer; font-weight: 600; }
   .brand .roof { fill: #D0636A; }
   .ja { color: #A8A8A8; }
   .breadcrumbs { color: #A8A8A8; }
+  .hero figcaption { color: #A8A8A8; }
   a { color: #D0636A; }
   a:focus-visible, summary:focus-visible, .table-wrap:focus-visible { outline-color: #D0636A; }
   .month h3 { border-bottom-color: #EBEBEB; }

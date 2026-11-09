@@ -1,8 +1,9 @@
 {% extends "base.html" %}
-{% from "icons.html" import map_link, cancelled_cross, calendar_links, drop_passed %}
+{% from "icons.html" import map_link, cancelled_cross, calendar_links, drop_passed, hero %}
 {% block main %}
 <h1>{{ ev.name_en }}</h1>
 {% if ev.name_ja %}<p class="ja" lang="ja">{{ ev.name_ja }}</p>{% endif %}
+{{ hero(photo, root) }}
 {% if ev.summary_en %}
 <p class="lede">{{ ev.summary_en | prose }}</p>
 {% endif %}

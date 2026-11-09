@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "icons.html" import map_link, video_icon, calendar_links, drop_passed %}
+{% from "icons.html" import map_link, video_icon, calendar_links, drop_passed, hero %}
 {% macro video_figure(video) -%}
 <figure class="video">
   <div class="video-frame"><iframe src="{{ video.embed }}" title="{{ video.title }}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
@@ -16,6 +16,7 @@
 </nav>
 <h1>{{ r.full_name }}</h1>
 {% if ev.name_ja %}<p class="ja" lang="ja">{{ ev.name_ja }}</p>{% endif %}
+{{ hero(photo, root) }}
 
 {% if ed.status == "tentative" %}
 <p class="note"><a href="{{ ed.source_url }}">{{ ed.source_url | domain }}</a> does not confirm these dates yet.</p>

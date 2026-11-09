@@ -60,3 +60,13 @@
   })();
 </script>
 {% endmacro %}
+
+{# The event's photo under the heading. Someone else's carries the credit its licence asks for. #}
+{% macro hero(photo, root) -%}
+{% if photo %}
+<figure class="hero">
+  <img src="{{ root }}{{ photo.src }}" srcset="{% for src, w in photo.srcset %}{{ root }}{{ src }} {{ w }}w{{ ", " if not loop.last }}{% endfor %}" sizes="(max-width: 720px) 100vw, 688px" width="{{ photo.width }}" height="{{ photo.height }}" alt="{{ photo.alt }}">
+  <figcaption>Photo: {{ photo.year }} edition{% if not photo.own %}, by <a href="{{ photo.source_url }}">{{ photo.credit }}</a>, <a href="{{ photo.license_url }}">{{ photo.license }}</a>, edited{% endif %}</figcaption>
+</figure>
+{% endif %}
+{%- endmacro %}
