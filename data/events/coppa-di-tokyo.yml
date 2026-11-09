@@ -29,3 +29,10 @@ spectator_fee_jpy: 0
 spectator_notes_en: >
   Free to watch, in the park and from the roadside.
 last_verified: 2026-10-13
+# From Wikimedia Commons. Its title says 1000 and its description 1300, so the alt text gives neither.
+photo:
+  alt_en: A red 1968 Bandini Berlinetta Saloncino, rally number 60, driving past spectators at Shiodome
+  year: 2024
+  credit: Mr.choppers
+  license: CC BY-SA 3.0
+  source_url: "https://commons.wikimedia.org/wiki/File:1968_Bandini_1000_Berlinetta_Saloncino,_front_right_(Tokyo).jpg"
