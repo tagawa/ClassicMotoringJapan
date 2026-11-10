@@ -262,7 +262,8 @@ summary { cursor: pointer; font-weight: 600; }
    inline SVG with height: auto a fixed 150px. The build sets the padding from the viewBox. */
 .course { max-width: 432px; margin: 0 0 24px; }
 .course-frame { position: relative; height: 0; }
-.course-map { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+.course-map, .route-map { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+.route-land { fill: #E0E0E0; }
 .course-ground { stroke: #E0E0E0; stroke-width: 2; }
 .course-line { stroke: #8C1C24; stroke-width: 4; stroke-linejoin: round; stroke-linecap: round; }
 .course-arrow { fill: #8C1C24; }
@@ -336,6 +337,7 @@ summary { cursor: pointer; font-weight: 600; }
   .cross { color: #F2A493; }
   .venue-map use { fill: #333333; }
   .course-ground { stroke: #333333; }
+  .route-land { fill: #333333; }
   .course-line { stroke: #D0636A; }
   .course-arrow { fill: #D0636A; }
   .course-start { fill: #141414; stroke: #EBEBEB; }

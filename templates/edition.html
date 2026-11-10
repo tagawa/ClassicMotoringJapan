@@ -1,5 +1,10 @@
 {% extends "base.html" %}
 {% from "icons.html" import map_link, video_icon, calendar_links, drop_passed, hero %}
+{# Seen from above, nose along +x, which rotate="auto" turns to the line's heading. Without
+   SMIL it stays at the origin, outside the drawn line, and the still map shows (spec 4.8). #}
+{% macro map_car(path_id, lap) -%}
+<g class="course-car"><rect x="-13" y="-7" width="26" height="14" rx="4"/><rect class="glass" x="2" y="-5.5" width="5" height="11" rx="1.5"/><animateMotion dur="{{ lap }}" repeatCount="indefinite" rotate="auto"><mpath xlink:href="#{{ path_id }}"/></animateMotion></g>
+{%- endmacro %}
 {% macro video_figure(video) -%}
 <figure class="video">
   <div class="video-frame"><iframe src="{{ video.embed }}" title="{{ video.title }}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
@@ -73,6 +78,28 @@
 <h2 id="route">Route</h2>
 {% if ed.route_en %}
 <p>{{ ed.route_en | prose }}</p>
+{% endif %}
+{% if r.route_map %}
+{% set rm = r.route_map %}
+<figure class="course">
+  <div class="course-frame" style="padding-top: {{ rm.shape }}%">
+  <svg class="route-map" viewBox="{{ rm.viewbox }}" role="img" aria-label="Map of the route's stops in timetable order" focusable="false">
+    <path class="route-land" d="{{ rm.land }}"/>
+    <rect class="course-ground" fill="none" x="0" y="0" width="{{ rm.width }}" height="{{ rm.height }}"/>
+    <path id="route-path" class="course-line" fill="none" d="{{ rm.d }}"/>
+{% for arrow in rm.arrows %}
+    <path class="course-arrow" d="{{ arrow }}"/>
+{% endfor %}
+{% for stop in rm.stops[1:-1] %}
+    <circle class="course-cone" cx="{{ stop[0] }}" cy="{{ stop[1] }}" r="5"/>
+{% endfor %}
+    <circle class="course-start" cx="{{ rm.start[0] }}" cy="{{ rm.start[1] }}" r="8"/>
+    <circle class="course-finish" cx="{{ rm.finish[0] }}" cy="{{ rm.finish[1] }}" r="8"/>
+    {{ map_car("route-path", rm.lap) }}
+  </svg>
+  </div>
+  <figcaption>Stops in timetable order, joined by straight lines, not the roads.</figcaption>
+</figure>
 {% endif %}
 {% if r.chart %}
 <ol class="chart">
@@ -179,9 +206,7 @@
 {% endfor %}
     <circle class="course-start" cx="{{ course.start[0] }}" cy="{{ course.start[1] }}" r="8"/>
     <circle class="course-finish" cx="{{ course.finish[0] }}" cy="{{ course.finish[1] }}" r="8"/>
-    {# Seen from above, nose along +x, which rotate="auto" turns to the line's heading. Without
-       SMIL it stays at the origin, outside the frame, and the still map is what shows (spec 4.8). #}
-    <g class="course-car"><rect x="-13" y="-7" width="26" height="14" rx="4"/><rect class="glass" x="2" y="-5.5" width="5" height="11" rx="1.5"/><animateMotion dur="{{ course.lap }}" repeatCount="indefinite" rotate="auto"><mpath xlink:href="#course-path"/></animateMotion></g>
+    {{ map_car("course-path", course.lap) }}
   </svg>
   </div>
   <figcaption>Redrawn from the organiser's course map{% if ed.course.map_url %}<span data-hide-after="{{ ed.end.isoformat() }}"> (<a href="{{ ed.course.map_url }}">PDF</a>)</span>{% endif %}.</figcaption>

@@ -3745,5 +3745,83 @@ class CourseArrowTests(unittest.TestCase):
             self.assertTrue(all(tip_y < y for y in base_ys), arrow)
 
 
+
+def located_route(overnight=False, drop_one=False) -> str:
+    """ROUTE's three stops with coordinates; overnight makes day 2 start where day 1 ended."""
+    hill = ("35.0", "138.5") if overnight else ("35.2", "138.6")
+    coords = [("34.9756", "138.3828"), ("35.0", "138.5"), hill]
+    lines, n = [], 0
+    for line in ROUTE.splitlines(keepends=True):
+        lines.append(line)
+        if line.strip().startswith("prefecture:"):
+            if not (drop_one and n == 1):
+                lines.append(f"        lat: {coords[n][0]}\n        lon: {coords[n][1]}\n")
+            n += 1
+    return "".join(lines)
+
+
+class RouteMapTests(unittest.TestCase):
+    """A rally's stops on the coastline, joined in order by straight lines (spec 4.8)."""
+
+    def page(self, extra: str) -> str:
+        tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, tmp)
+        write_event(tmp / "data", "rally")
+        write_instance(tmp / "data", "rally", 2026,
+                       instance_yaml("rally", 2026, "2026-10-18", "2026-10-19", extra=extra))
+        build.build(tmp / "data", tmp / "site")
+        return (tmp / "site/events/rally/2026/index.html").read_text(encoding="utf-8")
+
+    def errors(self, extra: str) -> str:
+        tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, tmp)
+        write_event(tmp / "data", "rally")
+        write_instance(tmp / "data", "rally", 2026,
+                       instance_yaml("rally", 2026, "2026-10-18", "2026-10-19", extra=extra))
+        with self.assertRaises(build.BuildError) as caught:
+            build.load_and_validate(tmp / "data")
+        return str(caught.exception)
+
+    def test_the_map_sits_above_the_day_chart(self):
+        html = self.page(located_route())
+        self.assertIn('<svg class="route-map"', html)
+        self.assertLess(html.index('class="route-map"'), html.index('<ol class="chart">'))
+
+    def test_no_map_without_coordinates(self):
+        self.assertNotIn("route-map", self.page(ROUTE))
+
+    def test_coordinates_are_all_or_none(self):
+        self.assertIn("all of its checkpoints or none", self.errors(located_route(drop_one=True)))
+
+    def test_a_checkpoint_needs_both_halves(self):
+        broken = located_route().replace("        lon: 138.5\n", "", 1)
+        self.assertIn("give lat and lon together", self.errors(broken))
+
+    def test_start_and_finish_are_the_first_and_last_stops(self):
+        drawn = build.route_map(yaml.safe_load(located_route())["route"])
+        self.assertEqual((drawn["start"], drawn["finish"]), (drawn["stops"][0], drawn["stops"][-1]))
+        # The first stop is south-west of the last, so it sits left of and below it.
+        (sx, sy), (fx, fy) = ([float(n) for n in drawn[k]] for k in ("start", "finish"))
+        self.assertLess(sx, fx)
+        self.assertGreater(sy, fy)
+        html = self.page(located_route())
+        self.assertIn(f'<circle class="course-start" cx="{drawn["start"][0]}" cy="{drawn["start"][1]}"', html)
+        self.assertIn(f'<circle class="course-finish" cx="{drawn["finish"][0]}" cy="{drawn["finish"][1]}"', html)
+
+    def test_an_overnight_stop_is_one_dot(self):
+        route = yaml.safe_load(located_route(overnight=True))["route"]
+        self.assertEqual(len(build.route_map(route)["stops"]), 2)
+        route = yaml.safe_load(located_route())["route"]
+        self.assertEqual(len(build.route_map(route)["stops"]), 3)
+
+    def test_the_car_drives_the_route(self):
+        html = self.page(located_route())
+        self.assertIn('<path id="route-path" class="course-line"', html)
+        self.assertIn('<mpath xlink:href="#route-path"/>', html)
+
+    def test_the_caption_says_the_lines_are_not_the_roads(self):
+        figure = self.page(located_route()).split('class="route-map"')[1].split("</figure>")[0]
+        self.assertIn("not the roads", figure)
+
 if __name__ == "__main__":
     unittest.main()

@@ -179,9 +179,13 @@ COURSE_ARROW_SPACING = 150
 COURSE_ARROW_LENGTH = 18
 # The course map's car, in frame units a second: about 26 seconds for the 2026 autumn course.
 COURSE_CAR_SPEED = 80
+# The route map is drawn as wide as the course map's frame, so the two share every style.
+ROUTE_FRAME_WIDTH = COURSE_VIEWBOX[2]
+# Frame units a second along a route map: a lap of roughly half a minute for La Festa.
+ROUTE_CAR_SPEED = 100
 ROUTE_DAY_REQUIRED = {"date": "date", "checkpoints": "checkpoints"}
 CHECKPOINT_REQUIRED = {"start_time": "time", "place_en": "str", "prefecture": "str"}
-CHECKPOINT_OPTIONAL = {"end_time": "time", "place_ja": "str"}
+CHECKPOINT_OPTIONAL = {"end_time": "time", "place_ja": "str", "lat": "lat", "lon": "lon"}
 # The ID alone, not a URL, so the embed domain is chosen once, in VIDEO_EMBED_URL.
 VIDEO_REQUIRED = {"youtube_id": "youtube_id", "label_en": "str"}
 # Fields the templates render into a single block. The cap has to apply to what a
@@ -507,6 +511,13 @@ def _check_route(route, start, end, rel: str, errors: list[str]) -> None:
     """Days run in order inside the edition's dates, checkpoints in order inside a day."""
     if not isinstance(route, list):
         return
+    # A route map with a stop missing would draw a straight line past it without a word.
+    points = [p for day in route if isinstance(day, dict) and isinstance(day.get("checkpoints"), list)
+              for p in day["checkpoints"] if isinstance(p, dict)]
+    located = sum("lat" in p for p in points)
+    if 0 < located < len(points):
+        errors.append(f"{rel}: route: give coordinates on all of its checkpoints or none "
+                      f"({located} of {len(points)} have them)")
     previous_day = None
     for i, day in enumerate(route, 1):
         where = f"{rel}: route day {i}"
@@ -526,6 +537,7 @@ def _check_route(route, start, end, rel: str, errors: list[str]) -> None:
             spot = f"{where}, checkpoint {j}"
             if not _check_fields(point, CHECKPOINT_REQUIRED, CHECKPOINT_OPTIONAL, spot, errors):
                 continue
+            _check_coords(point, spot, errors)
             begins, ends = point.get("start_time"), point.get("end_time")
             if isinstance(begins, str) and isinstance(ends, str) and ends <= begins:
                 errors.append(f"{spot}: end_time {ends} is not after start_time {begins}")
@@ -833,6 +845,20 @@ def course_steps(line: list) -> list:
     return steps
 
 
+def _arrows_along(steps) -> tuple[list[str], float]:
+    """Arrowheads every COURSE_ARROW_SPACING along a line of straight steps, and its length."""
+    arrows, travelled, next_at = [], 0.0, COURSE_ARROW_SPACING / 2
+    for (ax, ay), (bx, by) in steps:
+        length = math.hypot(bx - ax, by - ay)
+        while length and travelled + length >= next_at:
+            share = (next_at - travelled) / length
+            arrows.append(_arrowhead(ax + share * (bx - ax), ay + share * (by - ay),
+                                     (bx - ax) / length, (by - ay) / length))
+            next_at += COURSE_ARROW_SPACING
+        travelled += length
+    return arrows, travelled
+
+
 def course_map(course: dict) -> dict:
     """The course line as SVG, with arrowheads spaced by path length (spec 4.8).
 
@@ -842,21 +868,54 @@ def course_map(course: dict) -> dict:
     line = course["line"]
     d = f"M{line[0][0]:.1f} {line[0][1]:.1f} " + " ".join(
         "C" + " ".join(f"{x:.1f} {y:.1f}" for x, y in curve[1:]) for curve in _course_curves(line))
-    arrows, travelled, next_at = [], 0.0, COURSE_ARROW_SPACING / 2
-    for (ax, ay), (bx, by) in course_steps(line):
-        length = math.hypot(bx - ax, by - ay)
-        while length and travelled + length >= next_at:
-            share = (next_at - travelled) / length
-            arrows.append(_arrowhead(ax + share * (bx - ax), ay + share * (by - ay),
-                                     (bx - ax) / length, (by - ay) / length))
-            next_at += COURSE_ARROW_SPACING
-        travelled += length
+    arrows, travelled = _arrows_along(course_steps(line))
     return {"d": d, "start": [f"{n:.1f}" for n in line[0]], "finish": [f"{n:.1f}" for n in line[-1]],
             "cones": [[f"{n:.1f}" for n in cone] for cone in course.get("cones") or []],
             "arrows": arrows, "viewbox": " ".join(str(n) for n in COURSE_VIEWBOX),
             "lap": f"{travelled / COURSE_CAR_SPEED:.1f}s",
             # Height as a share of width, for the frame's padding.
             "shape": f"{COURSE_VIEWBOX[3] / COURSE_VIEWBOX[2] * 100:.2f}"}
+
+
+def route_map(route) -> dict:
+    """The stops in timetable order on the coastline, framed on the stops (spec 4.8)."""
+    stops = []
+    for day in route:
+        for point in day["checkpoints"]:
+            spot = map_point(point["lat"], point["lon"])
+            # An overnight stop ends one day and starts the next: one dot, not two.
+            if not stops or stops[-1] != spot:
+                stops.append(spot)
+    xs, ys = [x for x, _ in stops], [y for _, y in stops]
+    margin = max(max(xs) - min(xs), max(ys) - min(ys)) * 0.12 + 1
+    x0, x1, y0, y1 = min(xs) - margin, max(xs) + margin, min(ys) - margin, max(ys) + margin
+    # Keep the frame between 3:4 and 4:3, so a route running north to south is not a sliver.
+    if (y1 - y0) > (x1 - x0) * 4 / 3:
+        grow = ((y1 - y0) * 3 / 4 - (x1 - x0)) / 2
+        x0, x1 = x0 - grow, x1 + grow
+    elif (x1 - x0) > (y1 - y0) * 4 / 3:
+        grow = ((x1 - x0) * 3 / 4 - (y1 - y0)) / 2
+        y0, y1 = y0 - grow, y1 + grow
+    scale = ROUTE_FRAME_WIDTH / (x1 - x0)
+    width, height = ROUTE_FRAME_WIDTH, round((y1 - y0) * scale, 1)
+
+    def frame(x: float, y: float) -> tuple[float, float]:
+        return round((x - x0) * scale, 1), round((y - y0) * scale, 1)
+
+    placed = [frame(*spot) for spot in stops]
+    rings = json.loads(MAP_OUTLINE.read_text(encoding="utf-8"))
+    land = " ".join("M" + " ".join("%.1f,%.1f" % frame(*map_point(lat, lon)) for lon, lat in ring) + "Z"
+                    for ring in rings
+                    # Only the islands that reach into the frame; the viewBox clips the rest.
+                    if any(x0 <= mx <= x1 and y0 <= my <= y1
+                           for mx, my in (map_point(lat, lon) for lon, lat in ring)))
+    arrows, travelled = _arrows_along(zip(placed, placed[1:]))
+    return {"stops": [[f"{n:.1f}" for n in spot] for spot in placed],
+            "start": [f"{n:.1f}" for n in placed[0]], "finish": [f"{n:.1f}" for n in placed[-1]],
+            "d": "M" + " L".join(f"{x:.1f} {y:.1f}" for x, y in placed),
+            "arrows": arrows, "land": land, "viewbox": f"0 0 {width} {height}",
+            "width": width, "height": height,
+            "lap": f"{travelled / ROUTE_CAR_SPEED:.1f}s", "shape": f"{height / width * 100:.2f}"}
 
 
 def route_chart(route) -> dict | None:
@@ -1520,6 +1579,8 @@ def make_rows(events: dict, editions: list, makes: dict | None = None) -> list[d
             # A list published before the event can still change, but once we have
             # re-checked the source after the event ended, what we show is the last word.
             "chart": route_chart(ed.get("route")),
+            "route_map": (route_map(ed["route"]) if ed.get("route")
+                          and all("lat" in p for day in ed["route"] for p in day["checkpoints"]) else None),
             "course": course_map(ed["course"]) if ed.get("course") else None,
             "decades": decade_chart(ed.get("cars")),
             "makes": makes_chart(ed.get("cars")),
