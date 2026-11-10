@@ -1,4 +1,5 @@
 """Tests for scripts/check_links.py. Offline: every fetch is a stand-in."""
+import datetime as dt
 import shutil
 import sys
 import tempfile
@@ -42,6 +43,28 @@ class CollectTests(unittest.TestCase):
 
     def test_finds_links_in_the_real_data(self):
         self.assertGreater(len(check_links.collect_urls(ROOT / "data")), 0)
+
+
+class CourseMapLinkTests(unittest.TestCase):
+    """An organiser takes a course map down after the day; that must not email anyone."""
+
+    def urls(self, today: str) -> dict:
+        tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, tmp)
+        write_event(tmp / "data", "meet")
+        write_instance(tmp / "data", "meet", 2026, instance_yaml(
+            "meet", 2026, "2026-11-08", "2026-11-08",
+            extra="course:\n  map_url: https://example.com/course.pdf\n  line:\n"
+                  "    - [300.0, 700.0]\n    - [300.0, 700.0]\n    - [300.0, 200.0]\n    - [300.0, 200.0]\n"))
+        return check_links.collect_urls(tmp / "data", today=dt.date.fromisoformat(today))
+
+    def test_checked_on_the_day(self):
+        self.assertIn("https://example.com/course.pdf", self.urls("2026-11-08"))
+
+    def test_skipped_once_the_edition_has_ended(self):
+        urls = self.urls("2026-11-09")
+        self.assertNotIn("https://example.com/course.pdf", urls)
+        self.assertIn("https://example.com/meet/2026/", urls)
 
 
 class VerdictTests(unittest.TestCase):

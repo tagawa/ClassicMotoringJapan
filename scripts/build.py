@@ -164,7 +164,17 @@ EDITION_OPTIONAL = {
     "lat": "lat", "lon": "lon", "videos": "videos",
     # For an event whose limit moves each year: this edition's, when it is not the event's.
     "cutoff_year": "int",
+    # Written by tools/course.py from the organiser's course map, never by hand.
+    "course": "course",
 }
+COURSE_REQUIRED = {"line": "course_line"}
+# Only while the organiser serves the PDF; an archive copy gets a credit without a link.
+COURSE_OPTIONAL = {"map_url": "url"}
+# x, y, width, height of the car park area in SHCC's course template, in PDF points measured
+# down from the page top. It sat at the same place in every map from 2022 to 2026.
+COURSE_VIEWBOX = (84, 159, 467, 588)
+# Path length between arrowheads: about 15 on the shortest course and 28 on the longest.
+COURSE_ARROW_SPACING = 150
 ROUTE_DAY_REQUIRED = {"date": "date", "checkpoints": "checkpoints"}
 CHECKPOINT_REQUIRED = {"start_time": "time", "place_en": "str", "prefecture": "str"}
 CHECKPOINT_OPTIONAL = {"end_time": "time", "place_ja": "str"}
@@ -257,6 +267,10 @@ class ValidationError(BuildError):
 
 def _is_int(v) -> bool:
     return isinstance(v, int) and not isinstance(v, bool)
+
+
+def _is_number(v) -> bool:
+    return _is_int(v) or isinstance(v, float)
 
 
 def _check_editorial(v: str, where: str, errors: list[str]) -> None:
@@ -389,6 +403,20 @@ def _check_value(kind: str, v, where: str, errors: list[str]) -> None:
     elif kind in ("cars", "route", "checkpoints", "videos"):
         if not isinstance(v, list) or not v:
             errors.append(f"{where}: must be a non-empty list")
+    elif kind == "course":
+        _check_fields(v, COURSE_REQUIRED, COURSE_OPTIONAL, where, errors)
+    elif kind == "course_line":
+        x0, y0, width, height = COURSE_VIEWBOX
+        pairs = isinstance(v, list) and all(
+            isinstance(p, list) and len(p) == 2 and all(_is_number(n) for n in p) for p in v)
+        if not pairs or len(v) < 4 or (len(v) - 1) % 3:
+            errors.append(f"{where}: must be [x, y] pairs, a start point then three per curve, "
+                          f"as tools/course.py writes them")
+        # Points on the drawn curve, not control points, which can sit well outside it.
+        elif not all(x0 <= x <= x0 + width and y0 <= y <= y0 + height
+                     for step in course_steps(v) for x, y in step):
+            errors.append(f"{where}: runs outside the course frame COURSE_VIEWBOX, so this map "
+                          f"is not on SHCC's template and needs its own frame first")
 
 
 def _check_fields(obj, required: dict, optional: dict, where: str, errors: list[str]) -> bool:
@@ -761,6 +789,56 @@ def _minutes(hhmm: str) -> int:
 
 def _hhmm(minutes: int) -> str:
     return f"{minutes // 60:02d}:{minutes % 60:02d}"
+
+
+def _bezier(p0, p1, p2, p3, t: float) -> tuple[float, float]:
+    u = 1 - t
+    return tuple(u * u * u * a + 3 * u * u * t * b + 3 * u * t * t * c + t * t * t * d
+                 for a, b, c, d in zip(p0, p1, p2, p3))
+
+
+def _arrowhead(x: float, y: float, dx: float, dy: float) -> str:
+    """A triangle centred on (x, y), pointing along the unit vector (dx, dy)."""
+    tip = (x + dx * 6, y + dy * 6)
+    corners = [(x - dx * 6 + side * dy * 5, y - dy * 6 - side * dx * 5) for side in (1, -1)]
+    return "M{:.1f} {:.1f} L{:.1f} {:.1f} L{:.1f} {:.1f} Z".format(*tip, *corners[0], *corners[1])
+
+
+def _course_curves(line: list) -> list:
+    return [line[i:i + 4] for i in range(0, len(line) - 1, 3)]
+
+
+def course_steps(line: list) -> list:
+    """The drawn line as short straight steps, enough to measure along it and take a heading."""
+    steps = []
+    for curve in _course_curves(line):
+        points = [_bezier(*curve, n / 20) for n in range(21)]
+        steps += zip(points, points[1:])
+    return steps
+
+
+def course_map(course: dict) -> dict:
+    """The course line as SVG, with arrowheads spaced by path length (spec 4.8).
+
+    Drawn from course.line alone, so the same PDF always gives the same map, and the
+    direction shown never depends on where the organiser happened to put theirs.
+    """
+    line = course["line"]
+    d = f"M{line[0][0]:.1f} {line[0][1]:.1f} " + " ".join(
+        "C" + " ".join(f"{x:.1f} {y:.1f}" for x, y in curve[1:]) for curve in _course_curves(line))
+    arrows, travelled, next_at = [], 0.0, COURSE_ARROW_SPACING / 2
+    for (ax, ay), (bx, by) in course_steps(line):
+        length = math.hypot(bx - ax, by - ay)
+        while length and travelled + length >= next_at:
+            share = (next_at - travelled) / length
+            arrows.append(_arrowhead(ax + share * (bx - ax), ay + share * (by - ay),
+                                     (bx - ax) / length, (by - ay) / length))
+            next_at += COURSE_ARROW_SPACING
+        travelled += length
+    return {"d": d, "start": [f"{n:.1f}" for n in line[0]], "finish": [f"{n:.1f}" for n in line[-1]],
+            "arrows": arrows, "viewbox": " ".join(str(n) for n in COURSE_VIEWBOX),
+            # Height as a share of width, for the frame's padding.
+            "shape": f"{COURSE_VIEWBOX[3] / COURSE_VIEWBOX[2] * 100:.2f}"}
 
 
 def route_chart(route) -> dict | None:
@@ -1377,18 +1455,22 @@ def make_rows(events: dict, editions: list, makes: dict | None = None) -> list[d
                                    if any(c["key"] == "entry_no" for c in columns)
                                    else ("Cars on display", "the line-up may change"))
         present = {"route": ed.get("route") or ed.get("route_en"), "cars": ed.get("cars"),
-                   "videos": ed.get("videos")}
+                   "videos": ed.get("videos"), "course": ed.get("course")}
         # A video mostly exists only once an edition has run, so its presence marks the page
         # as a look back, with no clock involved: what it was like first, the timetable last.
         # An organiser's pre-event guide is the exception, and leading with it suits it too.
-        order = ("videos", "cars", "route") if present["videos"] else ("route", "cars", "videos")
+        # Before the day, a time trial's course is what a spectator has come to see.
+        order = (("videos", "course", "cars", "route") if present["videos"]
+                 else ("course", "route", "cars", "videos"))
         sections = [name for name in order if present[name]]
-        page_parts = [{"route": "Route", "cars": cars_label, "videos": "Videos"}[name] for name in sections]
+        page_parts = [{"route": "Route", "cars": cars_label, "videos": "Videos", "course": "Course map"}[name]
+                      for name in sections]
         has_page = bool(page_parts)
         # Counted from what each section shows, so a jump cannot promise more than it lands on.
         n_cars, n_videos = len(present["cars"] or []), len(present["videos"] or [])
         n_days = len(ed.get("route") or [])
         jump_text = {
+            "course": "Course map",
             "videos": f"Videos ({n_videos})",
             "cars": f"{cars_label} ({n_cars} {'car' if cars_label == 'Entry list' else 'model'}"
                     f"{'' if n_cars == 1 else 's'})",
@@ -1420,6 +1502,7 @@ def make_rows(events: dict, editions: list, makes: dict | None = None) -> list[d
             # A list published before the event can still change, but once we have
             # re-checked the source after the event ended, what we show is the last word.
             "chart": route_chart(ed.get("route")),
+            "course": course_map(ed["course"]) if ed.get("course") else None,
             "decades": decade_chart(ed.get("cars")),
             "makes": makes_chart(ed.get("cars")),
             "cars": cars,

@@ -14,6 +14,7 @@ since a false alarm every week would teach everyone to ignore the email.
 """
 from __future__ import annotations
 
+import datetime as dt
 import re
 import socket
 import sys
@@ -49,11 +50,22 @@ def _walk(value, found: set[str]) -> None:
         found.update(m.group(2) for m in LINK_RE.finditer(value))
 
 
-def collect_urls(data_dir: Path) -> dict[str, list[str]]:
-    """Each URL, with the data files that use it."""
+def _without_past_course_map(edition: dict, today: dt.date) -> dict:
+    # Organisers take a course map down once the day has run, and the page stops linking it
+    # then too (spec 4.8), so a dead one is expected rather than news.
+    if "course" in edition and edition["end"] < today:
+        return {**edition, "course": {k: v for k, v in edition["course"].items() if k != "map_url"}}
+    return edition
+
+
+def collect_urls(data_dir: Path, today: dt.date | None = None) -> dict[str, list[str]]:
+    """Each URL, with the data files that use it. today defaults to Japan's date."""
+    if today is None:
+        today = (dt.datetime.now(dt.timezone.utc) + dt.timedelta(hours=9)).date()
     events, editions = load_and_validate(data_dir)
     sources = [(f"events/{slug}.yml", ev) for slug, ev in events.items()]
-    sources += [(f"events/{e['data']['slug']}/{e['id']}.yml", e["data"]) for e in editions]
+    sources += [(f"events/{e['data']['slug']}/{e['id']}.yml", _without_past_course_map(e["data"], today))
+                for e in editions]
     urls: dict[str, list[str]] = {}
     for rel, record in sources:
         found: set[str] = set()

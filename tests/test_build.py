@@ -3611,5 +3611,103 @@ class ScriptSyntaxTests(unittest.TestCase):
                 self.assertEqual(old_browser_breakers(body), [])
 
 
+# A straight 500-unit run up the frame, written as the tool writes a straight segment:
+# one curve whose control points are its ends.
+STRAIGHT_LINE = [[300.0, 700.0], [300.0, 700.0], [300.0, 200.0], [300.0, 200.0]]
+
+
+def course_yaml(line=STRAIGHT_LINE, map_url=None) -> str:
+    return ("course:\n"
+            + (f"  map_url: {map_url}\n" if map_url else "")
+            + "  line:\n" + "".join(f"    - [{x}, {y}]\n" for x, y in line))
+
+
+class CourseMapTests(unittest.TestCase):
+    """A time-trial course read from the organiser's PDF, drawn on the edition page (spec 4.8)."""
+
+    def page(self, extra: str, status="confirmed") -> str:
+        tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, tmp)
+        write_event(tmp / "data", "meet")
+        write_instance(tmp / "data", "meet", 2026,
+                       instance_yaml("meet", 2026, "2026-11-08", "2026-11-08", status=status, extra=extra))
+        build.build(tmp / "data", tmp / "site")
+        return (tmp / "site/events/meet/2026/index.html").read_text(encoding="utf-8")
+
+    def errors(self, extra: str) -> str:
+        tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, tmp)
+        write_event(tmp / "data", "meet")
+        write_instance(tmp / "data", "meet", 2026,
+                       instance_yaml("meet", 2026, "2026-11-08", "2026-11-08", extra=extra))
+        with self.assertRaises(build.BuildError) as caught:
+            build.load_and_validate(tmp / "data")
+        return str(caught.exception)
+
+    def test_a_course_alone_makes_an_edition_page(self):
+        html = self.page(course_yaml())
+        self.assertIn('<h2 id="course">Course map</h2>', html)
+        self.assertIn("<title>Test Event 2026: Course map", html)
+
+    def test_the_line_is_drawn_from_the_data(self):
+        html = self.page(course_yaml())
+        self.assertIn('d="M300.0 700.0 C300.0 700.0 300.0 200.0 300.0 200.0"', html)
+
+    def test_start_is_open_and_finish_filled_with_the_legend_in_words(self):
+        html = self.page(course_yaml())
+        self.assertIn('<circle class="course-start" cx="300.0" cy="700.0"', html)
+        self.assertIn('<circle class="course-finish" cx="300.0" cy="200.0"', html)
+        self.assertIn("open circle", html)
+        self.assertIn("filled circle", html)
+
+    def test_the_map_has_an_accessible_name(self):
+        self.assertRegex(self.page(course_yaml()), r'<svg class="course-map"[^>]* role="img" aria-label="[^"]+"')
+
+    def test_course_comes_after_videos_and_first_without_them(self):
+        videos = "videos:\n  - youtube_id: gDq-2nEG3Y8\n    label_en: Film\n"
+        with_videos = self.page(videos + course_yaml() + CARS)
+        self.assertLess(with_videos.index('id="videos"'), with_videos.index('id="course"'))
+        self.assertLess(with_videos.index('id="course"'), with_videos.index('id="cars"'))
+        without = self.page(course_yaml() + CARS)
+        self.assertLess(without.index('id="course"'), without.index('id="cars"'))
+
+    def test_the_pdf_link_goes_once_the_edition_has_ended(self):
+        # Tentative: no calendar links, so the removing script must come from the map alone.
+        html = self.page(course_yaml(map_url="https://example.com/course.pdf"), status="tentative")
+        self.assertRegex(html, r'<span data-hide-after="2026-11-08">[^<]*<a href="https://example.com/course.pdf">')
+        self.assertIn('querySelectorAll("[data-hide-after]")', html)
+
+    def test_the_credit_stays_without_a_link(self):
+        html = self.page(course_yaml())
+        self.assertIn("Redrawn from the organiser's course map", html)
+        figure = html.split('id="course"')[1].split("</figure>")[0]
+        self.assertNotIn("<a ", figure)
+
+    def test_a_line_must_be_a_start_point_and_whole_curves(self):
+        self.assertIn("course: line", self.errors(course_yaml(line=STRAIGHT_LINE[:3])))
+
+    def test_a_line_outside_the_frame_is_refused(self):
+        self.assertIn("course: line", self.errors(course_yaml(line=[[900.0, 700.0]] + STRAIGHT_LINE[1:])))
+
+    def test_unknown_course_fields_are_refused(self):
+        self.assertIn("unknown field 'cones'", self.errors(course_yaml() + "  cones: []\n"))
+
+
+class CourseArrowTests(unittest.TestCase):
+    """Arrowheads at a fixed spacing of path length, pointing the way the line runs."""
+
+    def test_one_arrow_per_spacing_starting_half_a_spacing_in(self):
+        spacing = build.COURSE_ARROW_SPACING
+        expected = int((500 - spacing / 2) // spacing) + 1
+        self.assertEqual(len(build.course_map({"line": STRAIGHT_LINE})["arrows"]), expected)
+
+    def test_arrows_point_along_the_line(self):
+        # The line runs up the page, so every tip is above (smaller y than) its base.
+        for arrow in build.course_map({"line": STRAIGHT_LINE})["arrows"]:
+            numbers = [float(n) for n in re.findall(r"-?\d+\.\d", arrow)]
+            tip_y, base_ys = numbers[1], numbers[3::2]
+            self.assertTrue(all(tip_y < y for y in base_ys), arrow)
+
+
 if __name__ == "__main__":
     unittest.main()

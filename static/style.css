@@ -257,6 +257,18 @@ summary { cursor: pointer; font-weight: 600; }
 /* Two to a row where both fit, one on a phone, with no breakpoint: each wraps below 288px. */
 .videos { display: flex; flex-wrap: wrap; margin-left: -24px; }
 .videos > .video { flex: 1 1 288px; margin-left: 24px; }
+/* Course map. Portrait, so capped: at the column's full width it would fill a laptop screen.
+   The frame holds the shape by padding, as .video-frame does, because old browsers give an
+   inline SVG with height: auto a fixed 150px. The build sets the padding from the viewBox. */
+.course { max-width: 432px; margin: 0 0 24px; }
+.course-frame { position: relative; height: 0; }
+.course-map { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+.course-ground { stroke: #E0E0E0; stroke-width: 2; }
+.course-line { stroke: #8C1C24; stroke-width: 4; stroke-linejoin: round; stroke-linecap: round; }
+.course-arrow { fill: #8C1C24; }
+.course-start { fill: #FFFFFF; stroke: #1C1C1C; stroke-width: 3; }
+.course-finish { fill: #1C1C1C; stroke: #1C1C1C; stroke-width: 3; }
+.course figcaption { margin-top: 8px; }
 /* Cancelled or gone: still shown, because the list below shows it, but plainly not a date to keep. */
 .chart-track i.off, .chart-track i.past { background: #5C5C5C; }
 /* Today on this year's strip, with its word on a line of its own above the track. */
@@ -316,6 +328,11 @@ summary { cursor: pointer; font-weight: 600; }
   .dot.tentative { background: #F3D98B; }
   .cross { color: #F2A493; }
   .venue-map use { fill: #333333; }
+  .course-ground { stroke: #333333; }
+  .course-line { stroke: #D0636A; }
+  .course-arrow { fill: #D0636A; }
+  .course-start { fill: #141414; stroke: #EBEBEB; }
+  .course-finish { fill: #EBEBEB; stroke: #EBEBEB; }
   .flag { box-shadow: 0 0 0 1px #333333; }
   .venue-map circle { fill: #D0636A; stroke: #141414; }
   .venue-map circle.off { fill: #A8A8A8; }

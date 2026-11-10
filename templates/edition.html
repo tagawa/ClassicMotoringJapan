@@ -162,6 +162,25 @@
 </details>
 {% endif %}
 
+{% elif section == "course" %}
+<h2 id="course">Course map</h2>
+{% set course = r.course %}
+{% set x, y, width, height = course.viewbox.split(" ") %}
+<figure class="course">
+  <div class="course-frame" style="padding-top: {{ course.shape }}%">
+  <svg class="course-map" viewBox="{{ course.viewbox }}" role="img" aria-label="Map of the time trial course, from start to finish" focusable="false">
+    <rect class="course-ground" fill="none" x="{{ x }}" y="{{ y }}" width="{{ width }}" height="{{ height }}"/>
+    <path class="course-line" fill="none" d="{{ course.d }}"/>
+{% for arrow in course.arrows %}
+    <path class="course-arrow" d="{{ arrow }}"/>
+{% endfor %}
+    <circle class="course-start" cx="{{ course.start[0] }}" cy="{{ course.start[1] }}" r="8"/>
+    <circle class="course-finish" cx="{{ course.finish[0] }}" cy="{{ course.finish[1] }}" r="8"/>
+  </svg>
+  </div>
+  <figcaption>The course runs from the open circle (start) to the filled circle (finish), in the direction of the arrows. Redrawn from the organiser's course map{% if ed.course.map_url %}<span data-hide-after="{{ ed.end.isoformat() }}"> (<a href="{{ ed.course.map_url }}">PDF</a>)</span>{% endif %}.</figcaption>
+</figure>
+
 {% elif section == "videos" %}
 <h2 id="videos">Videos</h2>
 <div class="videos">
@@ -179,7 +198,7 @@
 {% endblock %}
 
 {% block scripts %}
-{% if r.ics_path %}
+{% if r.ics_path or (ed.course and ed.course.map_url) %}
 {{ drop_passed() }}
 {% endif %}
 {% if ev.spectator_fee_jpy is none %}
