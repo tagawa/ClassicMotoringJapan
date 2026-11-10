@@ -261,19 +261,26 @@ summary { cursor: pointer; font-weight: 600; }
    The frame holds the shape by padding, as .video-frame does, because old browsers give an
    inline SVG with height: auto a fixed 150px. The build sets the padding from the viewBox. */
 .course { max-width: 432px; margin: 0 0 24px; }
-.course-frame { position: relative; height: 0; }
+/* A card: hairline and radius, with the drawing clipped to its rounded corners. */
+.course-frame { position: relative; height: 0; border: 1px solid #E0E0E0; border-radius: 8px; overflow: hidden; }
 .course-map, .route-map { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-.route-land { fill: #E0E0E0; stroke: #FFFFFF; stroke-width: 1.5; stroke-linejoin: round; }
-.course-ground { stroke: #E0E0E0; stroke-width: 2; }
-.course-line { stroke: #8C1C24; stroke-width: 4; stroke-linejoin: round; stroke-linecap: round; }
-.course-arrow { fill: #8C1C24; }
+/* The route leads; sea, land and prefecture lines step back behind it. */
+.route-sea { fill: #D5E3EC; }
+.route-land { fill: #FFFFFF; stroke: #E0E0E0; stroke-width: 1; stroke-linejoin: round; }
+.course-casing { stroke: #FFFFFF; stroke-linejoin: round; stroke-linecap: round; }
+.course-line { stroke: #8C1C24; stroke-linejoin: round; stroke-linecap: round; }
+.course-chevron { stroke: #FFFFFF; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.route-stop { fill: #FFFFFF; stroke: #8C1C24; stroke-width: 2; }
+.map-label, .map-label-halo { font-size: 16px; font-weight: 600; }
+.map-label { fill: #1C1C1C; }
+.map-label-halo { fill: #FFFFFF; stroke: #FFFFFF; stroke-width: 4; stroke-linejoin: round; }
 .course-start { fill: #FFFFFF; stroke: #1C1C1C; stroke-width: 3; }
 .course-finish { fill: #1C1C1C; stroke: #1C1C1C; stroke-width: 3; }
 .course-cone { fill: #FFFFFF; stroke: #5C5C5C; stroke-width: 2; }
 .course figcaption { margin-top: 8px; }
-.course-car rect { fill: #1C1C1C; }
-.course-car .glass { fill: #FFFFFF; }
-/* The car shows which way the course runs; the arrows still say so for anyone who stops it. */
+.course-car rect { fill: #1C1C1C; stroke: #FFFFFF; stroke-width: 2; }
+.course-car .glass { fill: #FFFFFF; stroke: none; }
+/* The car shows which way the course runs; the chevrons still say so for anyone who stops it. */
 @media (prefers-reduced-motion: reduce) {
   .course-car { display: none; }
 }
@@ -336,14 +343,19 @@ summary { cursor: pointer; font-weight: 600; }
   .dot.tentative { background: #F3D98B; }
   .cross { color: #F2A493; }
   .venue-map use { fill: #333333; }
-  .course-ground { stroke: #333333; }
-  .route-land { fill: #333333; stroke: #141414; }
+  .course-frame { border-color: #333333; }
+  .route-sea { fill: #1A2731; }
+  .route-land { fill: #141414; stroke: #333333; }
+  .course-casing { stroke: #141414; }
   .course-line { stroke: #D0636A; }
-  .course-arrow { fill: #D0636A; }
+  .course-chevron { stroke: #141414; }
+  .route-stop { fill: #141414; stroke: #D0636A; }
+  .map-label { fill: #EBEBEB; }
+  .map-label-halo { fill: #141414; stroke: #141414; }
   .course-start { fill: #141414; stroke: #EBEBEB; }
   .course-finish { fill: #EBEBEB; stroke: #EBEBEB; }
   .course-cone { fill: #141414; stroke: #A8A8A8; }
-  .course-car rect { fill: #EBEBEB; }
+  .course-car rect { fill: #EBEBEB; stroke: #141414; }
   .course-car .glass { fill: #141414; }
   .flag { box-shadow: 0 0 0 1px #333333; }
   .venue-map circle { fill: #D0636A; stroke: #141414; }

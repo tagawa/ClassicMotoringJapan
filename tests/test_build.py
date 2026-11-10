@@ -1067,6 +1067,8 @@ COLOUR_TOKENS = {
     "#1C1C1C", "#EBEBEB", "#FFFFFF", "#141414", "#5C5C5C", "#A8A8A8", "#E0E0E0", "#333333",
     "#FFF4D6", "#5E4700", "#3A300F", "#F3D98B", "#FBE9E5", "#8E2A1B",
     "#3A1C16", "#F2A493", "#8C1C24", "#D0636A",
+    # Route maps' sea, light and dark (spec 6.5).
+    "#D5E3EC", "#1A2731",
 }
 FONT_SIZES = {"32px", "24px", "20px", "16px"}
 SPACING = {"4px", "8px", "16px", "24px", "32px", "48px"}
@@ -3674,12 +3676,14 @@ class CourseMapTests(unittest.TestCase):
         html = self.page(course_yaml())
         self.assertIn('<path id="course-path" class="course-line"', html)
         self.assertRegex(html, r'<g class="course-car">.*?<animateMotion dur="[0-9.]+s" '
-                               r'repeatCount="indefinite" rotate="auto"><mpath xlink:href="#course-path"/>')
+                               r'repeatCount="indefinite" rotate="auto" calcMode="spline" keyPoints="[0-9.;]+" '
+                               r'keyTimes="[0-9.;]+" keySplines="[0-9. ;]+"><mpath xlink:href="#course-path"/>')
+        self.assertRegex(html, r'<animate attributeName="opacity" dur="[0-9.]+s" repeatCount="indefinite" '
+                               r'values="[0-9;]+" keyTimes="[0-9.;]+"/>')
 
-    def test_a_lap_takes_the_line_length_over_the_speed(self):
-        # The straight test line is 500 long.
-        self.assertEqual(build.course_map({"line": STRAIGHT_LINE})["lap"],
-                         f"{500 / build.COURSE_CAR_SPEED:.1f}s")
+    def test_the_line_has_a_casing_under_it(self):
+        html = self.page(course_yaml())
+        self.assertLess(html.index('class="course-casing"'), html.index('class="course-line"'))
 
     def test_the_car_stays_still_for_reduced_motion(self):
         css = (ROOT / "static" / "style.css").read_text(encoding="utf-8")
@@ -3725,24 +3729,63 @@ class CourseMapTests(unittest.TestCase):
 
 
 class CourseArrowTests(unittest.TestCase):
-    """Arrowheads at a fixed spacing of path length, pointing the way the line runs."""
+    """Chevrons inside the line at a fixed spacing of path length, pointing the way it runs."""
 
-    def test_one_arrow_per_spacing_starting_half_a_spacing_in(self):
+    def numbers(self, chevron):
+        return [float(n) for n in re.findall(r"-?\d+\.\d", chevron)]
+
+    def test_one_chevron_per_spacing_starting_half_a_spacing_in(self):
         spacing = build.COURSE_ARROW_SPACING
         expected = int((500 - spacing / 2) // spacing) + 1
         self.assertEqual(len(build.course_map({"line": STRAIGHT_LINE})["arrows"]), expected)
 
-    def test_arrows_are_the_set_length(self):
-        # The line runs straight up, so an arrow's length is its tip-to-base height.
-        numbers = [float(n) for n in re.findall(r"-?\d+\.\d", build.course_map({"line": STRAIGHT_LINE})["arrows"][0])]
-        self.assertAlmostEqual(numbers[3] - numbers[1], build.COURSE_ARROW_LENGTH, places=1)
+    def test_chevrons_are_open_and_the_set_depth(self):
+        # Arm, tip, arm: an open V, not a filled triangle. The line runs straight up, so the
+        # depth is how far the tip sits above the arms.
+        chevron = build.course_map({"line": STRAIGHT_LINE})["arrows"][0]
+        self.assertNotIn("Z", chevron)
+        arm_y, tip_y = self.numbers(chevron)[1], self.numbers(chevron)[3]
+        self.assertAlmostEqual(arm_y - tip_y, build.COURSE_ARROW_LENGTH, places=1)
 
-    def test_arrows_point_along_the_line(self):
-        # The line runs up the page, so every tip is above (smaller y than) its base.
-        for arrow in build.course_map({"line": STRAIGHT_LINE})["arrows"]:
-            numbers = [float(n) for n in re.findall(r"-?\d+\.\d", arrow)]
-            tip_y, base_ys = numbers[1], numbers[3::2]
-            self.assertTrue(all(tip_y < y for y in base_ys), arrow)
+    def test_chevrons_point_along_the_line(self):
+        # The line runs up the page, so every tip is above (smaller y than) both arms.
+        for chevron in build.course_map({"line": STRAIGHT_LINE})["arrows"]:
+            n = self.numbers(chevron)
+            self.assertTrue(n[3] < n[1] and n[3] < n[5], chevron)
+
+    def test_chevrons_fit_inside_the_line(self):
+        n = self.numbers(build.course_map({"line": STRAIGHT_LINE})["arrows"][0])
+        self.assertLess(abs(n[4] - n[0]), build.MAP_LINE_WIDTH)
+
+
+class MapCarTimingTests(unittest.TestCase):
+    """The car fades in, eases off, pauses where the date changes, waits at the finish, fades out."""
+
+    def test_a_course_lap_adds_the_fades_and_the_hold_to_the_drive(self):
+        car = build.course_map({"line": STRAIGHT_LINE})["car"]
+        expected = 2 * build.MAP_CAR_FADE + 500 / build.COURSE_CAR_SPEED + build.MAP_CAR_HOLD
+        self.assertAlmostEqual(float(car["dur"].rstrip("s")), expected, places=1)
+
+    def test_the_lists_line_up_for_smil(self):
+        for car in (build.course_map({"line": STRAIGHT_LINE})["car"],
+                    build.route_map(yaml.safe_load(located_route())["route"])["car"]):
+            points, times = car["points"].split(";"), car["times"].split(";")
+            self.assertEqual(len(points), len(times))
+            self.assertEqual(len(car["splines"].split(";")), len(times) - 1)
+            self.assertEqual((times[0], times[-1]), ("0", "1"))
+            self.assertEqual([float(t) for t in times], sorted(float(t) for t in times))
+
+    def test_the_car_starts_and_ends_unseen(self):
+        car = build.course_map({"line": STRAIGHT_LINE})["car"]
+        self.assertEqual(car["opacity"].split(";")[0], "0")
+        self.assertEqual(car["opacity"].split(";")[-1], "0")
+
+    def test_a_route_pauses_once_where_the_date_changes(self):
+        # Two days, so one change of date: the car holds one point for a while there.
+        car = build.route_map(yaml.safe_load(located_route())["route"])["car"]
+        points = car["points"].split(";")
+        holds = [a for a, b in zip(points, points[1:]) if a == b and a not in ("0", "1")]
+        self.assertEqual(len(holds), 1)
 
 
 
@@ -3843,6 +3886,32 @@ class RouteMapTests(unittest.TestCase):
     def test_the_map_stays_light(self):
         figure = self.page(located_route()).split('class="route-map"')[1].split("</svg>")[0]
         self.assertLess(len(figure), 30000)
+
+    def test_close_stops_share_one_dot(self):
+        route = yaml.safe_load(located_route())["route"]
+        apart = len(build.route_map(route)["dots"])
+        route[0]["checkpoints"][1].update(lat=34.9757, lon=138.3829)
+        route[1]["checkpoints"][0].update(lat=35.0, lon=138.5)
+        # Day 1's second stop is now on top of the start, so it gets no dot of its own.
+        self.assertEqual(len(build.route_map(route)["dots"]), apart - 1)
+
+    def test_the_start_and_finish_are_named(self):
+        html = self.page(located_route())
+        self.assertIn(">Test Park</text>", html)
+        self.assertIn(">Test Hill</text>", html)
+
+    def test_close_ends_name_themselves_on_opposite_sides(self):
+        # La Festa 2026 starts in Harajuku and finishes in Makuhari: close, and the names collided.
+        route = yaml.safe_load(located_route())["route"]
+        route[1]["checkpoints"][-1].update(lat=34.99, lon=138.40)
+        start, finish = build.route_map(route)["labels"]
+        # Different sides, or different lines a font height apart: either way, no overlap.
+        apart = abs(float(start["y"]) - float(finish["y"])) >= 16
+        self.assertTrue(apart or {start["anchor"], finish["anchor"]} == {"start", "end"})
+
+    def test_the_sea_is_drawn_under_the_land(self):
+        html = self.page(located_route())
+        self.assertLess(html.index('class="route-sea"'), html.index('class="route-land"'))
 
     def test_the_caption_says_the_lines_are_not_the_roads(self):
         figure = self.page(located_route()).split('class="route-map"')[1].split("</figure>")[0]

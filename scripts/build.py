@@ -177,8 +177,14 @@ COURSE_OPTIONAL = {"map_url": "url", "cones": "course_points"}
 COURSE_VIEWBOX = (84, 159, 467, 588)
 # Path length between arrowheads: about 15 on the shortest course and 28 on the longest.
 COURSE_ARROW_SPACING = 150
-# Tip to base, in frame units; the base is five sixths as wide. 18 reads on a phone, 12 did not.
-COURSE_ARROW_LENGTH = 18
+# A chevron's depth, tip to arms, in frame units; it sits inside the line, so it stays small.
+COURSE_ARROW_LENGTH = 5
+# Both maps' line and the casing under it, in frame units: wide enough to hold a chevron.
+MAP_LINE_WIDTH = 8
+MAP_CASING_WIDTH = 12
+# The car's fade at each end of a lap and its wait at the finish, in seconds.
+MAP_CAR_FADE = 0.4
+MAP_CAR_HOLD = 1.2
 # The course map's car, in frame units a second: about 26 seconds for the 2026 autumn course.
 COURSE_CAR_SPEED = 80
 # The route map is drawn as wide as the course map's frame, so the two share every style.
@@ -187,6 +193,10 @@ ROUTE_FRAME_WIDTH = COURSE_VIEWBOX[2]
 ROUTE_CAR_SPEED = 67
 # The most a route's corner is rounded by, in frame units, so the car turns instead of snapping.
 ROUTE_CORNER = 30
+# Dots closer than this, in frame units, are one dot: a cluster reads as one place.
+ROUTE_STOP_MERGE = 10
+# Seconds the car waits at each day's last stop, where the date changes (owner, 2026-11-10).
+ROUTE_OVERNIGHT_PAUSE = 1.0
 ROUTE_DAY_REQUIRED = {"date": "date", "checkpoints": "checkpoints"}
 CHECKPOINT_REQUIRED = {"start_time": "time", "place_en": "str", "prefecture": "str"}
 CHECKPOINT_OPTIONAL = {"end_time": "time", "place_ja": "str", "lat": "lat", "lon": "lon"}
@@ -829,11 +839,44 @@ def _bezier(p0, p1, p2, p3, t: float) -> tuple[float, float]:
 
 
 def _arrowhead(x: float, y: float, dx: float, dy: float) -> str:
-    """A triangle centred on (x, y), pointing along the unit vector (dx, dy)."""
-    half, wide = COURSE_ARROW_LENGTH / 2, COURSE_ARROW_LENGTH * 5 / 12
+    """An open chevron centred on (x, y), arm, tip, arm, pointing along the unit vector (dx, dy)."""
+    half, wide = COURSE_ARROW_LENGTH / 2, MAP_LINE_WIDTH * 0.3
     tip = (x + dx * half, y + dy * half)
-    corners = [(x - dx * half + side * dy * wide, y - dy * half - side * dx * wide) for side in (1, -1)]
-    return "M{:.1f} {:.1f} L{:.1f} {:.1f} L{:.1f} {:.1f} Z".format(*tip, *corners[0], *corners[1])
+    arms = [(x - dx * half + side * dy * wide, y - dy * half - side * dx * wide) for side in (1, -1)]
+    return "M{:.1f} {:.1f} L{:.1f} {:.1f} L{:.1f} {:.1f}".format(*arms[0], *tip, *arms[1])
+
+
+def _key(value: float) -> str:
+    return ("%.4f" % value).rstrip("0").rstrip(".") or "0"
+
+
+def _car_timeline(length: float, pauses: list[float], speed: float) -> dict:
+    """SMIL timings for the car: fade in, drive, wait at each pause, wait, fade out.
+
+    pauses are distances along the line. Each leg eases off and into its end, so the car
+    slows into a pause or the finish rather than stopping dead.
+    """
+    ease, still = "0.42 0 0.58 1", "0 0 1 1"
+    marks, splines, clock, here = [(0.0, 0.0), (MAP_CAR_FADE, 0.0)], [still], MAP_CAR_FADE, 0.0
+    for stop in sorted(pauses) + [length]:
+        clock += (stop - here) / speed
+        marks.append((clock, stop))
+        splines.append(ease)
+        here = stop
+        if stop < length:
+            clock += ROUTE_OVERNIGHT_PAUSE
+            marks.append((clock, stop))
+            splines.append(still)
+    for wait in (MAP_CAR_HOLD, MAP_CAR_FADE):
+        clock += wait
+        marks.append((clock, length))
+        splines.append(still)
+    times = [_key(at / clock) for at, _ in marks[:-1]] + ["1"]
+    points = [_key(where / length) for _, where in marks[:-1]] + ["1"]
+    return {"dur": f"{clock:.2f}s", "points": ";".join(points), "times": ";".join(times),
+            "splines": ";".join(splines),
+            "opacity": "0;1;1;0",
+            "opacity_times": f"0;{_key(MAP_CAR_FADE / clock)};{_key(1 - MAP_CAR_FADE / clock)};1"}
 
 
 def _course_curves(line: list) -> list:
@@ -876,7 +919,8 @@ def course_map(course: dict) -> dict:
     return {"d": d, "start": [f"{n:.1f}" for n in line[0]], "finish": [f"{n:.1f}" for n in line[-1]],
             "cones": [[f"{n:.1f}" for n in cone] for cone in course.get("cones") or []],
             "arrows": arrows, "viewbox": " ".join(str(n) for n in COURSE_VIEWBOX),
-            "lap": f"{travelled / COURSE_CAR_SPEED:.1f}s",
+            "car": _car_timeline(travelled, [], COURSE_CAR_SPEED),
+            "line_width": MAP_LINE_WIDTH, "casing_width": MAP_CASING_WIDTH,
             # Height as a share of width, for the frame's padding.
             "shape": f"{COURSE_VIEWBOX[3] / COURSE_VIEWBOX[2] * 100:.2f}"}
 
@@ -886,13 +930,15 @@ def _prefectures() -> dict:
     return json.loads(MAP_PREFECTURES.read_text(encoding="utf-8"))
 
 
-def _rounded(points: list) -> tuple[str, list]:
-    """A polyline with each corner rounded, as SVG and as short straight steps.
+def _rounded(points: list) -> tuple[str, list, list[float]]:
+    """A polyline with each corner rounded: SVG, short straight steps, and how far along
+    the line each point is passed (a corner's point is passed at the middle of its curve).
 
     The car follows the drawn path, so rounding the corners is what turns its heading
     smoothly instead of snapping it round at every stop.
     """
     d, steps, here = [f"M{points[0][0]:.1f} {points[0][1]:.1f}"], [], points[0]
+    passed, travelled = [0.0], 0.0
     for before, corner, after in zip(points, points[1:], points[2:]):
         len_in, len_out = math.dist(before, corner), math.dist(corner, after)
         cut = min(ROUTE_CORNER, len_in / 2, len_out / 2)
@@ -900,11 +946,16 @@ def _rounded(points: list) -> tuple[str, list]:
         leave = tuple(c + (a - c) / len_out * cut for c, a in zip(corner, after))
         curve = [_quadratic(enter, corner, leave, n / 8) for n in range(9)]
         d.append(f"L{enter[0]:.1f} {enter[1]:.1f} Q{corner[0]:.1f} {corner[1]:.1f} {leave[0]:.1f} {leave[1]:.1f}")
+        travelled += math.dist(here, enter)
+        half = sum(math.dist(a, b) for a, b in zip(curve[:5], curve[1:5]))
+        passed.append(travelled + half)
+        travelled += sum(math.dist(a, b) for a, b in zip(curve, curve[1:]))
         steps += [(here, enter)] + list(zip(curve, curve[1:]))
         here = leave
     d.append(f"L{points[-1][0]:.1f} {points[-1][1]:.1f}")
     steps.append((here, points[-1]))
-    return " ".join(d), steps
+    passed.append(travelled + math.dist(here, points[-1]))
+    return " ".join(d), steps, passed
 
 
 def _quadratic(p0, p1, p2, t: float) -> tuple[float, float]:
@@ -914,13 +965,15 @@ def _quadratic(p0, p1, p2, t: float) -> tuple[float, float]:
 
 def route_map(route) -> dict:
     """The stops in timetable order on the coastline, framed on the stops (spec 4.8)."""
-    stops = []
+    stops, day_ends = [], []
     for day in route:
         for point in day["checkpoints"]:
             spot = map_point(point["lat"], point["lon"])
             # An overnight stop ends one day and starts the next: one dot, not two.
             if not stops or stops[-1] != spot:
                 stops.append(spot)
+        day_ends.append(len(stops) - 1)
+    first, last = route[0]["checkpoints"][0], route[-1]["checkpoints"][-1]
     xs, ys = [x for x, _ in stops], [y for _, y in stops]
     margin = max(max(xs) - min(xs), max(ys) - min(ys)) * 0.12 + 1
     x0, x1, y0, y1 = min(xs) - margin, max(xs) + margin, min(ys) - margin, max(ys) + margin
@@ -947,13 +1000,39 @@ def route_map(route) -> dict:
             xs, ys = [x for x, _ in points], [y for _, y in points]
             if min(xs) <= width and max(xs) >= 0 and min(ys) <= height and max(ys) >= 0:
                 land.append("M" + " ".join("%.1f,%.1f" % p for p in simplify(points, 1.0)) + "Z")
-    d, steps = _rounded(placed)
+    d, steps, passed = _rounded(placed)
     arrows, travelled = _arrows_along(steps)
+    # Small dots on the line; one that would sit on another dot or an end marker is left out.
+    dots = []
+    for spot in placed[1:-1]:
+        if all(math.dist(spot, other) > ROUTE_STOP_MERGE for other in dots + [placed[0], placed[-1]]):
+            dots.append(spot)
+
+    def label(spot, other, point) -> dict:
+        text = point.get("place_en", "").split(",")[0]
+        reach = len(text) * 9  # Roughly, at 16px semibold.
+        if math.dist(spot, other) < 120:
+            # Close ends: the higher name goes above its marker and the lower one below, centred
+            # and kept on the card, so the two can never share a line.
+            above = spot[1] <= other[1]
+            x = min(max(spot[0], reach / 2 + 4), width - reach / 2 - 4)
+            return {"text": text, "x": f"{x:.1f}", "y": f"{spot[1] + (-14 if above else 24):.1f}",
+                    "anchor": "middle"}
+        # Otherwise beside it, on whichever side has room.
+        right = spot[0] + 14 + reach <= width if spot[0] < width * 0.6 else spot[0] - 14 - reach < 0
+        return {"text": text, "x": f"{spot[0] + (14 if right else -14):.1f}",
+                "y": f"{spot[1] + 5:.1f}", "anchor": "start" if right else "end"}
+
+    overnight = [passed[i] for i in day_ends[:-1] if 0 < i < len(placed) - 1]
     return {"stops": [[f"{n:.1f}" for n in spot] for spot in placed],
+            "dots": [[f"{n:.1f}" for n in spot] for spot in dots],
+            "labels": [label(placed[0], placed[-1], first), label(placed[-1], placed[0], last)],
+            "car": _car_timeline(travelled, overnight, ROUTE_CAR_SPEED),
+            "line_width": MAP_LINE_WIDTH, "casing_width": MAP_CASING_WIDTH,
             "start": [f"{n:.1f}" for n in placed[0]], "finish": [f"{n:.1f}" for n in placed[-1]],
             "d": d, "arrows": arrows, "land": " ".join(land), "viewbox": f"0 0 {width} {height}",
             "width": width, "height": height,
-            "lap": f"{travelled / ROUTE_CAR_SPEED:.1f}s", "shape": f"{height / width * 100:.2f}"}
+            "shape": f"{height / width * 100:.2f}"}
 
 
 def route_chart(route) -> dict | None:
