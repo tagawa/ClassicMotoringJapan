@@ -3732,6 +3732,11 @@ class CourseArrowTests(unittest.TestCase):
         expected = int((500 - spacing / 2) // spacing) + 1
         self.assertEqual(len(build.course_map({"line": STRAIGHT_LINE})["arrows"]), expected)
 
+    def test_arrows_are_the_set_length(self):
+        # The line runs straight up, so an arrow's length is its tip-to-base height.
+        numbers = [float(n) for n in re.findall(r"-?\d+\.\d", build.course_map({"line": STRAIGHT_LINE})["arrows"][0])]
+        self.assertAlmostEqual(numbers[3] - numbers[1], build.COURSE_ARROW_LENGTH, places=1)
+
     def test_arrows_point_along_the_line(self):
         # The line runs up the page, so every tip is above (smaller y than) its base.
         for arrow in build.course_map({"line": STRAIGHT_LINE})["arrows"]:

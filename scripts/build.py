@@ -175,6 +175,8 @@ COURSE_OPTIONAL = {"map_url": "url", "cones": "course_points"}
 COURSE_VIEWBOX = (84, 159, 467, 588)
 # Path length between arrowheads: about 15 on the shortest course and 28 on the longest.
 COURSE_ARROW_SPACING = 150
+# Tip to base, in frame units; the base is five sixths as wide. 18 reads on a phone, 12 did not.
+COURSE_ARROW_LENGTH = 18
 # The course map's car, in frame units a second: about 26 seconds for the 2026 autumn course.
 COURSE_CAR_SPEED = 80
 ROUTE_DAY_REQUIRED = {"date": "date", "checkpoints": "checkpoints"}
@@ -812,8 +814,9 @@ def _bezier(p0, p1, p2, p3, t: float) -> tuple[float, float]:
 
 def _arrowhead(x: float, y: float, dx: float, dy: float) -> str:
     """A triangle centred on (x, y), pointing along the unit vector (dx, dy)."""
-    tip = (x + dx * 6, y + dy * 6)
-    corners = [(x - dx * 6 + side * dy * 5, y - dy * 6 - side * dx * 5) for side in (1, -1)]
+    half, wide = COURSE_ARROW_LENGTH / 2, COURSE_ARROW_LENGTH * 5 / 12
+    tip = (x + dx * half, y + dy * half)
+    corners = [(x - dx * half + side * dy * wide, y - dy * half - side * dx * wide) for side in (1, -1)]
     return "M{:.1f} {:.1f} L{:.1f} {:.1f} L{:.1f} {:.1f} Z".format(*tip, *corners[0], *corners[1])
 
 
