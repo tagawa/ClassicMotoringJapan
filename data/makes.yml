@@ -38,6 +38,7 @@ Datsun: JP
 Dino: IT
 Diva: GB
 DMC: US
+ERA: null  # builds Cobra replicas; set `country` on the car only with a source
 Ermini: IT
 Eunos: JP
 Ferrari: IT
@@ -100,6 +101,7 @@ Suzuki: JP
 Swallow: GB
 Toyota: JP
 Triumph: GB
+Turner: GB
 TVR: GB
 Unknown: null  # the organiser's list did not name the make
 Vanden Plas: GB
