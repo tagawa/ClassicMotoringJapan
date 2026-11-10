@@ -5,6 +5,8 @@ start: 2026-11-08
 end: 2026-11-08
 source_url: https://shcc.info/news/archives/21
 last_verified: 2026-10-26
+start_time: "09:30"
+end_time: "16:00"
 sequence: 0
 videos:
   # The site's own film, made from the owner's footage.

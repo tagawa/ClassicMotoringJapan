@@ -1,0 +1,261 @@
+slug: shcc
+# The 72nd meeting. The cars are from the club's results sheet
+# (https://shcc.info/documents/Result_72OISO_ALL.pdf), no longer linked from the site but
+# still on the server, read 2026-11-10. Same reading as 2026-spring.yml: class letter plus
+# number, Unknown where the sheet gives no make or no model, nicknames and livery names
+# left out (MA7, MA9, D8, L1). MA8's "98" (98メイフェア) may be a year or a model
+# name, so it gives no year. MA10 is cut off at the sheet's
+# column edge after "1275S". The ACJ guest class is left out pending the owner's decision.
+# Hours are the time trial's, from the club's rules sheet (regulation220227.pdf).
+year: 2025
+status: confirmed
+start: 2025-04-06
+end: 2025-04-06
+start_time: "09:30"
+end_time: "16:00"
+source_url: https://shcc.info/news/archives/15
+last_verified: 2026-11-10
+sequence: 0
+list_as_of: 2025-04-06
+cars:
+  - entry_no: "A2"
+    make: Fiat
+    model: 500 Giardiniera
+  - entry_no: "A3"
+    make: Toyota
+    model: Sports 800
+  - entry_no: "A5"
+    make: Suzuki
+    model: Fronte Coupé GXCF
+  - entry_no: "A6"
+    make: Suzuki
+    model: Fronte Coupé GXCF
+  - entry_no: "A7"
+    make: Honda
+    model: S600 Coupé
+  - entry_no: "B2"
+    make: Alpine
+    model: A110
+  - entry_no: "B3"
+    make: Suzuki
+    model: Fronte Coupé RP
+  - entry_no: "B5"
+    make: Cox
+    model: GTM
+  - entry_no: "B6"
+    make: Subaru
+    model: ff-1
+  - entry_no: "B7"
+    make: Austin
+    model: Mini Cooper
+  - entry_no: "B8"
+    make: Honda
+    model: S600 Coupé
+  - entry_no: "B9"
+    make: Suzuki
+    model: Fronte Coupé GE
+  - entry_no: "B10"
+    make: Hino
+    model: Contessa 900
+  - entry_no: "B11"
+    make: Fiat
+    model: 500F
+  - entry_no: "B12"
+    make: Hillman
+    model: Super Imp
+  - entry_no: "C2"
+    make: Lotus
+    model: Unknown
+  - entry_no: "C3"
+    make: Fiat
+    model: X1/9
+  - entry_no: "C5"
+    make: Lotus
+    model: Elan S3
+  - entry_no: "C6"
+    make: Fiat-Abarth
+    model: 1000TC HSpl
+  - entry_no: "C7"
+    make: Lotus
+    model: Elan S1
+  - entry_no: "C8"
+    make: Datsun
+    model: Bluebird 1600 SSS Coupé
+  - entry_no: "C9"
+    make: Mitsubishi
+    model: Lancer A73
+  - entry_no: "C10"
+    make: Alpine
+    model: A110
+  - entry_no: "C11"
+    make: Datsun
+    model: Bluebird 1600 SSS Coupé
+  - entry_no: "C12"
+    make: Lotus
+    model: Elan S4 Sprint
+  - entry_no: "D1"
+    make: Ginetta
+    model: G4 Dare
+  - entry_no: "D2"
+    make: Isuzu
+    model: Bellett 1600GTR
+  - entry_no: "D3"
+    make: Datsun
+    model: Fairlady 2000
+  - entry_no: "D5"
+    make: Ginetta
+    model: G4
+  - entry_no: "D6"
+    make: Toyota
+    model: Sprinter Trueno
+  - entry_no: "D7"
+    make: Datsun
+    model: Fairlady
+  - entry_no: "D8"
+    make: Datsun
+    model: Sunny B310 Coupé
+  - entry_no: "D9"
+    make: Volkswagen
+    model: Type 1
+  - entry_no: "D10"
+    make: Datsun
+    model: Fairlady SR311
+  - entry_no: "D11"
+    make: Datsun
+    model: Fairlady
+  - entry_no: "D12"
+    make: Datsun
+    model: Sunny Truck
+  - entry_no: "D13"
+    make: Datsun
+    model: Sunny B110
+  - entry_no: "D14"
+    make: Toyota
+    model: Celica
+  - entry_no: "D15"
+    make: Lotus
+    model: Europa TC
+  - entry_no: "D16"
+    make: Datsun
+    model: Sunny B310
+  - entry_no: "D17"
+    make: Datsun
+    model: Sunny B310
+  - entry_no: "D18"
+    make: Isuzu
+    model: Bellett
+  - entry_no: "D19"
+    make: Lotus
+    model: Cortina Mk I S2
+  - entry_no: "D20"
+    make: Alfa Romeo
+    model: 2000 GTV
+  - entry_no: "D21"
+    make: Ford
+    model: Escort Mk I RS1600
+    country: GB
+  - entry_no: "D22"
+    make: Datsun
+    model: Sunny HB310
+  - entry_no: "D23"
+    make: Lotus
+    model: Europa SPL
+  - entry_no: "R1"
+    make: Caterham
+    model: Unknown
+  - entry_no: "R2"
+    make: Unknown
+    model: Super Seven
+  - entry_no: "R3"
+    make: Caterham
+    model: R440
+  - entry_no: "R5"
+    make: Caterham
+    model: Super Seven 1700 BDR-S
+  - entry_no: "R6"
+    make: Unknown
+    model: HMCS Super Seven BDR
+  - entry_no: "R7"
+    make: Caterham
+    model: Super Seven RS300
+  - entry_no: "R8"
+    make: Caterham
+    model: Seven 1700 SS
+  - entry_no: "MA1"
+    make: Unknown
+    model: Mini 1300
+  - entry_no: "MA2"
+    make: Unknown
+    model: Mini Cooper
+  - entry_no: "MA3"
+    make: Rover
+    model: Mini
+  - entry_no: "MA5"
+    make: Unknown
+    model: Mini Cooper
+  - entry_no: "MA6"
+    make: Rover
+    model: Mini
+  - entry_no: "MA7"
+    make: Rover
+    model: Mini
+  - entry_no: "MA8"
+    make: Unknown
+    model: Mini Mayfair
+  - entry_no: "MA9"
+    make: Unknown
+    model: Mini 1.3i
+  - entry_no: "MA10"
+    make: Austin
+    model: Mini Cooper 1275S
+  - entry_no: "MA11"
+    make: Unknown
+    model: Mini
+  - entry_no: "MA12"
+    make: Rover
+    model: Unknown
+  - entry_no: "MA13"
+    make: Rover
+    model: Unknown
+  - entry_no: "MA14"
+    make: Rover
+    model: Unknown
+  - entry_no: "MB1"
+    make: Unknown
+    model: Mini 1000
+  - entry_no: "MB2"
+    make: Unknown
+    model: Mini 1300
+  - entry_no: "MB3"
+    make: Morris
+    model: Unknown
+  - entry_no: "MB5"
+    make: Morris
+    model: Unknown
+  - entry_no: "L1"
+    make: Unknown
+    model: Mini
+  - entry_no: "L2"
+    make: Unknown
+    model: Mini 1300
+  - entry_no: "L3"
+    make: Birkin
+    model: Seven
+  - entry_no: "L5"
+    make: Unknown
+    model: Mini
+  - entry_no: "L6"
+    make: Lotus
+    model: Elan S1
+  - entry_no: "L7"
+    make: Morris
+    model: Mini Cooper Mk I
+  - entry_no: "L8"
+    make: Caterham
+    model: Super Seven
+  - entry_no: "K1"
+    make: MG
+    model: PA
+  - entry_no: "K2"
+    make: MG
+    model: Magnette

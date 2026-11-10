@@ -13,10 +13,17 @@ start: 2026-04-26
 end: 2026-04-26
 source_url: https://shcc.info/news/archives/19
 last_verified: 2026-11-08
+start_time: "09:30"
+end_time: "16:00"
 sequence: 0
 videos:
   - youtube_id: f09y8R-rSNg
     label_en: 74th edition (video by SPACIOUS TV)
+  # The club's own channel (湘南ヒストリックカークラブch), in two halves.
+  - youtube_id: QUxwqPz3yZY
+    label_en: 74th edition, part 1
+  - youtube_id: KyhhTxKiQ0Y
+    label_en: 74th edition, part 2
 list_as_of: 2026-04-26
 cars:
   - entry_no: "A2"
