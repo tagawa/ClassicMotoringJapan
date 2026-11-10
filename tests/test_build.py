@@ -3670,6 +3670,21 @@ class CourseMapTests(unittest.TestCase):
         self.assertIn('<circle class="course-cone" cx="250.0" cy="400.0"', html)
         self.assertIn('<circle class="course-cone" cx="350.5" cy="450.0"', html)
 
+    def test_a_car_drives_the_line_on_a_loop(self):
+        html = self.page(course_yaml())
+        self.assertIn('<path id="course-path" class="course-line"', html)
+        self.assertRegex(html, r'<g class="course-car">.*?<animateMotion dur="[0-9.]+s" '
+                               r'repeatCount="indefinite" rotate="auto"><mpath xlink:href="#course-path"/>')
+
+    def test_a_lap_takes_the_line_length_over_the_speed(self):
+        # The straight test line is 500 long.
+        self.assertEqual(build.course_map({"line": STRAIGHT_LINE})["lap"],
+                         f"{500 / build.COURSE_CAR_SPEED:.1f}s")
+
+    def test_the_car_stays_still_for_reduced_motion(self):
+        css = (ROOT / "static" / "style.css").read_text(encoding="utf-8")
+        self.assertRegex(css, r"@media \(prefers-reduced-motion: reduce\) \{\s*\.course-car \{ display: none; \}")
+
     def test_a_course_without_cones_draws_none(self):
         self.assertNotIn("course-cone", self.page(course_yaml()))
 

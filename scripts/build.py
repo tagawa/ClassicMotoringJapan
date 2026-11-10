@@ -175,6 +175,8 @@ COURSE_OPTIONAL = {"map_url": "url", "cones": "course_points"}
 COURSE_VIEWBOX = (84, 159, 467, 588)
 # Path length between arrowheads: about 15 on the shortest course and 28 on the longest.
 COURSE_ARROW_SPACING = 150
+# The course map's car, in frame units a second: about 26 seconds for the 2026 autumn course.
+COURSE_CAR_SPEED = 80
 ROUTE_DAY_REQUIRED = {"date": "date", "checkpoints": "checkpoints"}
 CHECKPOINT_REQUIRED = {"start_time": "time", "place_en": "str", "prefecture": "str"}
 CHECKPOINT_OPTIONAL = {"end_time": "time", "place_ja": "str"}
@@ -849,6 +851,7 @@ def course_map(course: dict) -> dict:
     return {"d": d, "start": [f"{n:.1f}" for n in line[0]], "finish": [f"{n:.1f}" for n in line[-1]],
             "cones": [[f"{n:.1f}" for n in cone] for cone in course.get("cones") or []],
             "arrows": arrows, "viewbox": " ".join(str(n) for n in COURSE_VIEWBOX),
+            "lap": f"{travelled / COURSE_CAR_SPEED:.1f}s",
             # Height as a share of width, for the frame's padding.
             "shape": f"{COURSE_VIEWBOX[3] / COURSE_VIEWBOX[2] * 100:.2f}"}
 
