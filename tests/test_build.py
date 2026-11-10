@@ -3616,10 +3616,11 @@ class ScriptSyntaxTests(unittest.TestCase):
 STRAIGHT_LINE = [[300.0, 700.0], [300.0, 700.0], [300.0, 200.0], [300.0, 200.0]]
 
 
-def course_yaml(line=STRAIGHT_LINE, map_url=None) -> str:
+def course_yaml(line=STRAIGHT_LINE, map_url=None, cones=None) -> str:
     return ("course:\n"
             + (f"  map_url: {map_url}\n" if map_url else "")
-            + "  line:\n" + "".join(f"    - [{x}, {y}]\n" for x, y in line))
+            + "  line:\n" + "".join(f"    - [{x}, {y}]\n" for x, y in line)
+            + ("  cones:\n" + "".join(f"    - [{x}, {y}]\n" for x, y in cones) if cones else ""))
 
 
 class CourseMapTests(unittest.TestCase):
@@ -3653,12 +3654,27 @@ class CourseMapTests(unittest.TestCase):
         html = self.page(course_yaml())
         self.assertIn('d="M300.0 700.0 C300.0 700.0 300.0 200.0 300.0 200.0"', html)
 
-    def test_start_is_open_and_finish_filled_with_the_legend_in_words(self):
+    def test_start_is_open_and_finish_filled(self):
         html = self.page(course_yaml())
         self.assertIn('<circle class="course-start" cx="300.0" cy="700.0"', html)
         self.assertIn('<circle class="course-finish" cx="300.0" cy="200.0"', html)
-        self.assertIn("open circle", html)
-        self.assertIn("filled circle", html)
+
+    def test_the_caption_does_not_explain_what_the_drawing_shows(self):
+        # Owner, 2026-11-10: no reader thinks a course runs against its arrows.
+        figure = self.page(course_yaml()).split('id="course"')[1].split("</figure>")[0]
+        for obvious in ("open circle", "filled circle", "arrows"):
+            self.assertNotIn(obvious, figure)
+
+    def test_cones_are_drawn_where_the_data_puts_them(self):
+        html = self.page(course_yaml(cones=[[250.0, 400.0], [350.5, 450.0]]))
+        self.assertIn('<circle class="course-cone" cx="250.0" cy="400.0"', html)
+        self.assertIn('<circle class="course-cone" cx="350.5" cy="450.0"', html)
+
+    def test_a_course_without_cones_draws_none(self):
+        self.assertNotIn("course-cone", self.page(course_yaml()))
+
+    def test_a_cone_outside_the_frame_is_refused(self):
+        self.assertIn("course: cones", self.errors(course_yaml(cones=[[900.0, 400.0]])))
 
     def test_the_map_has_an_accessible_name(self):
         self.assertRegex(self.page(course_yaml()), r'<svg class="course-map"[^>]* role="img" aria-label="[^"]+"')
@@ -3690,7 +3706,7 @@ class CourseMapTests(unittest.TestCase):
         self.assertIn("course: line", self.errors(course_yaml(line=[[900.0, 700.0]] + STRAIGHT_LINE[1:])))
 
     def test_unknown_course_fields_are_refused(self):
-        self.assertIn("unknown field 'cones'", self.errors(course_yaml() + "  cones: []\n"))
+        self.assertIn("unknown field 'barriers'", self.errors(course_yaml() + "  barriers: []\n"))
 
 
 class CourseArrowTests(unittest.TestCase):

@@ -169,7 +169,7 @@ EDITION_OPTIONAL = {
 }
 COURSE_REQUIRED = {"line": "course_line"}
 # Only while the organiser serves the PDF; an archive copy gets a credit without a link.
-COURSE_OPTIONAL = {"map_url": "url"}
+COURSE_OPTIONAL = {"map_url": "url", "cones": "course_points"}
 # x, y, width, height of the car park area in SHCC's course template, in PDF points measured
 # down from the page top. It sat at the same place in every map from 2022 to 2026.
 COURSE_VIEWBOX = (84, 159, 467, 588)
@@ -271,6 +271,16 @@ def _is_int(v) -> bool:
 
 def _is_number(v) -> bool:
     return _is_int(v) or isinstance(v, float)
+
+
+def _is_pairs(v) -> bool:
+    return isinstance(v, list) and all(
+        isinstance(p, list) and len(p) == 2 and all(_is_number(n) for n in p) for p in v)
+
+
+def _in_course_frame(point) -> bool:
+    x0, y0, width, height = COURSE_VIEWBOX
+    return x0 <= point[0] <= x0 + width and y0 <= point[1] <= y0 + height
 
 
 def _check_editorial(v: str, where: str, errors: list[str]) -> None:
@@ -406,17 +416,18 @@ def _check_value(kind: str, v, where: str, errors: list[str]) -> None:
     elif kind == "course":
         _check_fields(v, COURSE_REQUIRED, COURSE_OPTIONAL, where, errors)
     elif kind == "course_line":
-        x0, y0, width, height = COURSE_VIEWBOX
-        pairs = isinstance(v, list) and all(
-            isinstance(p, list) and len(p) == 2 and all(_is_number(n) for n in p) for p in v)
-        if not pairs or len(v) < 4 or (len(v) - 1) % 3:
+        if not _is_pairs(v) or len(v) < 4 or (len(v) - 1) % 3:
             errors.append(f"{where}: must be [x, y] pairs, a start point then three per curve, "
                           f"as tools/course.py writes them")
         # Points on the drawn curve, not control points, which can sit well outside it.
-        elif not all(x0 <= x <= x0 + width and y0 <= y <= y0 + height
-                     for step in course_steps(v) for x, y in step):
+        elif not all(_in_course_frame(point) for step in course_steps(v) for point in step):
             errors.append(f"{where}: runs outside the course frame COURSE_VIEWBOX, so this map "
                           f"is not on SHCC's template and needs its own frame first")
+    elif kind == "course_points":
+        if not _is_pairs(v) or not v:
+            errors.append(f"{where}: must be a non-empty list of [x, y] pairs, as tools/course.py writes them")
+        elif not all(_in_course_frame(point) for point in v):
+            errors.append(f"{where}: a point lies outside the course frame COURSE_VIEWBOX")
 
 
 def _check_fields(obj, required: dict, optional: dict, where: str, errors: list[str]) -> bool:
@@ -836,6 +847,7 @@ def course_map(course: dict) -> dict:
             next_at += COURSE_ARROW_SPACING
         travelled += length
     return {"d": d, "start": [f"{n:.1f}" for n in line[0]], "finish": [f"{n:.1f}" for n in line[-1]],
+            "cones": [[f"{n:.1f}" for n in cone] for cone in course.get("cones") or []],
             "arrows": arrows, "viewbox": " ".join(str(n) for n in COURSE_VIEWBOX),
             # Height as a share of width, for the frame's padding.
             "shape": f"{COURSE_VIEWBOX[3] / COURSE_VIEWBOX[2] * 100:.2f}"}

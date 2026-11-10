@@ -174,11 +174,14 @@
 {% for arrow in course.arrows %}
     <path class="course-arrow" d="{{ arrow }}"/>
 {% endfor %}
+{% for cone in course.cones %}
+    <circle class="course-cone" cx="{{ cone[0] }}" cy="{{ cone[1] }}" r="4.5"/>
+{% endfor %}
     <circle class="course-start" cx="{{ course.start[0] }}" cy="{{ course.start[1] }}" r="8"/>
     <circle class="course-finish" cx="{{ course.finish[0] }}" cy="{{ course.finish[1] }}" r="8"/>
   </svg>
   </div>
-  <figcaption>The course runs from the open circle (start) to the filled circle (finish), in the direction of the arrows. Redrawn from the organiser's course map{% if ed.course.map_url %}<span data-hide-after="{{ ed.end.isoformat() }}"> (<a href="{{ ed.course.map_url }}">PDF</a>)</span>{% endif %}.</figcaption>
+  <figcaption>Redrawn from the organiser's course map{% if ed.course.map_url %}<span data-hide-after="{{ ed.end.isoformat() }}"> (<a href="{{ ed.course.map_url }}">PDF</a>)</span>{% endif %}.</figcaption>
 </figure>
 
 {% elif section == "videos" %}

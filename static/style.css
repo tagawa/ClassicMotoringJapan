@@ -268,6 +268,7 @@ summary { cursor: pointer; font-weight: 600; }
 .course-arrow { fill: #8C1C24; }
 .course-start { fill: #FFFFFF; stroke: #1C1C1C; stroke-width: 3; }
 .course-finish { fill: #1C1C1C; stroke: #1C1C1C; stroke-width: 3; }
+.course-cone { fill: #FFFFFF; stroke: #5C5C5C; stroke-width: 2; }
 .course figcaption { margin-top: 8px; }
 /* Cancelled or gone: still shown, because the list below shows it, but plainly not a date to keep. */
 .chart-track i.off, .chart-track i.past { background: #5C5C5C; }
@@ -333,6 +334,7 @@ summary { cursor: pointer; font-weight: 600; }
   .course-arrow { fill: #D0636A; }
   .course-start { fill: #141414; stroke: #EBEBEB; }
   .course-finish { fill: #EBEBEB; stroke: #EBEBEB; }
+  .course-cone { fill: #141414; stroke: #A8A8A8; }
   .flag { box-shadow: 0 0 0 1px #333333; }
   .venue-map circle { fill: #D0636A; stroke: #141414; }
   .venue-map circle.off { fill: #A8A8A8; }
