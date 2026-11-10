@@ -1459,9 +1459,12 @@ def make_rows(events: dict, editions: list, makes: dict | None = None) -> list[d
         r["previous_videos"] = latest_with_videos.get(r["slug"])
         if r["videos"]:
             latest_with_videos[r["slug"]] = r
-    # And forward to the next edition, so a page found by search leads on to the dates to keep.
+    # And forward to the next edition, so a page found by search leads on to the dates to keep,
+    # and back to the one before, so an event's history can be stepped through from any edition.
     for r in rows:
         r["next"] = next((n for n in rows if n["slug"] == r["slug"] and n["ed"]["start"] > r["ed"]["start"]), None)
+        r["previous"] = next((p for p in reversed(rows)
+                              if p["slug"] == r["slug"] and p["ed"]["start"] < r["ed"]["start"]), None)
     return rows
 
 

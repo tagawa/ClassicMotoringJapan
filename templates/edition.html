@@ -39,6 +39,9 @@
   <dt>Last verified</dt>
   <dd>{{ ed.last_verified.isoformat() }}, against <a href="{{ ed.source_url }}">{{ ed.source_url | domain }}</a></dd>
 </dl>
+{% if r.previous %}
+<p><a href="{{ root }}{{ r.previous.path }}">Previous edition: {{ r.previous.when }}</a>{% if r.previous.ed.status == "cancelled" %} (cancelled){% endif %}</p>
+{% endif %}
 {% if r.next %}
 <p><a href="{{ root }}{{ r.next.path }}">Next edition: {{ r.next.when }}</a>{% if r.next.ed.status == "tentative" %} (dates not confirmed){% elif r.next.ed.status == "cancelled" %} (cancelled){% endif %}</p>
 {% endif %}

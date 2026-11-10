@@ -1506,6 +1506,27 @@ class PastEditionTests(unittest.TestCase):
                                                               status="cancelled"))
         self.assertIn("Next edition: 17 Oct 2027</a> (cancelled)", self.page(2026))
 
+    def test_an_edition_links_back_to_the_previous_one(self):
+        self.assertIn('<a href="../../../events/meet/2026/">Previous edition: 18–19 Oct 2026</a>',
+                      self.page(2027))
+
+    def test_the_earliest_edition_has_no_back_link(self):
+        self.assertNotIn("Previous edition", self.page(2026))
+
+    def test_the_back_link_comes_before_the_forward_link(self):
+        write_instance(self.data, "meet", 2028, instance_yaml("meet", 2028, "2028-10-15", "2028-10-15"))
+        page = self.page(2027)
+        self.assertLess(page.index("Previous edition"), page.index("Next edition"))
+
+    def test_a_previous_edition_without_a_page_links_to_the_event_page(self):
+        write_instance(self.data, "meet", 2025, instance_yaml("meet", 2025, "2025-10-19", "2025-10-19"))
+        self.assertIn('<a href="../../../events/meet/">Previous edition: 19 Oct 2025</a>', self.page(2026))
+
+    def test_the_back_link_carries_a_cancellation(self):
+        write_instance(self.data, "meet", 2025, instance_yaml("meet", 2025, "2025-10-19", "2025-10-19",
+                                                              status="cancelled"))
+        self.assertIn("Previous edition: 19 Oct 2025</a> (cancelled)", self.page(2026))
+
 
 class EventNotesLinkTests(unittest.TestCase):
     """The edition page's link to the event page names only the notes that page has."""
