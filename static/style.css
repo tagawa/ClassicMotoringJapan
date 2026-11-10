@@ -271,6 +271,8 @@ summary { cursor: pointer; font-weight: 600; }
 .course-line { stroke: #8C1C24; stroke-linejoin: round; stroke-linecap: round; }
 .course-chevron { stroke: #FFFFFF; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
 .route-stop { fill: #FFFFFF; stroke: #8C1C24; stroke-width: 2; }
+.route-overnight { fill: #FFFFFF; stroke: #8C1C24; stroke-width: 3; }
+.route-overnight-centre { fill: #8C1C24; }
 .map-label, .map-label-halo { font-size: 16px; font-weight: 600; }
 .map-label { fill: #1C1C1C; }
 .map-label-halo { fill: #FFFFFF; stroke: #FFFFFF; stroke-width: 4; stroke-linejoin: round; }
@@ -350,6 +352,8 @@ summary { cursor: pointer; font-weight: 600; }
   .course-line { stroke: #D0636A; }
   .course-chevron { stroke: #141414; }
   .route-stop { fill: #141414; stroke: #D0636A; }
+  .route-overnight { fill: #141414; stroke: #D0636A; }
+  .route-overnight-centre { fill: #D0636A; }
   .map-label { fill: #EBEBEB; }
   .map-label-halo { fill: #141414; stroke: #141414; }
   .course-start { fill: #141414; stroke: #EBEBEB; }

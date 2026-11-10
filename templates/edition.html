@@ -98,6 +98,10 @@
 {% for dot in rm.dots %}
     <circle class="route-stop" cx="{{ dot[0] }}" cy="{{ dot[1] }}" r="3.5"/>
 {% endfor %}
+{% for night in rm.overnights %}
+    <circle class="route-overnight" cx="{{ night[0] }}" cy="{{ night[1] }}" r="7"/>
+    <circle class="route-overnight-centre" cx="{{ night[0] }}" cy="{{ night[1] }}" r="2.5"/>
+{% endfor %}
     <circle class="course-start" cx="{{ rm.start[0] }}" cy="{{ rm.start[1] }}" r="8"/>
     <circle class="course-finish" cx="{{ rm.finish[0] }}" cy="{{ rm.finish[1] }}" r="8"/>
 {# Twice: a halo in the background colour, then the name, since old browsers lack paint-order. #}
@@ -108,7 +112,7 @@
     {{ map_car("route-path", rm.car) }}
   </svg>
   </div>
-  <figcaption>Stops in timetable order, joined by straight lines, not the roads.</figcaption>
+  <figcaption>Stops in timetable order, joined by straight lines, not the roads.{% if rm.overnights %} Ringed stops are overnight.{% endif %}</figcaption>
 </figure>
 {% endif %}
 {% if r.chart %}

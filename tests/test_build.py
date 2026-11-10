@@ -3761,10 +3761,27 @@ class CourseArrowTests(unittest.TestCase):
 class MapCarTimingTests(unittest.TestCase):
     """The car fades in, eases off, pauses where the date changes, waits at the finish, fades out."""
 
-    def test_a_course_lap_adds_the_fades_and_the_hold_to_the_drive(self):
+    def test_a_course_lap_adds_the_fades_the_hold_and_the_ramps_to_the_drive(self):
+        # Even acceleration over a ramp covers half the distance full speed would, so the
+        # two ramps add half a ramp's time each to the drive.
         car = build.course_map({"line": STRAIGHT_LINE})["car"]
-        expected = 2 * build.MAP_CAR_FADE + 500 / build.COURSE_CAR_SPEED + build.MAP_CAR_HOLD
+        expected = (2 * build.MAP_CAR_FADE + 500 / build.COURSE_CAR_SPEED + build.MAP_CAR_HOLD
+                    + build.MAP_CAR_EASE)
         self.assertAlmostEqual(float(car["dur"].rstrip("s")), expected, places=1)
+
+    def test_the_car_gets_up_to_speed_in_the_ramp_time(self):
+        car = build.course_map({"line": STRAIGHT_LINE})["car"]
+        times = [float(t) for t in car["times"].split(";")]
+        dur = float(car["dur"].rstrip("s"))
+        # After the fade in, the next interval is the acceleration.
+        self.assertAlmostEqual((times[2] - times[1]) * dur, build.MAP_CAR_EASE, places=2)
+
+    def test_a_leg_too_short_for_full_ramps_shares_it_between_them(self):
+        short = [[300.0, 700.0], [300.0, 700.0], [300.0, 690.0], [300.0, 690.0]]
+        car = build.course_map({"line": short})["car"]
+        times = [float(t) for t in car["times"].split(";")]
+        dur = float(car["dur"].rstrip("s"))
+        self.assertLess((times[2] - times[1]) * dur, build.MAP_CAR_EASE)
 
     def test_the_lists_line_up_for_smil(self):
         for car in (build.course_map({"line": STRAIGHT_LINE})["car"],
@@ -3888,12 +3905,21 @@ class RouteMapTests(unittest.TestCase):
         self.assertLess(len(figure), 30000)
 
     def test_close_stops_share_one_dot(self):
+        def day(*spots):
+            return [{"checkpoints": [{"lat": lat, "lon": lon} for lat, lon in spots]}]
+        apart = build.route_map(day((34.9, 138.3), (35.0, 138.4), (35.1, 138.5), (35.3, 138.7)))
+        close = build.route_map(day((34.9, 138.3), (35.0, 138.4), (35.0001, 138.4001), (35.3, 138.7)))
+        self.assertEqual((len(apart["dots"]), len(close["dots"])), (2, 1))
+
+    def test_an_overnight_stop_is_ringed_and_never_merged_away(self):
         route = yaml.safe_load(located_route())["route"]
-        apart = len(build.route_map(route)["dots"])
-        route[0]["checkpoints"][1].update(lat=34.9757, lon=138.3829)
-        route[1]["checkpoints"][0].update(lat=35.0, lon=138.5)
-        # Day 1's second stop is now on top of the start, so it gets no dot of its own.
-        self.assertEqual(len(build.route_map(route)["dots"]), apart - 1)
+        drawn = build.route_map(route)
+        # Two days: day 1's last stop is the one overnight, and it is not an ordinary dot.
+        self.assertEqual(len(drawn["overnights"]), 1)
+        self.assertNotIn(drawn["overnights"][0], drawn["dots"])
+        html = self.page(located_route())
+        self.assertIn('class="route-overnight"', html)
+        self.assertIn("overnight", html.split('class="route-map"')[1].split("</figure>")[0].split("<figcaption>")[1])
 
     def test_the_start_and_finish_are_named(self):
         html = self.page(located_route())
@@ -3908,6 +3934,17 @@ class RouteMapTests(unittest.TestCase):
         # Different sides, or different lines a font height apart: either way, no overlap.
         apart = abs(float(start["y"]) - float(finish["y"])) >= 16
         self.assertTrue(apart or {start["anchor"], finish["anchor"]} == {"start", "end"})
+
+    def test_names_cover_no_marker_on_the_real_la_festa_map(self):
+        # La Festa 2026's start label once hid the Narita overnight ring beneath it.
+        edition = yaml.safe_load((ROOT / "data/events/la-festa-autunno/2026.yml").read_text(encoding="utf-8"))
+        drawn = build.route_map(edition["route"])
+        markers = [[float(n) for n in spot] for spot in drawn["dots"] + drawn["overnights"]
+                   + [drawn["start"], drawn["finish"]]]
+        for label in drawn["labels"]:
+            left, top, right, bottom = (float(n) for n in label["box"])
+            for x, y in markers:
+                self.assertFalse(left - 4 < x < right + 4 and top - 4 < y < bottom + 4, (label["text"], x, y))
 
     def test_the_sea_is_drawn_under_the_land(self):
         html = self.page(located_route())

@@ -185,6 +185,8 @@ MAP_CASING_WIDTH = 12
 # The car's fade at each end of a lap and its wait at the finish, in seconds.
 MAP_CAR_FADE = 0.4
 MAP_CAR_HOLD = 1.2
+# Seconds of even acceleration off each start, and braking into each stop (owner: whole-leg easing was too slow).
+MAP_CAR_EASE = 0.6
 # The course map's car, in frame units a second: about 26 seconds for the 2026 autumn course.
 COURSE_CAR_SPEED = 80
 # The route map is drawn as wide as the course map's frame, so the two share every style.
@@ -853,15 +855,26 @@ def _key(value: float) -> str:
 def _car_timeline(length: float, pauses: list[float], speed: float) -> dict:
     """SMIL timings for the car: fade in, drive, wait at each pause, wait, fade out.
 
-    pauses are distances along the line. Each leg eases off and into its end, so the car
-    slows into a pause or the finish rather than stopping dead.
+    pauses are distances along the line. Each leg accelerates evenly for MAP_CAR_EASE, runs at
+    speed, then brakes evenly over the same time. The ramps are SMIL splines for constant
+    acceleration (the curve t squared), whose slope at the join matches the cruising speed, so
+    the car never lurches.
     """
-    ease, still = "0.42 0 0.58 1", "0 0 1 1"
+    speed_up, cruise, slow_down, still = "0.333 0 0.667 0.333", "0 0 1 1", "0.333 0.667 0.667 1", "0 0 1 1"
     marks, splines, clock, here = [(0.0, 0.0), (MAP_CAR_FADE, 0.0)], [still], MAP_CAR_FADE, 0.0
     for stop in sorted(pauses) + [length]:
-        clock += (stop - here) / speed
-        marks.append((clock, stop))
-        splines.append(ease)
+        leg = stop - here
+        # A ramp covers half the distance full speed would; a short leg shares itself between two.
+        ramp = min(speed * MAP_CAR_EASE / 2, leg / 2)
+        ramp_time = 2 * ramp / speed
+        for distance, seconds, spline in ((ramp, ramp_time, speed_up), (leg - 2 * ramp, (leg - 2 * ramp) / speed, cruise),
+                                          (ramp, ramp_time, slow_down)):
+            if seconds <= 0:
+                continue
+            clock += seconds
+            here += distance
+            marks.append((clock, here))
+            splines.append(spline)
         here = stop
         if stop < length:
             clock += ROUTE_OVERNIGHT_PAUSE
@@ -1002,31 +1015,50 @@ def route_map(route) -> dict:
                 land.append("M" + " ".join("%.1f,%.1f" % p for p in simplify(points, 1.0)) + "Z")
     d, steps, passed = _rounded(placed)
     arrows, travelled = _arrows_along(steps)
-    # Small dots on the line; one that would sit on another dot or an end marker is left out.
+    # Overnight stops first, since they are never merged away; then small dots, leaving out any
+    # that would sit on another dot, an overnight or an end marker.
+    overnights = [placed[i] for i in day_ends[:-1] if 0 < i < len(placed) - 1]
     dots = []
     for spot in placed[1:-1]:
-        if all(math.dist(spot, other) > ROUTE_STOP_MERGE for other in dots + [placed[0], placed[-1]]):
+        if spot not in overnights and all(math.dist(spot, other) > ROUTE_STOP_MERGE
+                                          for other in dots + overnights + [placed[0], placed[-1]]):
             dots.append(spot)
 
-    def label(spot, other, point) -> dict:
+    markers = placed[:1] + dots + overnights + placed[-1:]
+
+    def label(spot, point, taken: list) -> dict:
+        """The first of right, left, above, below that covers no marker, stays on the card
+        and keeps clear of names already placed; failing that, the one covering least."""
         text = point.get("place_en", "").split(",")[0]
         reach = len(text) * 9  # Roughly, at 16px semibold.
-        if math.dist(spot, other) < 120:
-            # Close ends: the higher name goes above its marker and the lower one below, centred
-            # and kept on the card, so the two can never share a line.
-            above = spot[1] <= other[1]
-            x = min(max(spot[0], reach / 2 + 4), width - reach / 2 - 4)
-            return {"text": text, "x": f"{x:.1f}", "y": f"{spot[1] + (-14 if above else 24):.1f}",
-                    "anchor": "middle"}
-        # Otherwise beside it, on whichever side has room.
-        right = spot[0] + 14 + reach <= width if spot[0] < width * 0.6 else spot[0] - 14 - reach < 0
-        return {"text": text, "x": f"{spot[0] + (14 if right else -14):.1f}",
-                "y": f"{spot[1] + 5:.1f}", "anchor": "start" if right else "end"}
+        x, y = spot
+        tries = [(x + 14, y + 5, "start", (x + 14, y - 11, x + 14 + reach, y + 5)),
+                 (x - 14, y + 5, "end", (x - 14 - reach, y - 11, x - 14, y + 5))]
+        # Above, then below, centred on the marker, then slid a quarter of the name either way,
+        # each kept on the card, so a long name can step round a cluster of stops.
+        for baseline in (y - 14, y + 24):
+            for slide in (0, -reach / 4, reach / 4):
+                middle = min(max(x + slide, reach / 2), width - reach / 2)
+                tries.append((middle, baseline, "middle",
+                              (middle - reach / 2, baseline - 16, middle + reach / 2, baseline)))
+
+        def cost(box) -> int:
+            left, top, right, bottom = box
+            covered = sum(left - 4 < mx < right + 4 and top - 4 < my < bottom + 4 for mx, my in markers)
+            clash = sum(left < o[2] and o[0] < right and top < o[3] and o[1] < bottom for o in taken)
+            off = left < 0 or right > width or top < 0 or bottom > height
+            return covered + 10 * clash + 100 * off
+
+        lx, ly, anchor, box = min(tries, key=lambda t: cost(t[3]))
+        taken.append(box)
+        return {"text": text, "x": f"{lx:.1f}", "y": f"{ly:.1f}", "anchor": anchor,
+                "box": [f"{n:.1f}" for n in box]}
 
     overnight = [passed[i] for i in day_ends[:-1] if 0 < i < len(placed) - 1]
     return {"stops": [[f"{n:.1f}" for n in spot] for spot in placed],
             "dots": [[f"{n:.1f}" for n in spot] for spot in dots],
-            "labels": [label(placed[0], placed[-1], first), label(placed[-1], placed[0], last)],
+            "overnights": [[f"{n:.1f}" for n in spot] for spot in overnights],
+            "labels": [label(placed[0], first, taken := []), label(placed[-1], last, taken)],
             "car": _car_timeline(travelled, overnight, ROUTE_CAR_SPEED),
             "line_width": MAP_LINE_WIDTH, "casing_width": MAP_CASING_WIDTH,
             "start": [f"{n:.1f}" for n in placed[0]], "finish": [f"{n:.1f}" for n in placed[-1]],
