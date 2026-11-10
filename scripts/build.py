@@ -976,7 +976,7 @@ def _quadratic(p0, p1, p2, t: float) -> tuple[float, float]:
     return tuple(u * u * a + 2 * u * t * b + t * t * c for a, b, c in zip(p0, p1, p2))
 
 
-def route_map(route) -> dict:
+def route_map(route) -> dict | None:
     """The stops in timetable order on the coastline, framed on the stops (spec 4.8)."""
     stops, day_ends = [], []
     for day in route:
@@ -986,6 +986,8 @@ def route_map(route) -> dict:
             if not stops or stops[-1] != spot:
                 stops.append(spot)
         day_ends.append(len(stops) - 1)
+    if len(set(stops)) < 2:
+        return None  # One place throughout: there is no route to draw.
     first, last = route[0]["checkpoints"][0], route[-1]["checkpoints"][-1]
     xs, ys = [x for x, _ in stops], [y for _, y in stops]
     margin = max(max(xs) - min(xs), max(ys) - min(ys)) * 0.12 + 1
@@ -1029,7 +1031,8 @@ def route_map(route) -> dict:
     def label(spot, point, taken: list) -> dict:
         """The first of right, left, above, below that covers no marker, stays on the card
         and keeps clear of names already placed; failing that, the one covering least."""
-        text = point.get("place_en", "").split(",")[0]
+        # The place itself: no town after the comma, no organiser's note in brackets.
+        text = re.sub(r"\s*\(.*?\)", "", point.get("place_en", "")).split(",")[0].strip()
         reach = len(text) * 9  # Roughly, at 16px semibold.
         x, y = spot
         tries = [(x + 14, y + 5, "start", (x + 14, y - 11, x + 14 + reach, y + 5)),
@@ -1058,7 +1061,9 @@ def route_map(route) -> dict:
     return {"stops": [[f"{n:.1f}" for n in spot] for spot in placed],
             "dots": [[f"{n:.1f}" for n in spot] for spot in dots],
             "overnights": [[f"{n:.1f}" for n in spot] for spot in overnights],
-            "labels": [label(placed[0], first, taken := []), label(placed[-1], last, taken)],
+            # A route back to where it began is named once.
+            "labels": ([label(placed[0], first, taken := [])]
+                       + ([label(placed[-1], last, taken)] if placed[-1] != placed[0] else [])),
             "car": _car_timeline(travelled, overnight, ROUTE_CAR_SPEED),
             "line_width": MAP_LINE_WIDTH, "casing_width": MAP_CASING_WIDTH,
             "start": [f"{n:.1f}" for n in placed[0]], "finish": [f"{n:.1f}" for n in placed[-1]],

@@ -3946,6 +3946,24 @@ class RouteMapTests(unittest.TestCase):
             for x, y in markers:
                 self.assertFalse(left - 4 < x < right + 4 and top - 4 < y < bottom + 4, (label["text"], x, y))
 
+    def test_a_route_at_one_place_draws_no_map(self):
+        # Coppa di Tokyo checks in, starts and finishes at one park: nothing to draw.
+        one = [{"checkpoints": [{"lat": 35.66, "lon": 139.76}, {"lat": 35.66, "lon": 139.76}]}]
+        self.assertIsNone(build.route_map(one))
+
+    def test_a_name_drops_the_organisers_note_in_brackets(self):
+        # ROUTE's first stop is "Test Park, Testville"; Coppa di Kyoto's is
+        # "Kyoto Prefectural Office (cars check in)".
+        route = yaml.safe_load(located_route())["route"]
+        route[0]["checkpoints"][0]["place_en"] = "Kyoto Prefectural Office (cars check in)"
+        self.assertEqual(build.route_map(route)["labels"][0]["text"], "Kyoto Prefectural Office")
+
+    def test_a_route_back_to_its_start_is_named_once(self):
+        # Coppa di Koumi starts and finishes at Gateaux Kingdom Koumi.
+        route = yaml.safe_load(located_route())["route"]
+        route[1]["checkpoints"][-1].update(lat=34.9756, lon=138.3828, place_en="Test Park (finish)")
+        self.assertEqual(len(build.route_map(route)["labels"]), 1)
+
     def test_the_sea_is_drawn_under_the_land(self):
         html = self.page(located_route())
         self.assertLess(html.index('class="route-sea"'), html.index('class="route-land"'))
