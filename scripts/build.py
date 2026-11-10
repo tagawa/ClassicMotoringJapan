@@ -77,6 +77,8 @@ MAP_X = math.cos(math.radians(36)) * MAP_SCALE
 MAP_WIDTH = round((MAP_LON[1] - MAP_LON[0]) * MAP_X, 1)
 MAP_HEIGHT = round((MAP_LAT[1] - MAP_LAT[0]) * MAP_SCALE, 1)
 MAP_OUTLINE = ROOT / "data" / "japan_outline.json"
+# Route maps only: finer than the outline, and with the borders between prefectures.
+MAP_PREFECTURES = ROOT / "data" / "japan_prefectures.json"
 TIME_RE = re.compile(r"^([01]\d|2[0-3]):[0-5]\d$")
 YOUTUBE_ID_RE = re.compile(r"^[A-Za-z0-9_-]{11}$")
 # The privacy-enhanced domain: YouTube sets no cookies until the visitor presses play.
@@ -181,8 +183,10 @@ COURSE_ARROW_LENGTH = 18
 COURSE_CAR_SPEED = 80
 # The route map is drawn as wide as the course map's frame, so the two share every style.
 ROUTE_FRAME_WIDTH = COURSE_VIEWBOX[2]
-# Frame units a second along a route map: a lap of roughly half a minute for La Festa.
-ROUTE_CAR_SPEED = 100
+# Frame units a second along a route map: two thirds of the first speed (owner, 2026-11-10).
+ROUTE_CAR_SPEED = 67
+# The most a route's corner is rounded by, in frame units, so the car turns instead of snapping.
+ROUTE_CORNER = 30
 ROUTE_DAY_REQUIRED = {"date": "date", "checkpoints": "checkpoints"}
 CHECKPOINT_REQUIRED = {"start_time": "time", "place_en": "str", "prefecture": "str"}
 CHECKPOINT_OPTIONAL = {"end_time": "time", "place_ja": "str", "lat": "lat", "lon": "lon"}
@@ -877,6 +881,37 @@ def course_map(course: dict) -> dict:
             "shape": f"{COURSE_VIEWBOX[3] / COURSE_VIEWBOX[2] * 100:.2f}"}
 
 
+@functools.cache
+def _prefectures() -> dict:
+    return json.loads(MAP_PREFECTURES.read_text(encoding="utf-8"))
+
+
+def _rounded(points: list) -> tuple[str, list]:
+    """A polyline with each corner rounded, as SVG and as short straight steps.
+
+    The car follows the drawn path, so rounding the corners is what turns its heading
+    smoothly instead of snapping it round at every stop.
+    """
+    d, steps, here = [f"M{points[0][0]:.1f} {points[0][1]:.1f}"], [], points[0]
+    for before, corner, after in zip(points, points[1:], points[2:]):
+        len_in, len_out = math.dist(before, corner), math.dist(corner, after)
+        cut = min(ROUTE_CORNER, len_in / 2, len_out / 2)
+        enter = tuple(c - (c - b) / len_in * cut for b, c in zip(before, corner))
+        leave = tuple(c + (a - c) / len_out * cut for c, a in zip(corner, after))
+        curve = [_quadratic(enter, corner, leave, n / 8) for n in range(9)]
+        d.append(f"L{enter[0]:.1f} {enter[1]:.1f} Q{corner[0]:.1f} {corner[1]:.1f} {leave[0]:.1f} {leave[1]:.1f}")
+        steps += [(here, enter)] + list(zip(curve, curve[1:]))
+        here = leave
+    d.append(f"L{points[-1][0]:.1f} {points[-1][1]:.1f}")
+    steps.append((here, points[-1]))
+    return " ".join(d), steps
+
+
+def _quadratic(p0, p1, p2, t: float) -> tuple[float, float]:
+    u = 1 - t
+    return tuple(u * u * a + 2 * u * t * b + t * t * c for a, b, c in zip(p0, p1, p2))
+
+
 def route_map(route) -> dict:
     """The stops in timetable order on the coastline, framed on the stops (spec 4.8)."""
     stops = []
@@ -903,17 +938,20 @@ def route_map(route) -> dict:
         return round((x - x0) * scale, 1), round((y - y0) * scale, 1)
 
     placed = [frame(*spot) for spot in stops]
-    rings = json.loads(MAP_OUTLINE.read_text(encoding="utf-8"))
-    land = " ".join("M" + " ".join("%.1f,%.1f" % frame(*map_point(lat, lon)) for lon, lat in ring) + "Z"
-                    for ring in rings
-                    # Only the islands that reach into the frame; the viewBox clips the rest.
-                    if any(x0 <= mx <= x1 and y0 <= my <= y1
-                           for mx, my in (map_point(lat, lon) for lon, lat in ring)))
-    arrows, travelled = _arrows_along(zip(placed, placed[1:]))
+    land = []
+    for rings in _prefectures().values():
+        for ring in rings:
+            points = [frame(*map_point(lat, lon)) for lon, lat in ring]
+            # Only what reaches into the frame, at the detail its scale can show: about a pixel.
+            # By bounding box, so a frame lying wholly inside one prefecture still gets its land.
+            xs, ys = [x for x, _ in points], [y for _, y in points]
+            if min(xs) <= width and max(xs) >= 0 and min(ys) <= height and max(ys) >= 0:
+                land.append("M" + " ".join("%.1f,%.1f" % p for p in simplify(points, 1.0)) + "Z")
+    d, steps = _rounded(placed)
+    arrows, travelled = _arrows_along(steps)
     return {"stops": [[f"{n:.1f}" for n in spot] for spot in placed],
             "start": [f"{n:.1f}" for n in placed[0]], "finish": [f"{n:.1f}" for n in placed[-1]],
-            "d": "M" + " L".join(f"{x:.1f} {y:.1f}" for x, y in placed),
-            "arrows": arrows, "land": land, "viewbox": f"0 0 {width} {height}",
+            "d": d, "arrows": arrows, "land": " ".join(land), "viewbox": f"0 0 {width} {height}",
             "width": width, "height": height,
             "lap": f"{travelled / ROUTE_CAR_SPEED:.1f}s", "shape": f"{height / width * 100:.2f}"}
 
@@ -1119,6 +1157,34 @@ def venue_pin(ev: dict, ed: dict | None = None) -> dict | None:
 
 
 # Maps
+
+def _line_distance(p, a, b) -> float:
+    (x, y), (x1, y1), (x2, y2) = p, a, b
+    length = math.hypot(x2 - x1, y2 - y1)
+    if length == 0:
+        return math.hypot(x - x1, y - y1)
+    return abs((x2 - x1) * (y1 - y) - (x1 - x) * (y2 - y1)) / length
+
+
+def simplify(points: list, tolerance: float) -> list:
+    """Douglas-Peucker: drop points closer than tolerance to the line they sit on.
+
+    With a stack rather than recursion, since a prefecture's coast runs to thousands of points.
+    """
+    if len(points) < 3:
+        return points
+    keep, stack = {0, len(points) - 1}, [(0, len(points) - 1)]
+    while stack:
+        first, last = stack.pop()
+        if last - first < 2:
+            continue
+        far, index = max((_line_distance(points[i], points[first], points[last]), i)
+                         for i in range(first + 1, last))
+        if far > tolerance:
+            keep.add(index)
+            stack += [(first, index), (index, last)]
+    return [points[i] for i in sorted(keep)]
+
 
 def map_point(lat: float, lon: float) -> tuple[float, float]:
     """The one projection: the coastline and every dot go through it, so they cannot disagree."""

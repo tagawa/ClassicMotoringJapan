@@ -3819,6 +3819,31 @@ class RouteMapTests(unittest.TestCase):
         self.assertIn('<path id="route-path" class="course-line"', html)
         self.assertIn('<mpath xlink:href="#route-path"/>', html)
 
+    def test_each_corner_is_rounded_so_the_car_turns(self):
+        drawn = build.route_map(yaml.safe_load(located_route())["route"])
+        # Three stops, so one corner, drawn as one curve the car follows.
+        self.assertEqual(drawn["d"].count("Q"), 1)
+
+    def test_the_land_is_the_prefectures_in_the_frame(self):
+        html = self.page(located_route())
+        land = re.search(r'<path class="route-land" d="([^"]+)"', html)
+        self.assertIsNotNone(land)
+        # More than one prefecture, so there is a border, and far fewer than all 47 hold.
+        rings = land.group(1).count("M")
+        self.assertGreater(rings, 1)
+        everything = json.loads((ROOT / "data" / "japan_prefectures.json").read_text(encoding="utf-8"))
+        self.assertLess(rings, sum(len(r) for r in everything.values()))
+
+    def test_a_route_inside_one_prefecture_still_has_land(self):
+        # No border point of Shizuoka falls in a frame this small, yet the frame is all land.
+        tiny = [{"checkpoints": [{"lat": 34.98, "lon": 138.39}, {"lat": 34.985, "lon": 138.395},
+                                 {"lat": 34.99, "lon": 138.38}]}]
+        self.assertGreater(build.route_map(tiny)["land"].count("M"), 0)
+
+    def test_the_map_stays_light(self):
+        figure = self.page(located_route()).split('class="route-map"')[1].split("</svg>")[0]
+        self.assertLess(len(figure), 30000)
+
     def test_the_caption_says_the_lines_are_not_the_roads(self):
         figure = self.page(located_route()).split('class="route-map"')[1].split("</figure>")[0]
         self.assertIn("not the roads", figure)
