@@ -105,6 +105,10 @@ h1:lang(ja) { word-break: keep-all; }
 .badge.cancelled { background: #FBE9E5; color: #8E2A1B; }
 
 /* Jumps to an edition page's sections. Inline, so a wrapped line starts flush at the left. */
+/* Previous and next edition on one line; each link stays whole so a narrow screen wraps between them. */
+.edition-steps { margin: 16px 0; }
+.edition-steps .step { display: inline-block; }
+.edition-steps .bar { margin: 0 8px; }
 .on-this-page { margin: 24px 0; padding: 16px 0; border-top: 1px solid #E0E0E0; border-bottom: 1px solid #E0E0E0; }
 .on-this-page span { margin-right: 16px; color: #5C5C5C; }
 .on-this-page a, .site-links a { display: inline-block; padding: 4px 0; margin-right: 16px; white-space: nowrap; }
@@ -265,6 +269,10 @@ summary { cursor: pointer; font-weight: 600; }
   /* The date goes above its events; each thumbnail stays beside its own event. */
   .events > li { grid-template-columns: 1fr; }
   .facts dd { margin-bottom: 16px; }
+  /* Too narrow for both edition links on one line: stack them, and the bar has nothing to divide. */
+  .edition-steps .step { display: block; }
+  .edition-steps .bar { display: none; }
+  .edition-steps .bar + .step { margin-top: 8px; }
 }
 
 /* Dark mode restates only the colours. It comes last so these win on order. */

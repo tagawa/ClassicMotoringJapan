@@ -1487,45 +1487,62 @@ class PastEditionTests(unittest.TestCase):
     def test_the_title_names_the_sections_in_page_order(self):
         self.assertIn("<title>Test Event 2026: Videos, entry list and route</title>", self.page(2026))
 
-    def test_an_edition_links_forward_to_the_next_one(self):
-        self.assertIn('<a href="../../../events/meet/2027/">Next edition: 18–19 Oct 2027</a>',
-                      self.page(2026))
+    def nav(self, stem) -> str:
+        found = re.search(r'<nav class="edition-steps" aria-label="Other editions">(.*?)</nav>', self.page(stem), re.S)
+        return re.sub(r"\s+", " ", found.group(1)).strip() if found else ""
 
-    def test_the_latest_edition_has_no_forward_link(self):
-        self.assertNotIn("Next edition", self.page(2027))
+    def test_an_edition_links_forward_to_the_next_one_by_its_label(self):
+        self.assertIn('<a href="../../../events/meet/2027/">Next edition: 2027'
+                      '<span aria-hidden="true"> →</span></a>', self.nav(2026))
 
-    def test_a_next_edition_without_a_page_links_to_the_event_page(self):
-        write_instance(self.data, "meet", 2027, instance_yaml("meet", 2027, "2027-10-17", "2027-10-17"))
-        self.assertIn('<a href="../../../events/meet/">Next edition: 17 Oct 2027</a>', self.page(2026))
+    def test_an_edition_links_back_to_the_previous_one_by_its_label(self):
+        self.assertIn('<a href="../../../events/meet/2026/"><span aria-hidden="true">← </span>'
+                      'Previous edition: 2026</a>', self.nav(2027))
 
-    def test_the_forward_link_carries_the_next_edition_status(self):
-        write_instance(self.data, "meet", 2027, instance_yaml("meet", 2027, "2027-10-17", "2027-10-17",
-                                                              status="tentative"))
-        self.assertIn("Next edition: 17 Oct 2027</a> (dates not confirmed)", self.page(2026))
-        write_instance(self.data, "meet", 2027, instance_yaml("meet", 2027, "2027-10-17", "2027-10-17",
-                                                              status="cancelled"))
-        self.assertIn("Next edition: 17 Oct 2027</a> (cancelled)", self.page(2026))
+    def test_both_links_share_one_line_back_first_with_a_bar_screen_readers_skip(self):
+        write_instance(self.data, "meet", 2028, instance_yaml("meet", 2028, "2028-10-15", "2028-10-15"))
+        nav = self.nav(2027)
+        self.assertLess(nav.index("Previous edition"), nav.index("Next edition"))
+        self.assertIn('<span class="bar" aria-hidden="true">|</span>', nav)
 
-    def test_an_edition_links_back_to_the_previous_one(self):
-        self.assertIn('<a href="../../../events/meet/2026/">Previous edition: 18–19 Oct 2026</a>',
-                      self.page(2027))
+    def test_the_latest_edition_has_no_forward_link_and_no_bar(self):
+        nav = self.nav(2027)
+        self.assertNotIn("Next edition", nav)
+        self.assertNotIn('class="bar"', nav)
 
     def test_the_earliest_edition_has_no_back_link(self):
-        self.assertNotIn("Previous edition", self.page(2026))
+        self.assertNotIn("Previous edition", self.nav(2026))
 
-    def test_the_back_link_comes_before_the_forward_link(self):
-        write_instance(self.data, "meet", 2028, instance_yaml("meet", 2028, "2028-10-15", "2028-10-15"))
-        page = self.page(2027)
-        self.assertLess(page.index("Previous edition"), page.index("Next edition"))
+    def test_a_lone_edition_has_no_nav_at_all(self):
+        shutil.rmtree(self.data / "events" / "meet")
+        write_instance(self.data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-19",
+                                                              extra=CARS))
+        self.assertNotIn("edition-steps", self.page(2026))
 
-    def test_a_previous_edition_without_a_page_links_to_the_event_page(self):
+    def test_a_neighbour_without_a_page_links_to_the_event_page(self):
         write_instance(self.data, "meet", 2025, instance_yaml("meet", 2025, "2025-10-19", "2025-10-19"))
-        self.assertIn('<a href="../../../events/meet/">Previous edition: 19 Oct 2025</a>', self.page(2026))
+        write_instance(self.data, "meet", 2027, instance_yaml("meet", 2027, "2027-10-17", "2027-10-17"))
+        nav = self.nav(2026)
+        self.assertIn('<a href="../../../events/meet/"><span aria-hidden="true">← </span>Previous edition: 2025</a>', nav)
+        self.assertIn('<a href="../../../events/meet/">Next edition: 2027', nav)
 
-    def test_the_back_link_carries_a_cancellation(self):
+    def test_the_links_carry_their_edition_status(self):
+        write_instance(self.data, "meet", 2027, instance_yaml("meet", 2027, "2027-10-17", "2027-10-17",
+                                                              status="tentative"))
+        self.assertIn("</a> (dates not confirmed)", self.nav(2026))
+        write_instance(self.data, "meet", 2027, instance_yaml("meet", 2027, "2027-10-17", "2027-10-17",
+                                                              status="cancelled"))
+        self.assertIn("</a> (cancelled)", self.nav(2026))
         write_instance(self.data, "meet", 2025, instance_yaml("meet", 2025, "2025-10-19", "2025-10-19",
                                                               status="cancelled"))
-        self.assertIn("Previous edition: 19 Oct 2025</a> (cancelled)", self.page(2026))
+        self.assertIn("Previous edition: 2025</a> (cancelled)", self.nav(2026))
+
+    def test_each_link_is_kept_whole_and_a_phone_stacks_them_without_the_bar(self):
+        css = (ROOT / "static" / "style.css").read_text(encoding="utf-8")
+        self.assertRegex(css, r"\.edition-steps \.step \{[^}]*display: inline-block")
+        narrow = re.search(r"@media \(max-width: 480px\) \{(.*?)\n\}", css, re.S).group(1)
+        self.assertRegex(narrow, r"\.edition-steps \.step \{[^}]*display: block")
+        self.assertRegex(narrow, r"\.edition-steps \.bar \{[^}]*display: none")
 
 
 class EventNotesLinkTests(unittest.TestCase):
