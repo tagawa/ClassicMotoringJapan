@@ -3869,10 +3869,14 @@ class RouteMapTests(unittest.TestCase):
         self.assertIn(f'<circle class="course-finish" cx="{drawn["finish"][0]}" cy="{drawn["finish"][1]}"', html)
 
     def test_an_overnight_stop_is_one_dot(self):
-        route = yaml.safe_load(located_route(overnight=True))["route"]
-        self.assertEqual(len(build.route_map(route)["stops"]), 2)
-        route = yaml.safe_load(located_route())["route"]
-        self.assertEqual(len(build.route_map(route)["stops"]), 3)
+        def stop(lat, lon):
+            return {"lat": lat, "lon": lon}
+        # Day 2 starting where day 1 ended is one stop; starting somewhere else is two.
+        same = [{"checkpoints": [stop(34.9, 138.3), stop(35.0, 138.5)]},
+                {"checkpoints": [stop(35.0, 138.5), stop(35.2, 138.6)]}]
+        moved = [{"checkpoints": [stop(34.9, 138.3), stop(35.0, 138.5)]},
+                 {"checkpoints": [stop(35.1, 138.4), stop(35.2, 138.6)]}]
+        self.assertEqual((len(build.route_map(same)["stops"]), len(build.route_map(moved)["stops"])), (3, 4))
 
     def test_the_car_drives_the_route(self):
         html = self.page(located_route())
@@ -3946,6 +3950,11 @@ class RouteMapTests(unittest.TestCase):
             for x, y in markers:
                 self.assertFalse(left - 4 < x < right + 4 and top - 4 < y < bottom + 4, (label["text"], x, y))
 
+    def test_a_route_between_two_places_draws_no_map(self):
+        # Japan Classic Car Day: Daikanyama to the Tokyo Prince Hotel, an hour's drive between.
+        two = [{"checkpoints": [{"lat": 35.6493, "lon": 139.6998}, {"lat": 35.6589, "lon": 139.7488}]}]
+        self.assertIsNone(build.route_map(two))
+
     def test_a_route_at_one_place_draws_no_map(self):
         # Coppa di Tokyo checks in, starts and finishes at one park: nothing to draw.
         one = [{"checkpoints": [{"lat": 35.66, "lon": 139.76}, {"lat": 35.66, "lon": 139.76}]}]
@@ -3961,7 +3970,8 @@ class RouteMapTests(unittest.TestCase):
     def test_a_route_back_to_its_start_is_named_once(self):
         # Coppa di Koumi starts and finishes at Gateaux Kingdom Koumi.
         route = yaml.safe_load(located_route())["route"]
-        route[1]["checkpoints"][-1].update(lat=34.9756, lon=138.3828, place_en="Test Park (finish)")
+        route[1]["checkpoints"].append(dict(route[1]["checkpoints"][0], lat=34.9756, lon=138.3828,
+                                            start_time="09:00", place_en="Test Park (finish)"))
         self.assertEqual(len(build.route_map(route)["labels"]), 1)
 
     def test_the_sea_is_drawn_under_the_land(self):

@@ -986,8 +986,9 @@ def route_map(route) -> dict | None:
             if not stops or stops[-1] != spot:
                 stops.append(spot)
         day_ends.append(len(stops) - 1)
-    if len(set(stops)) < 2:
-        return None  # One place throughout: there is no route to draw.
+    # One or two places: a straight line from A to B, which the table already says (spec 4.8).
+    if len(set(stops)) < 3:
+        return None
     first, last = route[0]["checkpoints"][0], route[-1]["checkpoints"][-1]
     xs, ys = [x for x, _ in stops], [y for _, y in stops]
     margin = max(max(xs) - min(xs), max(ys) - min(ys)) * 0.12 + 1
