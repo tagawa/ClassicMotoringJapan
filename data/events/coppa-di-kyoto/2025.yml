@@ -28,24 +28,37 @@ route:
         place_en: Kyoto Prefectural Office (cars check in)
         place_ja: 京都府庁
         prefecture: Kyoto
+        lat: 35.0211
+        lon: 135.7553
       - start_time: "09:30"
         place_en: Kyoto Prefectural Office (start)
         place_ja: 京都府庁
         prefecture: Kyoto
+        lat: 35.0211
+        lon: 135.7553
       - start_time: "17:30"
         place_en: Mercure Kyoto Miyazu Resort & Spa, Miyazu (finish)
         place_ja: メルキュール京都宮津リゾート&スパ
         prefecture: Kyoto
+        # Approximate: GSI placed the address 田井岩本58 in its district only.
+        lat: 35.5864
+        lon: 135.2444
   - date: 2025-06-01
     checkpoints:
       - start_time: "08:30"
         place_en: Mercure Kyoto Miyazu Resort & Spa, Miyazu (start)
         place_ja: メルキュール京都宮津リゾート&スパ
         prefecture: Kyoto
+        # Approximate: GSI placed the address 田井岩本58 in its district only.
+        lat: 35.5864
+        lon: 135.2444
       - start_time: "11:00"
         place_en: Arashiyama-Takao Parkway, car park inside the Takao gate (finish)
         place_ja: 嵐山-高雄パークウェイ 高雄口ゲート内大駐車場
         prefecture: Kyoto
+        # Approximate: The parkway near the Takao gate; the car park is not in OSM or GSI.
+        lat: 35.0531
+        lon: 135.6757
 list_as_of: 2025-05-30
 cars:
   - entry_no: "1"

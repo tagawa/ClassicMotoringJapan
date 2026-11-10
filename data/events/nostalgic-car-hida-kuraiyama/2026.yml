@@ -20,8 +20,13 @@ route:
         place_en: Michi-no-eki Mondeus Hida Kuraiyama (start)
         place_ja: 道の駅モンデウス飛騨位山
         prefecture: Gifu
+        # Approximate: GSI placed the address 一之宮町7846-1 in its district only.
+        lat: 36.0524
+        lon: 137.2013
       - start_time: "12:00"
         end_time: "15:00"
         place_en: Takayama Museum of History and Art (display)
         place_ja: 飛騨高山まちの博物館
         prefecture: Gifu
+        lat: 36.1422
+        lon: 137.2613

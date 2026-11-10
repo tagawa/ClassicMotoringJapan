@@ -18,41 +18,57 @@ route:
         place_en: Jingubashi, Harajuku (start ceremony)
         place_ja: 原宿・神宮橋（スタートセレモニー）
         prefecture: Tokyo
+        lat: 35.6697
+        lon: 139.7024
       - start_time: "13:20"
         end_time: "14:45"
         place_en: Nasunogahara Park, Nasushiobara
         place_ja: 那須塩原市・那須野が原公園
         prefecture: Tochigi
+        lat: 36.9307
+        lon: 139.9480
       - start_time: "14:25"
         end_time: "15:10"
         place_en: Tsukuruma Circuit, Nasushiobara
         place_ja: 那須塩原市・つくるまサーキット
         prefecture: Tochigi
+        lat: 36.9750
+        lon: 139.9389
       - start_time: "15:20"
         end_time: "16:05"
         place_en: Marugoto Saigokan, Nishigo
         place_ja: 西郷村・まるごと西郷館
         prefecture: Fukushima
+        lat: 37.1401
+        lon: 140.1545
       - start_time: "15:45"
         end_time: "16:30"
         place_en: Michi-no-Eki Toki-no-Sato Tenei, Tenei
         place_ja: 天栄村・道の駅 季の里天栄
         prefecture: Fukushima
+        lat: 37.2435
+        lon: 140.2450
       - start_time: "16:40"
         end_time: "17:25"
         place_en: Noguchi Hideyo Memorial Hall, Inawashiro
         place_ja: 猪苗代町・野口英世記念館
         prefecture: Fukushima
+        lat: 37.5361
+        lon: 140.0739
       - start_time: "16:50"
         end_time: "17:35"
         place_en: Inawashiro Ski Resort, Inawashiro
         place_ja: 猪苗代町・猪苗代スキー場
         prefecture: Fukushima
+        lat: 37.5815
+        lon: 140.0887
       - start_time: "17:10"
         end_time: "17:55"
         place_en: Urabandai Lake Resort, Kitashiobara
         place_ja: 北塩原村・裏磐梯レイクリゾート
         prefecture: Fukushima
+        lat: 37.6506
+        lon: 140.0630
   - date: 2025-09-27
     checkpoints:
       - start_time: "07:00"
@@ -60,71 +76,103 @@ route:
         place_en: Urabandai Lake Resort, Kitashiobara
         place_ja: 北塩原村・裏磐梯レイクリゾート
         prefecture: Fukushima
+        lat: 37.6506
+        lon: 140.0630
       - start_time: "07:05"
         end_time: "07:35"
         place_en: Mount Bandai Eruption Memorial Museum, Kitashiobara
         place_ja: 北塩原村・磐梯山噴火記念館
         prefecture: Fukushima
+        lat: 37.6598
+        lon: 140.0794
       - start_time: "07:15"
         end_time: "08:15"
         place_en: Nakatsugawa Gorge Rest House, Inawashiro
         place_ja: 猪苗代町・中津川渓谷レストハウス
         prefecture: Fukushima
+        lat: 37.6712
+        lon: 140.1477
       - start_time: "08:05"
         end_time: "09:05"
         place_en: Jododaira, Fukushima City
         place_ja: 福島市・浄土平
         prefecture: Fukushima
+        lat: 37.7218
+        lon: 140.2527
       - start_time: "08:45"
         end_time: "09:30"
         place_en: Link Circuit, Fukushima City
         place_ja: 福島市・リンクサーキット
         prefecture: Fukushima
+        # Approximate: GSI placed the address 大笹生字台山2-2 in its district only.
+        lat: 37.7979
+        lon: 140.4133
       - start_time: "08:55"
         end_time: "09:40"
         place_en: Fukushima Sky Park, Fukushima City
         place_ja: 福島市・ふくしまスカイパーク
         prefecture: Fukushima
+        lat: 37.8232
+        lon: 140.3877
       - start_time: "09:15"
         end_time: "10:00"
         place_en: Iizaka Onsen, Fukushima City
         place_ja: 福島市・飯坂温泉
         prefecture: Fukushima
+        lat: 37.8299
+        lon: 140.4543
       - start_time: "09:45"
         end_time: "10:30"
         place_en: Kamitozawa community hall, Shiroishi
         place_ja: 白石市・上戸沢集会所
         prefecture: Miyagi
+        # Approximate: The hamlet of 上戸沢; the hall itself is not in OSM or GSI.
+        lat: 37.9214
+        lon: 140.5186
       - start_time: "10:00"
         end_time: "11:20"
         place_en: Shichikashuku Dam nature park car park, Shichikashuku
         place_ja: 七ヶ宿町・七ケ宿ダム自然休養公園駐車場
         prefecture: Miyagi
+        lat: 37.9589
+        lon: 140.5132
       - start_time: "10:45"
         end_time: "11:30"
         place_en: Owaraji, Shichikashuku
         place_ja: 七ヶ宿町・大わらじ
         prefecture: Miyagi
+        # Approximate: The town's point; the sandal itself is not in OSM or GSI.
+        lat: 37.9930
+        lon: 140.4417
       - start_time: "11:55"
         end_time: "12:40"
         place_en: Onogawa Onsen, Yonezawa
         place_ja: 米沢市・小野川温泉
         prefecture: Yamagata
+        lat: 37.8672
+        lon: 140.0681
       - start_time: "12:40"
         end_time: "14:25"
         place_en: Michi-no-Eki Kita-no-Sato, Kitakata
         place_ja: 喜多方市・喜多の郷
         prefecture: Fukushima
+        lat: 37.7016
+        lon: 139.8785
       - start_time: "15:00"
         end_time: "16:15"
         place_en: Ouchi-juku post town, Shimogo
         place_ja: 下郷町・大内宿
         prefecture: Fukushima
+        lat: 37.3336
+        lon: 139.8607
       - start_time: "17:30"
         end_time: "18:45"
         place_en: Nikko Kanaya Hotel and Chuzenji Kanaya Hotel, Nikko
         place_ja: 日光市・日光金谷ホテル・中禅寺金谷ホテル
         prefecture: Tochigi
+        # Approximate: Nikko Kanaya Hotel, the first of the two named.
+        lat: 36.7521
+        lon: 139.6040
   - date: 2025-09-28
     checkpoints:
       - start_time: "08:00"
@@ -132,51 +180,73 @@ route:
         place_en: Nikko Kanaya Hotel and Chuzenji Kanaya Hotel, Nikko
         place_ja: 日光市・日光金谷ホテル・中禅寺金谷ホテル
         prefecture: Tochigi
+        # Approximate: Nikko Kanaya Hotel, the first of the two named.
+        lat: 36.7521
+        lon: 139.6040
       - start_time: "08:55"
         end_time: "09:40"
         place_en: Michi-no-Eki Yusui-no-Sato Shioya, Shioya
         place_ja: 塩谷町・道の駅湧水の郷しおや
         prefecture: Tochigi
+        lat: 36.7645
+        lon: 139.7807
       - start_time: "09:05"
         end_time: "09:50"
         place_en: Shinoi Ring, Utsunomiya
         place_ja: 宇都宮市・SHINOI RING
         prefecture: Tochigi
+        # Approximate: The city's point; SHINOI RING is not in OSM or GSI.
+        lat: 36.5551
+        lon: 139.8826
       - start_time: "10:00"
         end_time: "10:45"
         place_en: Michi-no-Eki Kitsuregawa, Sakura
         place_ja: さくら市・道の駅 きつれがわ
         prefecture: Tochigi
+        lat: 36.7154
+        lon: 140.0328
       - start_time: "10:45"
         end_time: "11:30"
         place_en: Michi-no-Eki Motegi, Motegi
         place_ja: 茂木町・道の駅もてぎ
         prefecture: Tochigi
+        lat: 36.5280
+        lon: 140.1736
       - start_time: "11:20"
         end_time: "12:05"
         place_en: Kasama Inari Shrine, Kasama
         place_ja: 笠間市・笠間稲荷神社
         prefecture: Ibaraki
+        lat: 36.3855
+        lon: 140.2544
       - start_time: "12:00"
         end_time: "14:00"
         place_en: Oarai Marina, Oarai
         place_ja: 大洗町・大洗マリーナ
         prefecture: Ibaraki
+        lat: 36.3070
+        lon: 140.5678
       - start_time: "14:45"
         end_time: "16:30"
         place_en: Sawara old town, Katori
         place_ja: 香取市・小江戸佐原
         prefecture: Chiba
+        lat: 35.8945
+        lon: 140.4941
       - start_time: "15:00"
         end_time: "16:30"
         place_en: NATS Japan Automobile College, Narita
         place_ja: 成田市・日本自動車大学校
         prefecture: Chiba
+        lat: 35.8446
+        lon: 140.4387
       - start_time: "16:20"
         end_time: "17:00"
         place_en: ANA Crowne Plaza Narita, Narita
         place_ja: 成田市・ANAクラウンプラザホテル成田
         prefecture: Chiba
+        lat: 35.7870
+        lon: 140.3711
   - date: 2025-09-29
     checkpoints:
       - start_time: "08:30"
@@ -184,56 +254,81 @@ route:
         place_en: ANA Crowne Plaza Narita, Narita
         place_ja: 成田市・ANAクラウンプラザホテル成田
         prefecture: Chiba
+        lat: 35.7870
+        lon: 140.3711
       - start_time: "08:50"
         end_time: "09:35"
         place_en: Naritasan Shinshoji temple approach, Narita
         place_ja: 成田市・成田山新勝寺門前広場
         prefecture: Chiba
+        # Approximate: Shinshoji itself; the approach square is not in OSM or GSI.
+        lat: 35.7863
+        lon: 140.3172
       - start_time: "09:20"
         end_time: "10:05"
         place_en: Shibayama Niozon temple, Shibayama
         place_ja: 芝山町・芝山仁王尊
         prefecture: Chiba
+        lat: 35.6927
+        lon: 140.4268
       - start_time: "10:00"
         end_time: "10:45"
         place_en: Town car park, Kujukuri
         place_ja: 九十九里町・町営駐車場
         prefecture: Chiba
+        # Approximate: The town's point; the source does not say which car park.
+        lat: 35.5350
+        lon: 140.4404
       - start_time: "10:30"
         end_time: "11:15"
         place_en: Tsurigasaki Beach, Ichinomiya
         place_ja: 一宮町・釣ヶ崎海岸広場
         prefecture: Chiba
+        lat: 35.3354
+        lon: 140.3948
       - start_time: "11:15"
         end_time: "12:45"
         place_en: Tsuki-no-Sabaku Park, Onjuku
         place_ja: 御宿町・月の砂漠公園
         prefecture: Chiba
+        lat: 35.1843
+        lon: 140.3578
       - start_time: "12:10"
         end_time: "12:55"
         place_en: Kuste arts centre, Katsuura
         place_ja: 勝浦市・勝浦市芸術文化交流センターKüste
         prefecture: Chiba
+        lat: 35.1530
+        lon: 140.3220
       - start_time: "12:40"
         end_time: "13:25"
         place_en: Yorokeikoku Station, Kominato Railway, Ichihara
         place_ja: 市原市・小湊鐵道 養老渓谷駅前
         prefecture: Chiba
+        lat: 35.2668
+        lon: 140.1596
       - start_time: "13:10"
         end_time: "13:55"
         place_en: Michi-no-Eki Kisarazu Umakuta-no-Sato, Kisarazu
         place_ja: 木更津市・道の駅木更津うまくたの里
         prefecture: Chiba
+        lat: 35.3600
+        lon: 140.0525
       - start_time: "13:20"
         end_time: "15:35"
         place_en: Tokyo German Village, Sodegaura
         place_ja: 袖ケ浦市・東京ドイツ村
         prefecture: Chiba
+        lat: 35.4067
+        lon: 140.0625
       - start_time: "15:30"
         end_time: "17:00"
         place_en: Valentine Street, Makuhari Bay Town, Chiba City (finish ceremony)
         place_ja: 千葉市・幕張ベイタウン バレンタイン通り（ゴールセレモニー）
         prefecture: Chiba
+        # Approximate: Makuhari Bay Town, as for 2026; Valentine Street is not in OSM or GSI.
+        lat: 35.6381
+        lon: 140.0417
 list_as_of: 2025-09-09
 cars:
   - entry_no: "01"

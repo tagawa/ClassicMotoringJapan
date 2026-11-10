@@ -22,51 +22,74 @@ route:
         place_en: Atsuta Jingu, Nagoya (start)
         place_ja: 名古屋市・熱田神宮
         prefecture: Aichi
+        lat: 35.1254
+        lon: 136.9093
       - start_time: "11:10"
         end_time: "11:55"
         place_en: NTP Nagoya Toyopet, Nagoya
         place_ja: 名古屋市・NTP名古屋トヨペット
         prefecture: Aichi
+        # Approximate: Nagoya's point; the source does not say which branch.
+        lat: 35.1814
+        lon: 136.9066
       - start_time: "11:35"
         end_time: "12:20"
         place_en: Toyota Commemorative Museum of Industry and Technology, Nagoya
         place_ja: 名古屋市・トヨタ産業技術記念館
         prefecture: Aichi
+        lat: 35.1825
+        lon: 136.8765
       - start_time: "12:30"
         end_time: "13:15"
         place_en: Mihama Circuit, Mihama
         place_ja: 美浜町・美浜サーキット
         prefecture: Aichi
+        lat: 34.7631
+        lon: 136.8723
       - start_time: "12:45"
         end_time: "13:30"
         place_en: Shoku to Kenko no Yakata, Mihama
         place_ja: 美浜町・食と健康の館
         prefecture: Aichi
+        lat: 34.7559
+        lon: 136.8477
       - start_time: "13:25"
         end_time: "14:10"
         place_en: Green space at Utsumi, Minamichita
         place_ja: 南知多町・内海小桝緑地
         prefecture: Aichi
+        # Approximate: The district of 内海小桝, from GSI.
+        lat: 34.7301
+        lon: 136.8748
       - start_time: "13:40"
         end_time: "14:25"
         place_en: Mihama Circuit, Mihama
         place_ja: 美浜町・美浜サーキット
         prefecture: Aichi
+        lat: 34.7631
+        lon: 136.8723
       - start_time: "14:30"
         end_time: "15:45"
         place_en: NTP Nagoya Toyopet Marina Rinku, Tokoname
         place_ja: 常滑市・NTP名古屋トヨペット マリーナりんくう
         prefecture: Aichi
+        # Approximate: The district of りんくう町; the marina is not in OSM or GSI.
+        lat: 34.8897
+        lon: 136.8267
       - start_time: "16:30"
         end_time: "17:15"
         place_en: Naritasan Betsuin temple, Inuyama
         place_ja: 犬山市・成田山別院
         prefecture: Aichi
+        lat: 35.3899
+        lon: 136.9487
       - start_time: "16:35"
         end_time: "17:20"
         place_en: Hotel Indigo Inuyama Urakuen, Inuyama
         place_ja: 犬山市・ホテルインディゴ犬山有楽苑
         prefecture: Aichi
+        lat: 35.3888
+        lon: 136.9419
   - date: 2026-04-18
     checkpoints:
       - start_time: "07:00"
@@ -74,51 +97,71 @@ route:
         place_en: Hotel Indigo Inuyama Urakuen, Inuyama
         place_ja: 犬山市・ホテルインディゴ犬山有楽苑
         prefecture: Aichi
+        lat: 35.3888
+        lon: 136.9419
       - start_time: "07:20"
         end_time: "08:35"
         place_en: Little World, Inuyama
         place_ja: 犬山市・リトルワールド
         prefecture: Aichi
+        lat: 35.3767
+        lon: 137.0175
       - start_time: "08:25"
         end_time: "09:10"
         place_en: Kani City Tourist Exchange Centre, Kani
         place_ja: 可児市・可児市観光交流館
         prefecture: Gifu
+        lat: 35.4577
+        lon: 137.0934
       - start_time: "09:10"
         end_time: "09:55"
         place_en: Michi-no-Eki Mino Shirakawa Piacere, Shirakawa
         place_ja: 白川町・道の駅美濃白川ピアチェーレ
         prefecture: Gifu
+        lat: 35.6039
+        lon: 137.1739
       - start_time: "09:55"
         end_time: "10:40"
         place_en: Gero Onsen Gassho Village, Gero
         place_ja: 下呂市・下呂温泉合掌村
         prefecture: Gifu
+        lat: 35.8085
+        lon: 137.2499
       - start_time: "10:45"
         end_time: "11:55"
         place_en: Meiho Ski Resort, Gujo
         place_ja: 郡上市・めいほうスキー場
         prefecture: Gifu
+        lat: 35.9511
+        lon: 137.0290
       - start_time: "14:10"
         end_time: "14:55"
         place_en: Horossa fossil centre, Ono
         place_ja: 大野市・化石発掘センターホロッサ
         prefecture: Fukui
+        lat: 35.8991
+        lon: 136.6520
       - start_time: "15:35"
         end_time: "16:20"
         place_en: Fukui Prefectural Dinosaur Museum, Katsuyama
         place_ja: 勝山市・福井県立恐竜博物館
         prefecture: Fukui
+        lat: 36.0823
+        lon: 136.5066
       - start_time: "16:10"
         end_time: "16:55"
         place_en: Taniguchiya car park, Sakai
         place_ja: 坂井市・谷口屋駐車場
         prefecture: Fukui
+        lat: 36.1571
+        lon: 136.3326
       - start_time: "16:35"
         end_time: "17:20"
         place_en: Ruriko hotel, Kaga
         place_ja: 加賀市・瑠璃光
         prefecture: Ishikawa
+        lat: 36.2945
+        lon: 136.3643
   - date: 2026-04-19
     checkpoints:
       - start_time: "08:00"
@@ -126,51 +169,72 @@ route:
         place_en: Ruriko hotel, Kaga
         place_ja: 加賀市・瑠璃光
         prefecture: Ishikawa
+        lat: 36.2945
+        lon: 136.3643
       - start_time: "08:35"
         end_time: "09:20"
         place_en: Ishikawa Aviation Plaza, Komatsu
         place_ja: 小松市・石川県航空プラザ
         prefecture: Ishikawa
+        lat: 36.4044
+        lon: 136.4108
       - start_time: "08:55"
         end_time: "09:40"
         place_en: Kutani Pottery Village, Nomi
         place_ja: 能美市・九谷陶芸村
         prefecture: Ishikawa
+        lat: 36.4285
+        lon: 136.5188
       - start_time: "09:55"
         end_time: "10:40"
         place_en: Kanazawa Monozukuri Kaikan, Kanazawa
         place_ja: 金沢市・金沢ものづくり会館
         prefecture: Ishikawa
+        # Approximate: The city's point; the hall is not in OSM or GSI.
+        lat: 36.5611
+        lon: 136.6565
       - start_time: "10:05"
         end_time: "10:50"
         place_en: Kanazawa Racecourse, Kanazawa
         place_ja: 金沢市・金沢競馬場
         prefecture: Ishikawa
+        lat: 36.6385
+        lon: 136.6741
       - start_time: "11:35"
         end_time: "13:20"
         place_en: Chirihama Nagisa Driveway, Hakui
         place_ja: 羽咋市・千里浜なぎさドライブウェイ
         prefecture: Ishikawa
+        lat: 36.8791
+        lon: 136.7621
       - start_time: "13:35"
         end_time: "14:20"
         place_en: Michi-no-Eki Kurikara Juku, Tsubata
         place_ja: 津幡町・道の駅 倶利伽羅塾
         prefecture: Ishikawa
+        lat: 36.6626
+        lon: 136.7681
       - start_time: "14:15"
         end_time: "15:00"
         place_en: Iozen Ski Area, Kanazawa
         place_ja: 金沢市・医王山スキー場
         prefecture: Ishikawa
+        lat: 36.5273
+        lon: 136.7517
       - start_time: "16:00"
         end_time: "17:05"
         place_en: Japan Automobile Museum, Komatsu
         place_ja: 小松市・日本自動車博物館
         prefecture: Ishikawa
+        lat: 36.3343
+        lon: 136.4305
       - start_time: "16:35"
         end_time: "17:20"
         place_en: Ruriko hotel, Kaga
         place_ja: 加賀市・瑠璃光
         prefecture: Ishikawa
+        lat: 36.2945
+        lon: 136.3643
   - date: 2026-04-20
     checkpoints:
       - start_time: "07:00"
@@ -178,61 +242,88 @@ route:
         place_en: Ruriko hotel, Kaga
         place_ja: 加賀市・瑠璃光
         prefecture: Ishikawa
+        lat: 36.2945
+        lon: 136.3643
       - start_time: "07:40"
         end_time: "08:20"
-        place_en: Shibamasa World, Awara
-        place_ja: あわら市・芝政ワールド
+        # The organiser lists it under Awara; its address, 三国町浜地, is in Sakai, by the border.
+        place_en: Shibamasa World, Sakai
+        place_ja: 坂井市・芝政ワールド
         prefecture: Fukui
+        lat: 36.2505
+        lon: 136.1785
       - start_time: "09:00"
         end_time: "09:45"
         place_en: Eiheiji tourist information centre, Eiheiji
         place_ja: 永平寺町・永平寺町観光案内所
         prefecture: Fukui
+        # Approximate: Eiheiji temple; the information centre is not in OSM or GSI.
+        lat: 36.0557
+        lon: 136.3560
       - start_time: "09:15"
         end_time: "10:00"
         place_en: Ichijodani Asakura Family Ruins, Fukui City
         place_ja: 福井市・一乗谷朝倉氏遺跡
         prefecture: Fukui
+        lat: 35.9995
+        lon: 136.2951
       - start_time: "09:50"
         end_time: "10:35"
         place_en: Megane Museum, Sabae
         place_ja: 鯖江市・めがねミュージアム
         prefecture: Fukui
+        lat: 35.9428
+        lon: 136.1988
       - start_time: "10:30"
         end_time: "11:15"
         place_en: Echizen Crab Museum, Michi-no-Eki Echizen
         place_ja: 越前町・道の駅 越前 越前がにミュージアム
         prefecture: Fukui
+        lat: 35.9217
+        lon: 135.9977
       - start_time: "11:20"
         end_time: "13:00"
         place_en: Kirameki Minatokan, Tsuruga
         place_ja: 敦賀市・きらめきみなと館
         prefecture: Fukui
+        lat: 35.6600
+        lon: 136.0711
       - start_time: "12:35"
         end_time: "13:20"
         place_en: Kehi Jingu approach, Tsuruga
         place_ja: 敦賀市・氣比神宮参道
         prefecture: Fukui
+        # Approximate: Kehi Jingu itself, at the head of its approach.
+        lat: 35.6547
+        lon: 136.0746
       - start_time: "13:40"
         end_time: "14:45"
         place_en: Kumagawa-juku, Wakasa
         place_ja: 若狭町・熊川宿
         prefecture: Fukui
+        lat: 35.4402
+        lon: 135.9072
       - start_time: "15:00"
         end_time: "15:45"
         place_en: Michi-no-Eki Kutsuki Shinhonjin, Takashima
         place_ja: 高島市・道の駅くつき新本陣
         prefecture: Shiga
+        lat: 35.3511
+        lon: 135.9156
       - start_time: "16:05"
         end_time: "17:15"
         place_en: Okazaki Park, Kyoto City (finish)
         place_ja: 京都市・岡崎公園
         prefecture: Kyoto
+        lat: 35.0140
+        lon: 135.7832
       - start_time: "16:50"
         end_time: "17:30"
         place_en: The Westin Miyako Kyoto, Kyoto City
         place_ja: 京都市・ウェスティン都ホテル京都
         prefecture: Kyoto
+        lat: 35.0093
+        lon: 135.7882
 # From /2026/entrylist/, published 2026-03-27. Numbers 10, 20, 30, 40 and 50 are listed
 # as "xx", and 04 and 42 are not on it.
 list_as_of: 2026-11-08

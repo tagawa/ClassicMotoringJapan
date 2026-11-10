@@ -28,36 +28,53 @@ route:
         place_en: Himeji Otemae Park (start, timed trial)
         place_ja: 姫路大手前公園
         prefecture: Hyogo
+        lat: 34.8351
+        lon: 134.6933
       - start_time: "09:30"
         place_en: Kotani, Kasai (timed trial)
         place_ja: 株式会社コタニ
         prefecture: Hyogo
+        lat: 34.8878
+        lon: 134.8741
       - start_time: "12:20"
         place_en: Akashi Kaikyo National Government Park, Awaji (display run)
         place_ja: 国営明石海峡公園
         prefecture: Hyogo
+        # Approximate: The park's Awaji section, from GSI.
+        lat: 34.5630
+        lon: 135.0121
       - start_time: "14:35"
         place_en: Nishiwaki City Hall (timed trial)
         place_ja: 西脇市役所
         prefecture: Hyogo
+        lat: 34.9831
+        lon: 134.9796
       - start_time: "15:35"
         place_en: Shiso City Hall (timed trial)
         place_ja: 宍粟市役所
         prefecture: Hyogo
+        lat: 35.0043
+        lon: 134.5495
       - start_time: "16:45"
         place_en: Arcrea Himeji (arrival)
         place_ja: アクリエひめじ
         prefecture: Hyogo
+        lat: 34.8266
+        lon: 134.6999
   - date: 2026-06-07
     checkpoints:
       - start_time: "09:50"
         place_en: Arcrea Himeji (start)
         place_ja: アクリエひめじ
         prefecture: Hyogo
+        lat: 34.8266
+        lon: 134.6999
       - start_time: "12:20"
         place_en: Himeji Otemae Park (finish)
         place_ja: 姫路大手前公園
         prefecture: Hyogo
+        lat: 34.8351
+        lon: 134.6933
 list_as_of: 2026-05-31
 cars:
   - entry_no: "1"

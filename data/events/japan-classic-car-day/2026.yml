@@ -26,10 +26,14 @@ route:
         place_en: Daikanyama T-Site car park (start)
         place_ja: 代官山蔦屋書店駐車場
         prefecture: Tokyo
+        lat: 35.6493
+        lon: 139.6998
       - start_time: "09:30"
         place_en: Tokyo Prince Hotel (finish)
         place_ja: 東京プリンスホテル
         prefecture: Tokyo
+        lat: 35.6589
+        lon: 139.7488
 # The club's post of 21 October says 68 cars; the list it links, updated on the 23rd, heads itself 69 and has 69.
 # Entries are from that post, cccj.org/information/jccd2026...エントリーリスト, country column included.
 list_as_of: 2026-10-23

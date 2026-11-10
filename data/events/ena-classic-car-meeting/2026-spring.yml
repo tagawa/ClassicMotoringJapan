@@ -31,12 +31,21 @@ route:
         place_en: Jardin, Ena (start)
         place_ja: 恵那市・ジャルダン
         prefecture: Gifu
+        # Approximate: The town's point; Jardin is not in OSM or GSI.
+        lat: 35.4493
+        lon: 137.4128
       - start_time: "09:53"
         place_en: Iwamura, Ena (lead car passes)
         place_ja: 恵那市・岩村本町交差点
         prefecture: Gifu
+        # Approximate: Iwamura's point; the junction is not in OSM or GSI.
+        lat: 35.3602
+        lon: 137.4393
       - start_time: "10:35"
         end_time: "11:00"
         place_en: Taisho-mura Roman-tei, Akechi (finish)
         place_ja: 恵那市・大正村浪漫亭
         prefecture: Gifu
+        # Approximate: Nihon Taisho-mura; Roman-tei itself is not in OSM or GSI.
+        lat: 35.3050
+        lon: 137.3885

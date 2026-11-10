@@ -25,53 +25,78 @@ route:
         place_en: Gateaux Kingdom Koumi (cars on display)
         place_ja: ガトーキングダム小海
         prefecture: Nagano
+        lat: 36.0558
+        lon: 138.4140
       - start_time: "10:00"
         place_en: Gateaux Kingdom Koumi (start)
         place_ja: ガトーキングダム小海
         prefecture: Nagano
+        lat: 36.0558
+        lon: 138.4140
       - start_time: "10:30"
         place_en: Michi-no-Eki Yachiho Kogen, Sakuho
         place_ja: 道の駅 八千穂高原
         prefecture: Nagano
+        lat: 36.1286
+        lon: 138.4651
       - start_time: "11:15"
         place_en: Art Village Myojinkan
         place_ja: アートヴィレッジ明神館
         prefecture: Nagano
+        lat: 36.3228
+        lon: 138.3264
       - start_time: "11:55"
         place_en: Saku Ski Garden Parada, Saku
         place_ja: 佐久スキーガーデンパラダ
         prefecture: Nagano
+        lat: 36.2796
+        lon: 138.5137
       - start_time: "13:10"
         end_time: "14:10"
         place_en: Tsumagoi Prince Hotel, Tsumagoi
         place_ja: 嬬恋プリンスホテル
         prefecture: Gunma
+        lat: 36.5549
+        lon: 138.5437
       - start_time: "15:25"
         place_en: Kakuichi Seisakusho Tomi factory, Tomi
         place_ja: 株式会社カクイチ製作所 東御工場
         prefecture: Nagano
+        # Approximate: Kakuichi's site at Kazawa, Tomi, in OSM; the factory itself is not listed.
+        lat: 36.3447
+        lon: 138.3518
       - start_time: "16:30"
         place_en: Yachiho Kogen ski area, Sakuho
         place_ja: 八千穂高原スキー場
         prefecture: Nagano
+        lat: 36.0688
+        lon: 138.3756
       - start_time: "16:45"
         place_en: Gateaux Kingdom Koumi (finish)
         place_ja: ガトーキングダム小海
         prefecture: Nagano
+        lat: 36.0558
+        lon: 138.4140
   - date: 2026-04-19
     checkpoints:
       - start_time: "10:00"
         place_en: Gateaux Kingdom Koumi (hill climb, first heat)
         place_ja: ガトーキングダム小海
         prefecture: Nagano
+        lat: 36.0558
+        lon: 138.4140
       - start_time: "11:15"
         place_en: Gateaux Kingdom Koumi (hill climb, second heat)
         place_ja: ガトーキングダム小海
         prefecture: Nagano
+        lat: 36.0558
+        lon: 138.4140
       - start_time: "12:00"
         place_en: Gateaux Kingdom Koumi (prizegiving)
         place_ja: ガトーキングダム小海
         prefecture: Nagano
+        lat: 36.0558
+        lon: 138.4140
 list_as_of: 2026-04-10
 cars:
   - entry_no: "1"

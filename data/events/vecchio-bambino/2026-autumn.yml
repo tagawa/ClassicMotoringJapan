@@ -31,84 +31,129 @@ route:
         place_en: Okayama Gokoku Shrine, Okayama
         place_ja: 岡山市・岡山縣護國神社
         prefecture: Okayama
+        lat: 34.6573
+        lon: 133.9551
       - start_time: "09:20"
         place_en: Sanyo Fureai Park (Sanyo Gymnasium), Akaiwa
         place_ja: 赤磐市・山陽ふれあい公園（山陽体育館）
         prefecture: Okayama
+        lat: 34.7679
+        lon: 134.0217
       - start_time: "09:50"
         place_en: Takatori Shoyu soy sauce brewery, Bizen
         place_ja: 備前市・鷹取醤油
         prefecture: Okayama
+        lat: 34.7317
+        lon: 134.1238
       - start_time: "10:20"
         place_en: Ushimado Teremok, Setouchi
         place_ja: 瀬戸内市・牛窓テレモーク
         prefecture: Okayama
+        lat: 34.6159
+        lon: 134.1551
       - start_time: "10:25"
         place_en: Hotel Limani, Setouchi
         place_ja: 瀬戸内市・ホテルリマーニ
         prefecture: Okayama
+        lat: 34.6162
+        lon: 134.1630
       - start_time: "10:50"
         place_en: Michi-no-Eki Kuroiyama Green Park, Setouchi
         place_ja: 瀬戸内市・道の駅 黒井山グリーンパーク
         prefecture: Okayama
+        lat: 34.6913
+        lon: 134.2062
       - start_time: "11:30"
         place_en: Bizen Hinase Bridge (Kakui and Kashira islands), Bizen
         place_ja: 備前市・備前♡日生大橋（鹿久居島・頭島）
         prefecture: Okayama
+        # Approximate: Kashira island, which the bridges reach; a bridge has no single point.
+        lat: 34.7003
+        lon: 134.2865
       - start_time: "11:40"
         place_en: Villa Stella Resort, Bizen
         place_ja: 備前市・ヴィラステラリゾート
         prefecture: Okayama
+        lat: 34.7246
+        lon: 134.2595
       - start_time: "12:20"
         place_en: Wakemaro Park and Wake Ukaidani Onsen, Wake
         place_ja: 和気町・わけまろパーク 和気鵜飼谷温泉
         prefecture: Okayama
+        lat: 34.8110
+        lon: 134.1434
       - start_time: "14:40"
         place_en: Hattoji Furusato-mura, Bizen
         place_ja: 備前市・八塔寺ふるさと村
         prefecture: Okayama
+        lat: 34.9174
+        lon: 134.2540
       - start_time: "16:00"
         place_en: Fureai-dori, Yunogo Onsen, Mimasaka
         place_ja: 美作市・湯郷温泉 ふれあい通り
         prefecture: Okayama
+        # Approximate: The district of 湯郷, from GSI.
+        lat: 34.9951
+        lon: 134.1378
       - start_time: "17:00"
         place_en: Yubara Onsen, Maniwa (finish)
         place_ja: 真庭市・湯原温泉郷
         prefecture: Okayama
+        lat: 35.2027
+        lon: 133.7371
   - date: 2026-10-04
     checkpoints:
       - start_time: "08:30"
         place_en: Yubara Onsen, Maniwa (start)
         place_ja: 真庭市・湯原温泉郷
         prefecture: Okayama
+        lat: 35.2027
+        lon: 133.7371
       - start_time: "09:30"
         place_en: Yamada Bee Farm honeybee farm, Kagamino
         place_ja: 鏡野町・山田養蜂場 みつばち農園
         prefecture: Okayama
+        # Approximate: GSI placed the address 塚谷785-1 in its district only.
+        lat: 35.1241
+        lon: 133.9037
       - start_time: "10:00"
         place_en: Hanabijin-no-Sato, Okutsu Onsen, Kagamino
         place_ja: 鏡野町・奥津温泉 花美人の里
         prefecture: Okayama
+        lat: 35.2214
+        lon: 133.9197
       - start_time: "10:50"
         place_en: Hiruzen Kogen Sports Park (Kaze no Palette Hiruzen), Maniwa
         place_ja: 真庭市・蒜山高原スポーツ公園（風のパレット HIRUZEN）
         prefecture: Okayama
+        # Approximate: GSI placed the address 蒜山上長田2300-1 in its district only.
+        lat: 35.3028
+        lon: 133.7048
       - start_time: "11:30"
         place_en: Hiruzen Kogen Center Joyful Park, Maniwa
         place_ja: 真庭市・ヒルゼン高原センター ジョイフルパーク
         prefecture: Okayama
+        lat: 35.2904
+        lon: 133.6346
       - start_time: "13:30"
         place_en: Makiba no Yakata, Misaki
         place_ja: 美咲町・まきばの館
         prefecture: Okayama
+        # Approximate: GSI placed the address 北2272 in its district only.
+        lat: 35.0285
+        lon: 133.8572
       - start_time: "15:00"
         place_en: Takebe Hachiman Onsen, Okayama
         place_ja: 岡山市・たけべ八幡温泉
         prefecture: Okayama
+        lat: 34.8629
+        lon: 133.9049
       - start_time: "16:00"
         place_en: Okayama Plaza Hotel, Okayama (finish)
         place_ja: 岡山市・岡山プラザホテル
         prefecture: Okayama
+        lat: 34.6707
+        lon: 133.9362
 list_as_of: 2026-09-14
 cars:
   - entry_no: "1"

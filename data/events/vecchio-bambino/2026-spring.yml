@@ -23,46 +23,72 @@ route:
         place_en: Brazilian Park Washuzan Highland, Kurashiki (start)
         place_ja: 倉敷市・ブラジリアンパーク鷲羽山ハイランド
         prefecture: Okayama
+        lat: 34.4464
+        lon: 133.7982
       - start_time: "09:00"
         place_en: Bikan historical quarter, Kurashiki
         place_ja: 倉敷市・倉敷美観地区
         prefecture: Okayama
+        lat: 34.5965
+        lon: 133.7726
       - start_time: "09:35"
         place_en: Tamashima Harbour Island, Kurashiki
         place_ja: 倉敷市・玉島ハーバーアイランド
         prefecture: Okayama
+        lat: 34.4959
+        lon: 133.6764
       - start_time: "09:45"
         place_en: Tamashima Torimachi shopping street, Kurashiki
         place_ja: 倉敷市・玉島通町商店街
         prefecture: Okayama
+        lat: 34.5433
+        lon: 133.6745
       - start_time: "10:00"
         place_en: Nishimachi and Nakagaimachi, Tamashima, Kurashiki
         place_ja: 倉敷市・玉島西町・仲買町
         prefecture: Okayama
+        lat: 34.5428
+        lon: 133.6656
       - start_time: "10:15"
         place_en: Sami Beach west car park, Kurashiki
         place_ja: 倉敷市・沙美海岸西駐車場
         prefecture: Okayama
+        # Approximate: The district of 玉島黒崎, where the beach is; the car park is not in OSM or GSI.
+        lat: 34.5142
+        lon: 133.6351
       - start_time: "10:40"
         place_en: Horseshoe Crab Museum, Kasaoka
         place_ja: 笠岡市・笠岡市立カブトガニ博物館
         prefecture: Okayama
+        lat: 34.4775
+        lon: 133.5214
       - start_time: "11:10"
         place_en: Kasaoka Cherry Blossom Festival, Kasaoka
         place_ja: 笠岡市・笠岡さくら祭
         prefecture: Okayama
+        # Approximate: The district of 笠岡; the source gives no venue.
+        lat: 34.5138
+        lon: 133.5154
       - start_time: "11:40"
         place_en: Ibara Line DE Tokutoku-ichi market, Ibara
         place_ja: 井原市・井原線DE得得市
         prefecture: Okayama
+        # Approximate: Ibara station; the source gives no venue.
+        lat: 34.5931
+        lon: 133.4684
       - start_time: "13:25"
         place_en: Old San'yodo highway, Yakage
         place_ja: 矢掛町・旧山陽道
         prefecture: Okayama
+        # Approximate: The district of 矢掛, the post town on the old highway.
+        lat: 34.6317
+        lon: 133.5978
       - start_time: "15:30"
         place_en: Okayama Plaza Hotel, Okayama (finish)
         place_ja: 岡山市・岡山プラザホテル
         prefecture: Okayama
+        lat: 34.6707
+        lon: 133.9362
 list_as_of: 2026-03-24
 cars:
   - entry_no: "1"
