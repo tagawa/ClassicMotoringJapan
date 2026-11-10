@@ -9,10 +9,12 @@ source_url: https://www.motor-gathering.com/archives/1556
 last_verified: 2026-11-05
 sequence: 0
 videos:
+  # Video by nostalgiccar.
   - youtube_id: XCIVjQjCbv4
-    label_en: Report from the event (video by nostalgiccar)
+    label_en: Report from the event
+  # Video by Maebashi Sunday Meeting.
   - youtube_id: WZZrZ0ZvODk
-    label_en: Cars on display on 5 September (video by Maebashi Sunday Meeting)
+    label_en: Cars on display on 5 September
 # The Concours of Elegance entries, one post each on the organiser's site. Entries 14
 # and 32 were never posted. The wider display has no published list.
 list_as_of: 2026-09-01

@@ -1,0 +1,341 @@
+slug: shcc
+# The 71st meeting. The cars are from the club's results sheet
+# (https://shcc.info/documents/Result_71OISO_ALL.pdf), no longer linked from the site but
+# still on the server, read 2026-11-10. Same reading as 2026-spring.yml: class letter plus
+# number, Unknown where the sheet gives no make or no model, nicknames and livery names
+# left out. B7 and MA3 (リタイア, retired) and D5 (車両変更, car changed) name no car and are
+# left out. The AR class is Alfa Romeo's; AR1, AR2, AR3, AR8 and AR9 are cut off at the
+# sheet's column edge and completed where the cut-off text allows (AR3 stops at
+# "GIULIETTA SF" and is given as Giulietta). Spelling corrected: "Spirnt", "Sptrint",
+# "Coope". K2's "アメリア" is taken to be the car's name and left out.
+# Hours are the time trial's, from the club's rules sheet (regulation220227.pdf).
+year: 2024
+status: confirmed
+start: 2024-11-24
+end: 2024-11-24
+start_time: "09:30"
+end_time: "16:00"
+source_url: https://shcc.info/news/archives/13
+last_verified: 2026-11-10
+sequence: 0
+videos:
+  # Video by SPACIOUS TV.
+  - youtube_id: l9X7br3HQLc
+    label_en: 71st edition
+list_as_of: 2024-11-24
+cars:
+  - entry_no: "A1"
+    make: Honda
+    model: S600 Coupé
+  - entry_no: "A2"
+    make: Fiat
+    model: Giannini 590 GT Corsa
+  - entry_no: "A3"
+    make: Honda
+    model: Life
+  - entry_no: "A5"
+    make: Renault
+    model: Dauphine
+  - entry_no: "A6"
+    make: Suzuki
+    model: Fronte Coupé GE
+  - entry_no: "A7"
+    make: Fiat
+    model: 500F
+  - entry_no: "A8"
+    make: Honda
+    model: S600 Coupé
+  - entry_no: "A9"
+    make: Honda
+    model: Z360 (N360)
+  - entry_no: "A10"
+    make: Subaru
+    model: "360"
+  - entry_no: "A11"
+    make: Honda
+    model: S600
+  - entry_no: "B1"
+    make: Suzuki
+    model: Fronte Coupé RP
+  - entry_no: "B2"
+    make: Subaru
+    model: ff-1
+  - entry_no: "B3"
+    make: Austin
+    model: Mini Cooper S
+  - entry_no: "B5"
+    make: Lancia
+    model: Fulvia Coupé 1.3
+  - entry_no: "B6"
+    make: Hino
+    model: Contessa 900
+  - entry_no: "B8"
+    make: Toyota
+    model: Publica KP30
+  - entry_no: "B9"
+    make: Austin-Healey
+    model: Sprite Mk IV
+  - entry_no: "B10"
+    make: Hino
+    model: Contessa 900
+  - entry_no: "C2"
+    make: Lotus
+    model: Seven
+  - entry_no: "C3"
+    make: Cox
+    model: GTM
+  - entry_no: "C5"
+    make: Lotus
+    model: Elan S1
+  - entry_no: "C6"
+    make: Lotus
+    model: Elan S1
+  - entry_no: "C7"
+    make: Datsun
+    model: Bluebird 1600 SSS Coupé
+  - entry_no: "C8"
+    make: Nissan
+    model: Sunny Truck
+  - entry_no: "C9"
+    make: Fiat-Abarth
+    model: 1000TC HSpl
+  - entry_no: "C10"
+    make: Nissan
+    model: Cherry X-1R
+  - entry_no: "C11"
+    make: Lotus
+    model: Elan S4 Sprint
+  - entry_no: "C12"
+    make: Lotus
+    model: Elan S3 DHC
+  - entry_no: "C13"
+    make: Alfa Romeo
+    model: Giulia Sprint GTA
+  - entry_no: "C14"
+    make: Triumph
+    model: Spitfire Mk III
+  - entry_no: "C15"
+    make: Lotus
+    model: Elan S2
+  - entry_no: "C16"
+    make: Alpine
+    model: A110
+  - entry_no: "D1"
+    make: Ginetta
+    model: G4
+  - entry_no: "D2"
+    make: Datsun
+    model: Bluebird 1600 SSS
+  - entry_no: "D3"
+    make: Datsun
+    model: Sunny
+  - entry_no: "D6"
+    make: Isuzu
+    model: Bellett
+  - entry_no: "D7"
+    make: Isuzu
+    model: Bellett GTR
+  - entry_no: "D8"
+    make: Nissan
+    model: Sunny Truck LFB-122
+  - entry_no: "D9"
+    make: Fiat
+    model: X1/9 Bertone
+  - entry_no: "D10"
+    make: Datsun
+    model: Fairlady
+  - entry_no: "D11"
+    make: Datsun
+    model: Sunny B310
+  - entry_no: "D12"
+    make: Datsun
+    model: Sunny B310
+  - entry_no: "D13"
+    make: Datsun
+    model: Fairlady SR311
+  - entry_no: "D14"
+    make: Datsun
+    model: Sunny Coupé
+  - entry_no: "D15"
+    make: Toyota
+    model: Sprinter Trueno
+  - entry_no: "D16"
+    make: Datsun
+    model: Fairlady
+  - entry_no: "D17"
+    make: Datsun
+    model: Sunny Truck
+  - entry_no: "D18"
+    make: Datsun
+    model: Sunny B110
+  - entry_no: "D19"
+    make: Datsun
+    model: Fairlady 2000
+  - entry_no: "D20"
+    make: Datsun
+    model: Fairlady
+  - entry_no: "D21"
+    make: Toyota
+    model: Celica
+  - entry_no: "D22"
+    make: Lotus
+    model: Europa SPL
+  - entry_no: "D23"
+    make: Datsun
+    model: Fairlady SR311
+  - entry_no: "D24"
+    make: Volkswagen
+    model: Type 1
+  - entry_no: "D25"
+    make: Ginetta
+    model: G4
+  - entry_no: "D26"
+    make: Alfa Romeo
+    model: 2000 GTV
+  - entry_no: "R1"
+    make: Caterham
+    model: Seven 480R
+  - entry_no: "R2"
+    make: Lotus
+    model: "51"
+  - entry_no: "R3"
+    make: Unknown
+    model: Super Seven
+  - entry_no: "R5"
+    make: Caterham
+    model: Super Seven
+  - entry_no: "R6"
+    make: Caterham
+    model: Super Seven 1700 BDR-S
+  - entry_no: "R7"
+    make: Caterham
+    model: Super Seven Roadsport 300
+  - entry_no: "R8"
+    make: Caterham
+    model: R440
+  - entry_no: "R9"
+    make: Caterham
+    model: Seven
+  - entry_no: "MA1"
+    make: Unknown
+    model: Mini
+  - entry_no: "MA2"
+    make: Rover
+    model: Mini
+  - entry_no: "MA5"
+    make: Rover
+    model: Mini
+  - entry_no: "MA6"
+    make: Unknown
+    model: Mini Mayfair
+  - entry_no: "MA7"
+    make: Unknown
+    model: Mini 1300
+  - entry_no: "MA8"
+    make: Rover
+    model: Unknown
+  - entry_no: "MA9"
+    make: Rover
+    model: Unknown
+  - entry_no: "MA10"
+    make: Rover
+    model: Unknown
+  - entry_no: "MA11"
+    make: Unknown
+    model: Mini Cooper
+  - entry_no: "MA12"
+    make: Austin
+    model: Mini Cooper 1275S
+  - entry_no: "MB2"
+    make: Unknown
+    model: Mini 1000
+  - entry_no: "MB3"
+    make: Morris
+    model: Unknown
+  - entry_no: "K1"
+    make: MG
+    model: PA
+  - entry_no: "K2"
+    make: Austin
+    model: Seven Chummy
+  - entry_no: "K3"
+    make: MG
+    model: TD
+  - entry_no: "K5"
+    make: MG
+    model: TD
+  - entry_no: "L1"
+    make: Unknown
+    model: Mini
+  - entry_no: "L2"
+    make: Westfield
+    model: Super Seven
+  - entry_no: "L3"
+    make: Fiat
+    model: Giannini 590 GT Corsa
+  - entry_no: "L6"
+    make: Rover
+    model: Mini
+  - entry_no: "L7"
+    make: Birkin
+    model: Seven
+  - entry_no: "L8"
+    make: Lotus
+    model: Elan S3 DHC
+  - entry_no: "L9"
+    make: Morris
+    model: Mini Cooper Mk I
+  - entry_no: "L10"
+    make: Austin-Healey
+    model: Sprite Mk IV
+  - entry_no: "AR1"
+    make: Alfa Romeo
+    model: Giulietta Sprint
+  - entry_no: "AR2"
+    make: Alfa Romeo
+    model: Giulietta Spider
+  - entry_no: "AR3"
+    make: Alfa Romeo
+    model: Giulietta
+  - entry_no: "AR5"
+    make: Alfa Romeo
+    model: Giulietta Sprint
+  - entry_no: "AR6"
+    make: Alfa Romeo
+    model: Giulietta Sprint
+  - entry_no: "AR7"
+    make: Alfa Romeo
+    model: Giulietta Spider
+  - entry_no: "AR8"
+    make: Alfa Romeo
+    model: Giulietta Berlina
+  - entry_no: "AR9"
+    make: Alfa Romeo
+    model: Giulietta Sprint
+  - entry_no: "AR10"
+    make: Alfa Romeo
+    model: Giulietta Sprint Veloce
+  - entry_no: "AR11"
+    make: Alfa Romeo
+    model: 75 Evoluzione
+  - entry_no: "AR12"
+    make: Alfa Romeo
+    model: 75 Turbo Evoluzione
+  - entry_no: "AR13"
+    make: Alfa Romeo
+    model: Giulietta Berlina Ti
+  - entry_no: "ACJ203"
+    make: MG
+    model: MGB Mk I
+  - entry_no: "ACJ409"
+    make: Alfa Romeo
+    model: 4C
+  - entry_no: "ACJ479"
+    make: Rover
+    model: Mini 1.3i John Cooper
+  - entry_no: "ACJ744"
+    make: TVR
+    model: Grantura
+  - entry_no: "ACJ782"
+    make: Mitsubishi
+    model: i

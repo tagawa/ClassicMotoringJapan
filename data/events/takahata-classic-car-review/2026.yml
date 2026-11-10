@@ -12,5 +12,6 @@ source_url: https://shokokai-takahata.or.jp/event_classiccar2026/
 last_verified: 2026-10-27
 sequence: 0
 videos:
+  # Video by Yamagata Shimbun.
   - youtube_id: YJb_IugJsZc
-    label_en: News report, in Japanese (video by Yamagata Shimbun)
+    label_en: News report, in Japanese

@@ -9,5 +9,6 @@ source_url: https://www.youtube.com/watch?v=KOigJJUHddY
 last_verified: 2026-10-04
 sequence: 0
 videos:
+  # Video by Tokorozawa Jidosha Gakko.
   - youtube_id: KOigJJUHddY
-    label_en: Event film, ending with the entry cars lined up (video by Tokorozawa Jidosha Gakko)
+    label_en: Event film, ending with the entry cars lined up

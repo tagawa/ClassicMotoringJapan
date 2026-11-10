@@ -13,5 +13,6 @@ route_en: >
   New Otani in Yuzawa, Niigata, with 54 timed stages: 36 on Saturday and 18 on
   Sunday.
 videos:
+  # Video by strada.
   - youtube_id: 5zjLcoE5-zI
-    label_en: Both days (video by strada)
+    label_en: Both days

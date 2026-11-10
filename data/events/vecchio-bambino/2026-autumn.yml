@@ -8,12 +8,15 @@ last_verified: 2026-10-05
 sequence: 0
 videos:
   # The channel gives no Latin-script name; TSCテレビせとうち is the broadcaster TV Setouchi.
+  # Video by TV Setouchi.
   - youtube_id: UGcV37v8wKE
-    label_en: Both days of the rally (video by TV Setouchi)
+    label_en: Both days of the rally
+  # Video by Okatabi Channel.
   - youtube_id: h9QdtjnC08I
-    label_en: The start at Okayama Gokoku Shrine (video by Okatabi Channel)
+    label_en: The start at Okayama Gokoku Shrine
+  # Video by HB countryside.
   - youtube_id: vJERHS8x77U
-    label_en: Day 2 at Hiruzen Kogen Center, in the rain (video by HB countryside)
+    label_en: Day 2 at Hiruzen Kogen Center, in the rain
 route_en: >
   The 28th running. Cars gathered at the shrine from 07:00 and set off from
   08:30. Saturday's leg ran through Akaiwa, Bizen, Setouchi, Wake and Mimasaka to

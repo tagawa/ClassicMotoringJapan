@@ -11,8 +11,9 @@ sequence: 0
 # Stated for 2026 in the entry rules (/entry-rules/): models built or announced by then.
 cutoff_year: 1995
 videos:
+  # Video by SSLC caRS.
   - youtube_id: W6Kb1rhRSfs
-    label_en: The cars on show (video by SSLC caRS)
+    label_en: The cars on show
 # From /cars/. The site's last car announcement was 12 October. Numbers A23, A28, A48
 # and B20 are not on it. Entry F40 (D7) has no year there.
 list_as_of: 2026-10-12

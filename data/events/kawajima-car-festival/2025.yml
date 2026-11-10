@@ -10,5 +10,6 @@ last_verified: 2026-10-04
 sequence: 0
 videos:
   # The channel gives no Latin-script name, so ろーちゃんねる is romanised here.
+  # Video by Ro Channel.
   - youtube_id: wg9ukMeFhco
-    label_en: Clips from the day (video by Ro Channel)
+    label_en: Clips from the day

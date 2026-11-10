@@ -11,5 +11,6 @@ sequence: 0
 # Entries closed once the field was full and the organiser publishes no roster, so
 # there is no list of cars to give.
 videos:
+  # Video by YOU-CarLifeChannel.
   - youtube_id: 4xPrLXZqKIs
-    label_en: A tour of the event (video by YOU-CarLifeChannel)
+    label_en: A tour of the event

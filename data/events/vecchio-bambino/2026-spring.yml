@@ -8,8 +8,9 @@ last_verified: 2026-10-05
 sequence: 0
 videos:
   # The channel gives no Latin-script name; TSCテレビせとうち is the broadcaster TV Setouchi.
+  # Video by TV Setouchi.
   - youtube_id: Ev0S5kzKN3s
-    label_en: Both days of the rally (video by TV Setouchi)
+    label_en: Both days of the rally
 route_en: >
   The 27th running. Saturday's leg left Okayama Gokoku Shrine for Tsuyama,
   Hiruzen, Shinjo and Fukiya, finishing at Brazilian Park Washuzan Highland in

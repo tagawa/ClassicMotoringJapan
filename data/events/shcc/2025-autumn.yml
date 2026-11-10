@@ -1,13 +1,15 @@
 slug: shcc
-# The 73rd meeting. Its results sheet was already gone from the club's server on
-# 2026-11-10 (Result_73OISO_ALL.pdf, 404), so there is no entry list.
-# Hours are the time trial's, from the club's rules sheet (regulation220227.pdf).
+# The 73rd meeting. The club's report (source_url) says the meeting and its talk show went
+# ahead in the rain but the time trial was called off, so there are no hours and no results
+# sheet (Result_73OISO_ALL.pdf was 404 on 2026-11-10).
 year: 2025
 status: confirmed
 start: 2025-10-26
 end: 2025-10-26
-start_time: "09:30"
-end_time: "16:00"
-source_url: https://shcc.info/news/archives/17
+source_url: https://shcc.info/news/archives/18
 last_verified: 2026-11-10
 sequence: 0
+videos:
+  # Video by 5t8221, a slideshow of photos.
+  - youtube_id: qOT33o8q_3A
+    label_en: Photos of the cars at the venue; the time trial was called off in the rain

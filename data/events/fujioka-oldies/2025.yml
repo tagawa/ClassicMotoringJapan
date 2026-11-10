@@ -11,5 +11,6 @@ last_verified: 2026-09-27
 sequence: 0
 videos:
   # Tagged 【公式】 and made for the organiser, but uploaded to another channel.
+  # Video by Yukinocchi Channel.
   - youtube_id: l8v3sAKQ7V4
-    label_en: Event film (video by Yukinocchi Channel)
+    label_en: Event film

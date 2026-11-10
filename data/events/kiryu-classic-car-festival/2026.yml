@@ -12,10 +12,13 @@ last_verified: 2026-11-03
 sequence: 0
 videos:
   # The channel, 前橋サンデーミーティング, gives no Latin form of its name, so the credit is romanised.
+  # Video by Maebashi Sunday Meeting.
   - youtube_id: GJgrly8_i8U
-    label_en: Cars on display, the rally and shop stalls (video by Maebashi Sunday Meeting)
+    label_en: Cars on display, the rally and shop stalls
+  # Video by Jiji Nobo.
   - youtube_id: UNHgSsRq79o
-    label_en: The 19th festival at Gunma University's Kiryu campus (video by Jiji Nobo)
+    label_en: The 19th festival at Gunma University's Kiryu campus
   # The channel, 稀に暇な医療事務えみちゃん, gives no Latin form of its name, so the credit is romanised.
+  # Video by Mare ni Hima na Iryo Jimu Emi-chan.
   - youtube_id: alxATJkUKCo
-    label_en: Cars arriving (video by Mare ni Hima na Iryo Jimu Emi-chan)
+    label_en: Cars arriving

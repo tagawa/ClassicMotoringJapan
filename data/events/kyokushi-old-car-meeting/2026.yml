@@ -12,5 +12,6 @@ last_verified: 2026-10-06
 sequence: 0
 videos:
   # The channel name is 半袖つなぎ男; its handle gives the Latin-script form.
+  # Video by Hansode Tsunagi Otoko.
   - youtube_id: dnIa9ZhMTcw
-    label_en: Clips from the day (video by Hansode Tsunagi Otoko)
+    label_en: Clips from the day

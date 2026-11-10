@@ -9,8 +9,9 @@ source_url: https://www.takashimaya.co.jp/tamagawa/sc/event/?id=7216
 last_verified: 2026-10-27
 sequence: 0
 videos:
+  # Video by Rare Machines Garage.
   - youtube_id: 6ArIC4NT1Gs
-    label_en: The cars on show (video by Rare Machines Garage)
+    label_en: The cars on show
 list_as_of: 2026-09-21
 # The source names the models it will have on the floor, not the individual cars, so
 # there are no entry numbers and no years to give.

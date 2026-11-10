@@ -416,7 +416,9 @@ cars:
 videos:
   - youtube_id: se4nefVXwrA
     label_en: The paddock and the start in Tokyo
+  # Video by bakabonspa.
   - youtube_id: UhoeNPmV0Ik
-    label_en: Day 2, the start at Urabandai Lake Resort (video by bakabonspa)
+    label_en: Day 2, the start at Urabandai Lake Resort
+  # Video by SPACIOUS TV.
   - youtube_id: bk0uQ4fxkpE
-    label_en: Taking part as co-driver (video by SPACIOUS TV)
+    label_en: Taking part as co-driver

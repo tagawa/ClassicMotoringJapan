@@ -17,8 +17,9 @@ start_time: "09:30"
 end_time: "16:00"
 sequence: 0
 videos:
+  # Video by SPACIOUS TV.
   - youtube_id: f09y8R-rSNg
-    label_en: 74th edition (video by SPACIOUS TV)
+    label_en: 74th edition
   # The club's own channel (湘南ヒストリックカークラブch), in two halves.
   - youtube_id: QUxwqPz3yZY
     label_en: 74th edition, part 1

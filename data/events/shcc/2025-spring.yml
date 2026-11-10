@@ -5,7 +5,9 @@ slug: shcc
 # number, Unknown where the sheet gives no make or no model, nicknames and livery names
 # left out (MA7, MA9, D8, L1). MA8's "98" (98メイフェア) may be a year or a model
 # name, so it gives no year. MA10 is cut off at the sheet's
-# column edge after "1275S". The ACJ guest class is left out pending the owner's decision.
+# column edge after "1275S". The ACJ class, which includes modern cars, is in by the owner's
+# decision (2026-11-10). ACJ435 is left out: the sheet marks it as ACJ409's car entered a
+# second time (〃 Wエントリー).
 # Hours are the time trial's, from the club's rules sheet (regulation220227.pdf).
 year: 2025
 status: confirmed
@@ -16,6 +18,10 @@ end_time: "16:00"
 source_url: https://shcc.info/news/archives/15
 last_verified: 2026-11-10
 sequence: 0
+videos:
+  # Video by Y Sekiai.
+  - youtube_id: GoBKxzAp7k8
+    label_en: The Seven and Lotus classes
 list_as_of: 2025-04-06
 cars:
   - entry_no: "A2"
@@ -232,6 +238,30 @@ cars:
   - entry_no: "MB5"
     make: Morris
     model: Unknown
+  - entry_no: "ACJ203"
+    make: MG
+    model: MGB Mk I
+  - entry_no: "ACJ409"
+    make: Alpine
+    model: A110
+  - entry_no: "ACJ479"
+    make: Rover
+    model: Mini 1.3i John Cooper
+  - entry_no: "ACJ603"
+    make: Lotus
+    model: Elan S1
+  - entry_no: "ACJ744"
+    make: TVR
+    model: Grantura
+  - entry_no: "ACJ751"
+    make: Alpine
+    model: A110 Corse 75
+  - entry_no: "ACJ782"
+    make: Mitsubishi
+    model: i
+  - entry_no: "ACJ816"
+    make: Subaru
+    model: Vivio RX-R
   - entry_no: "L1"
     make: Unknown
     model: Mini
