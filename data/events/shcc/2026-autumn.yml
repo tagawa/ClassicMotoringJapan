@@ -1,13 +1,235 @@
 slug: shcc
+# The cars are from the club's results sheet, linked from https://shcc.info/download as
+# "last meeting's results" (http://shcc.info/documents/Result_75OISO_ALL.pdf), read
+# 2026-11-11; a copy is in ref/shcc/2026-autumn/. It gives class, number and car name
+# only, no years except MA7's. The entry numbers are the sheet's class letter plus number.
+# Makes the sheet leaves out are filled where the model settles them, as in spring 2026;
+# a bare Mini or Super Seven stays Unknown, and R3's model, never given, is Unknown.
+# Nicknames and livery names beside a model (B10's restomod excepted, D8, D16, MA3) are
+# left out. D16 is the sheet's "Don Quixote Yota 8 x1.87", a Toyota Sports 800.
 year: 2026
 status: confirmed
 start: 2026-11-08
 end: 2026-11-08
 source_url: https://shcc.info/news/archives/21
-last_verified: 2026-10-26
+last_verified: 2026-11-11
 start_time: "09:30"
 end_time: "16:00"
 sequence: 0
+list_as_of: 2026-11-08
+cars:
+  - entry_no: "A1"
+    make: Suzuki
+    model: Fronte Coupé
+  - entry_no: "A2"
+    make: Austin-Healey
+    model: Sebring Sprite
+  - entry_no: "A3"
+    make: Honda
+    model: N360
+  - entry_no: "A5"
+    make: Honda
+    model: S600 Coupé
+  - entry_no: "A6"
+    make: Subaru
+    model: 360 Super Deluxe
+  - entry_no: "A7"
+    make: Honda
+    model: S600
+  - entry_no: "B1"
+    make: Suzuki
+    model: Fronte Coupé GE
+  - entry_no: "B2"
+    make: Austin
+    model: Mini Cooper S
+  - entry_no: "B3"
+    make: Subaru
+    model: ff-1
+  - entry_no: "B5"
+    make: Suzuki
+    model: Fronte Coupé RP
+  - entry_no: "B6"
+    make: Honda
+    model: S600
+  - entry_no: "B7"
+    make: Honda
+    model: 1300 77S
+  - entry_no: "B8"
+    make: Hillman
+    model: Super Imp
+  - entry_no: "B9"
+    make: Honda
+    model: S600 Coupé
+  - entry_no: "B10"
+    make: Fiat-Abarth
+    model: 1000TCR Restomod
+  - entry_no: "C2"
+    make: Datsun
+    model: Bluebird 1600 SSS Coupé
+  - entry_no: "C3"
+    make: Lotus
+    model: Seven Series 2
+  - entry_no: "C5"
+    make: Alfa Romeo
+    model: GT 1300 Junior
+  - entry_no: "C6"
+    make: Lotus
+    model: Elan S4 Sprint
+  - entry_no: "C7"
+    make: Fiat
+    model: X1/9
+  - entry_no: "C8"
+    make: Nissan
+    model: Cherry X-1R
+  - entry_no: "C9"
+    make: Lotus
+    model: Elan S1
+  - entry_no: "C10"
+    make: Datsun
+    model: Sunny 1000
+  - entry_no: "C11"
+    make: Datsun
+    model: Sunny B10
+  - entry_no: "C12"
+    make: Fiat-Abarth
+    model: 1000TC HSpl
+  - entry_no: "C13"
+    make: Alpine
+    model: A110
+  - entry_no: "D2"
+    make: Isuzu
+    model: Bellett 1600GTR
+  - entry_no: "D3"
+    make: Datsun
+    model: Sunny HB310
+  - entry_no: "D5"
+    make: Fiat
+    model: X1/9 Bertone
+  - entry_no: "D6"
+    make: Datsun
+    model: Coupé
+  - entry_no: "D7"
+    make: Datsun
+    model: Fairlady SR311
+  - entry_no: "D8"
+    make: Datsun
+    model: Sunny B310 Coupé
+  - entry_no: "D9"
+    make: Nissan
+    model: Fairlady Z S30
+  - entry_no: "D10"
+    make: Datsun
+    model: Sunny B310
+  - entry_no: "D11"
+    make: Ford
+    model: Escort RS1600
+    country: GB
+  - entry_no: "D12"
+    make: Datsun
+    model: Sunny B110
+  - entry_no: "D13"
+    make: Toyota
+    model: Celica
+  - entry_no: "D14"
+    make: Isuzu
+    model: Bellett
+  - entry_no: "D15"
+    make: Datsun
+    model: Sunny Truck
+  - entry_no: "D16"
+    make: Toyota
+    model: Sports 800
+  - entry_no: "D17"
+    make: Lotus
+    model: Europa SPL
+  - entry_no: "D18"
+    make: Datsun
+    model: Fairlady SR311
+  - entry_no: "D19"
+    make: Datsun
+    model: Sunny Van
+  - entry_no: "D20"
+    make: Datsun
+    model: Fairlady
+  - entry_no: "R1"
+    make: Caterham
+    model: Seven
+  - entry_no: "R2"
+    make: Unknown
+    model: Super Seven
+  - entry_no: "R3"
+    make: Caterham
+    model: Unknown
+  - entry_no: "R5"
+    make: Ginetta
+    model: G4
+  - entry_no: "R6"
+    make: Caterham
+    model: R440
+  - entry_no: "R7"
+    make: Caterham
+    model: Super Seven 1700 BDR-S
+  - entry_no: "R8"
+    make: Lotus
+    model: "51"
+  - entry_no: "MA1"
+    make: Rover
+    model: Mini
+  - entry_no: "MA2"
+    make: Unknown
+    model: Mini
+  - entry_no: "MA3"
+    make: Rover
+    model: Mini
+  - entry_no: "MA5"
+    make: Unknown
+    model: Mini Cooper
+  - entry_no: "MA6"
+    make: Rover
+    model: Mini Mayfair
+  - entry_no: "MA7"
+    year: 1998
+    make: Rover
+    model: Mini Mayfair
+  - entry_no: "MB1"
+    make: Unknown
+    model: Mini Mk II
+  - entry_no: "MB2"
+    make: Morris
+    model: Mini
+  - entry_no: "MB3"
+    make: Morris
+    model: Mini
+  - entry_no: "MB5"
+    make: Unknown
+    model: Mini Mk II
+  - entry_no: "MB6"
+    make: Rover
+    model: Mini
+  - entry_no: "L1"
+    make: Austin-Healey
+    model: Sprite Mk IV
+  - entry_no: "L2"
+    make: Austin-Healey
+    model: Sebring Sprite
+  - entry_no: "L3"
+    make: Caterham
+    model: Super Seven
+  - entry_no: "L5"
+    make: Rover
+    model: Mini
+  - entry_no: "K1"
+    make: MG
+    model: PA
+  - entry_no: "K2"
+    make: MG
+    model: TD
+  - entry_no: "K3"
+    make: MG
+    model: TD
+  - entry_no: "K5"
+    make: Riley
+    model: TT Sprite
 videos:
   # The site's own film, made from the owner's footage.
   - youtube_id: nmMIb9Kqa8Y
