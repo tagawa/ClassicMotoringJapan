@@ -2,9 +2,10 @@ slug: matsudo-classic-car-festival
 name_en: Matsudo Classic Car Festival
 name_ja: まつどクラシックカーフェスティバル
 organizer: まつどクラシックカーフェスティバル実行委員会 (Matsudo Classic Car Festival Executive Committee)
-# The show has no site of its own. This is the Matsudo Festival it runs within; the
-# show's own details come from the organiser's flyer and entry guide.
-official_url: https://matsudo-cci.com/festival
+# The show has no site of its own. This is the city's page for the Matsudo Festival it
+# runs within (the chamber of commerce's own festival page went 404 in November 2026);
+# the show's own details come from the organiser's flyer and entry guide.
+official_url: https://www.city.matsudo.chiba.jp/shisei/oshirase/matsudomatsuri.html
 summary_en: >
   A two-day show on the two basement floors of the car park under Matsudo station's
   west exit, held during the Matsudo Festival. About 120 Japanese and foreign cars
