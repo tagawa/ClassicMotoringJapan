@@ -21,8 +21,9 @@ access_notes_en: >
   The Large Lawn is about 10 minutes' walk from the station. The parade starts at
   the museum, about 5 minutes' walk from Geidai-dori, two Linimo stops west.
 typical_scale: 100 to 120 cars
-spectator_fee_jpy: null
+# Free in 2023, 2025 and 2026.
+spectator_fee_jpy: 0
 spectator_notes_en: >
-  Free in 2023 and 2025. In 2025 the museum ran a free park-and-ride car park for
+  Held in rain. In 2025 and 2026 the museum ran a free park-and-ride car park for
   300 cars south of the museum, with Linimo trains on to the park.
-last_verified: 2026-10-04
+last_verified: 2026-11-17

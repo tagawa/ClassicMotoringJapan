@@ -9,12 +9,14 @@ AC: GB
 Alfa Romeo: IT
 Alpine: FR
 Alvis: GB
+AMC: US
 Amilcar: FR
 Arnolt: null  # an American firm's car on a British Bristol chassis with an Italian body
 Aston Martin: GB
 Austin: GB
 Austin-Healey: GB
 Autobianchi: IT
+Autozam: JP
 Bandini: IT
 Beck: null  # builds replicas of other makes' cars; set `country` on the car only with a source
 Bentley: GB
@@ -26,6 +28,8 @@ Branca: IT
 Bristol: GB
 Buckler: GB
 Bugatti: FR
+Buick: US
+Cadillac: US
 Caterham: GB
 Chevrolet: US
 Cisitalia: IT
@@ -35,9 +39,11 @@ Crepaldi Panhard: null  # the organiser's list marks it Italy and France
 Daihatsu: JP
 Daimler: GB
 Datsun: JP
+De Tomaso: IT
 Dino: IT
 Diva: GB
 DMC: US
+Efini: JP
 ERA: null  # builds Cobra replicas; set `country` on the car only with a source
 Ermini: IT
 Eunos: JP
@@ -55,8 +61,9 @@ Heinkel: null  # German, but its bubble car was also built in Britain as the Tro
 Hillman: GB
 Hino: JP
 Honda: JP
-Imperial: US
 Humber: GB
+Imperial: US
+Impul: JP
 Isuzu: JP
 Jack Knight: GB
 Jaguar: GB
@@ -91,6 +98,7 @@ Renault: FR
 Riley: GB
 Rolls-Royce: GB
 Rover: GB
+Saab: SE
 Sammio: GB
 Siata: IT
 Simca: FR

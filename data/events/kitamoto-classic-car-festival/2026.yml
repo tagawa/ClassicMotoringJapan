@@ -7,5 +7,10 @@ end: 2026-11-14
 start_time: "10:00"
 end_time: "15:00"
 source_url: https://minkara.carview.co.jp/userid/2251740/blog/49158120/
-last_verified: 2026-10-30
+last_verified: 2026-11-17
 sequence: 0
+videos:
+  # The channel, 前橋サンデーミーティング, gives no Latin form of its name, so the credit is romanised.
+  # Video by Maebashi Sunday Meeting.
+  - youtube_id: keOElYAGOkI
+    label_en: Arrivals and the cars on display
