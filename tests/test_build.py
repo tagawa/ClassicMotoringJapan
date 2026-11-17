@@ -1061,6 +1061,22 @@ class BritishSpellingTests(unittest.TestCase):
             self.assertNotRegex(text, r"(?i)organiz", path.name)
 
 
+class LiteralEmDashTests(unittest.TestCase):
+    """No em dash character in the code or templates: a template's reaches visitors, and
+    in code one reads as a hyphen. Code that needs the character writes it as an escape."""
+
+    def test_none_in_code_templates_or_styles(self):
+        dash = chr(0x2014)
+        files = [p for folder in ("scripts", "tests", "templates", "static")
+                 for p in (ROOT / folder).rglob("*")
+                 if p.suffix in (".py", ".html", ".css", ".js", ".yml")]
+        self.assertTrue(files, "no files found, so this test would prove nothing")
+        for path in files:
+            with self.subTest(path=path.relative_to(ROOT)):
+                self.assertNotIn(dash, path.read_text(encoding="utf-8"),
+                                 "write \\u2014 in code, or a comma, colon or semicolon in text")
+
+
 # Values the stylesheet may use. The spec's token table explains them; this is the copy
 # that is enforced, because the spec is never uploaded and a test cannot read it.
 COLOUR_TOKENS = {
@@ -1831,20 +1847,20 @@ class HouseStyleTests(unittest.TestCase):
         return {"extra": f"summary_en: {json.dumps(text)}\n"}
 
     def test_an_em_dash_in_prose_is_refused_with_the_way_out(self):
-        message = self.refusal(**self.summary("Entry is free — parking is not."))
+        message = self.refusal(**self.summary("Entry is free \u2014 parking is not."))
         self.assertIn("summary_en", message)
         self.assertIn("em dash", message)
         self.assertIn("comma", message)
 
     def test_an_em_dash_in_a_short_text_field_is_refused(self):
-        self.assertIn("name_en", self.refusal(name_en="Meeting — Autumn"))
+        self.assertIn("name_en", self.refusal(name_en="Meeting \u2014 Autumn"))
 
     def test_an_em_dash_in_a_list_of_text_is_refused(self):
-        message = self.refusal(extra='typical_eras: ["1950s", "1960s — 1970s"]\n')
+        message = self.refusal(extra='typical_eras: ["1950s", "1960s \u2014 1970s"]\n')
         self.assertIn("typical_eras", message)
 
     def test_japanese_text_may_carry_one(self):
-        self.build_event(name_ja="テスト—ミーティング")
+        self.build_event(name_ja="テスト\u2014ミーティング")
 
     def test_every_listed_american_spelling_is_caught_with_its_british_form(self):
         # An absence check proves nothing until the pattern is shown to produce a positive.

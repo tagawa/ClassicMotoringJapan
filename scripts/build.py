@@ -339,7 +339,7 @@ def _check_editorial(v: str, where: str, errors: list[str]) -> None:
 
 def _check_house_style(v: str, where: str, errors: list[str]) -> None:
     """Refuse em dashes and American spellings in English text."""
-    if "—" in v:
+    if "\u2014" in v:
         errors.append(f"{where}: contains an em dash. Use a comma, colon or semicolon, "
                       f"or rewrite the sentence")
     for name in AMERICAN_SPELLING_NAMES:
