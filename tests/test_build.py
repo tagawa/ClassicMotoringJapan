@@ -1738,10 +1738,10 @@ class EditorialProseTests(unittest.TestCase):
     """The pages are a reference, not a recommendation, so advice fails the build."""
 
     # The clause that shipped on la-festa-autunno and prompted the rule.
-    SHIPPED = ("About two weeks beforehand the organizer publishes a timetable giving an "
+    SHIPPED = ("About two weeks beforehand the organiser publishes a timetable giving an "
                "arrival window for every checkpoint, which is the practical way to plan a "
                "day around it.")
-    CUT = ("About two weeks beforehand the organizer publishes a timetable giving an "
+    CUT = ("About two weeks beforehand the organiser publishes a timetable giving an "
            "arrival window for every checkpoint.")
 
     def setUp(self):
@@ -1805,6 +1805,66 @@ class EditorialProseTests(unittest.TestCase):
         ):
             with self.subTest(text=text):
                 self.build_with_prose(text)
+
+
+class HouseStyleTests(unittest.TestCase):
+    """English text in the data uses no em dashes and British spelling (spec 4.7)."""
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.data = self.tmp / "data"
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp)
+
+    def build_event(self, **event):
+        write_event(self.data, "meet", **event)
+        write_instance(self.data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-18"))
+        build.build(self.data, self.tmp / "site")
+
+    def refusal(self, **event) -> str:
+        with self.assertRaises(build.ValidationError) as ctx:
+            self.build_event(**event)
+        return str(ctx.exception)
+
+    def summary(self, text: str) -> dict:
+        return {"extra": f"summary_en: {json.dumps(text)}\n"}
+
+    def test_an_em_dash_in_prose_is_refused_with_the_way_out(self):
+        message = self.refusal(**self.summary("Entry is free — parking is not."))
+        self.assertIn("summary_en", message)
+        self.assertIn("em dash", message)
+        self.assertIn("comma", message)
+
+    def test_an_em_dash_in_a_short_text_field_is_refused(self):
+        self.assertIn("name_en", self.refusal(name_en="Meeting — Autumn"))
+
+    def test_an_em_dash_in_a_list_of_text_is_refused(self):
+        message = self.refusal(extra='typical_eras: ["1950s", "1960s — 1970s"]\n')
+        self.assertIn("typical_eras", message)
+
+    def test_japanese_text_may_carry_one(self):
+        self.build_event(name_ja="テスト—ミーティング")
+
+    def test_every_listed_american_spelling_is_caught_with_its_british_form(self):
+        # An absence check proves nothing until the pattern is shown to produce a positive.
+        for american, british in build.AMERICAN_SPELLINGS.items():
+            with self.subTest(word=american):
+                message = self.refusal(**self.summary(f"The {american} is near the gate."))
+                self.assertIn(repr(american), message)
+                self.assertIn(british, message)
+
+    def test_capitals_do_not_hide_one(self):
+        self.assertIn("'Color'", self.refusal(name_en="Color Meeting"))
+
+    def test_only_whole_words_count(self):
+        self.build_event(**self.summary("Colorado's programme starts at the centre; the organiser has tyres."))
+
+    def test_a_listed_proper_name_is_left_alone(self):
+        self.build_event(**self.summary("Day 2 at Hiruzen Kogen Center."))
+
+    def test_the_message_points_proper_names_at_the_exception_list(self):
+        self.assertIn("AMERICAN_SPELLING_NAMES", self.refusal(name_en="Fuji Center Meeting"))
 
 
 class ProseLinkTests(unittest.TestCase):

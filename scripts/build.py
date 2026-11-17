@@ -132,6 +132,23 @@ EDITORIAL_PHRASES = (
 EDITORIAL_RE = re.compile(
     r"\b(" + "|".join(r"\s+".join(map(re.escape, phrase.split())) for phrase in EDITORIAL_PHRASES) + r")\b"
 )
+# American spellings a visitor would read, with the British form the message offers.
+# Deliberately narrow: words with a valid British use (meter, license, curb, tire) stay off.
+AMERICAN_SPELLINGS = {
+    "color": "colour", "colors": "colours", "colored": "coloured", "colorful": "colourful",
+    "program": "programme", "programs": "programmes",
+    "center": "centre", "centers": "centres", "centered": "centred",
+    "theater": "theatre", "catalog": "catalogue", "gray": "grey",
+    "organize": "organise", "organized": "organised", "organizes": "organises",
+    "organizing": "organising", "organizer": "organiser", "organizers": "organisers",
+    "organization": "organisation", "organizations": "organisations",
+    "traveler": "traveller", "travelers": "travellers", "traveling": "travelling",
+    "favorite": "favourite", "neighborhood": "neighbourhood",
+    "kilometer": "kilometre", "kilometers": "kilometres", "tires": "tyres",
+}
+AMERICAN_RE = re.compile(r"\b(" + "|".join(AMERICAN_SPELLINGS) + r")\b", re.IGNORECASE)
+# Proper names spelt the American way, which the spelling check skips.
+AMERICAN_SPELLING_NAMES = ("Hiruzen Kogen Center",)
 # Percent of the axis. An open-ended checkpoint has no width of its own but still
 # has to be visible, so every bar gets a floor.
 CHART_MIN_BAR = 1.0
@@ -320,6 +337,20 @@ def _check_editorial(v: str, where: str, errors: list[str]) -> None:
         )
 
 
+def _check_house_style(v: str, where: str, errors: list[str]) -> None:
+    """Refuse em dashes and American spellings in English text."""
+    if "—" in v:
+        errors.append(f"{where}: contains an em dash. Use a comma, colon or semicolon, "
+                      f"or rewrite the sentence")
+    for name in AMERICAN_SPELLING_NAMES:
+        v = v.replace(name, "")
+    for match in AMERICAN_RE.finditer(v):
+        word = match.group(0)
+        errors.append(f"{where}: {word!r} is American spelling; write "
+                      f"{AMERICAN_SPELLINGS[word.lower()]!r}. If it is part of a proper name, "
+                      f"add the name to AMERICAN_SPELLING_NAMES in scripts/build.py")
+
+
 def prose_text(v: str) -> str:
     """Prose as a reader hears it: each link reduced to its text."""
     return LINK_RE.sub(r"\1", v)
@@ -471,6 +502,13 @@ def _check_fields(obj, required: dict, optional: dict, where: str, errors: list[
     for key, kind in optional.items():
         if key in obj:
             _check_value(kind, obj[key], f"{where}: {key}", errors)
+    # Every English text field, prose or not: a label or place name is read as much as a summary.
+    for key, kind in {**required, **optional}.items():
+        if key in obj and kind in ("str", "prose", "strlist") and not key.endswith("_ja"):
+            values = obj[key] if isinstance(obj[key], list) else [obj[key]]
+            for value in values:
+                if isinstance(value, str):
+                    _check_house_style(value, f"{where}: {key}", errors)
     return True
 
 
