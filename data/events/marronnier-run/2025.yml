@@ -1,0 +1,21 @@
+slug: marronnier-run
+year: 2025
+status: confirmed
+start: 2025-04-19
+end: 2025-04-20
+# The organiser's site has nothing on 2025. The dates and the 35th running are from
+# 車の世界NOW's report; the route and the tests are from an entrant's film.
+source_url: https://www.youtube.com/watch?v=RgfubtP3BZg
+last_verified: 2026-11-20
+sequence: 0
+route_en: >
+  The 35th running. The run took in the Irohazaka and the shore of Lake Chuzenji,
+  with a regularity test and a timed gymkhana. Cars ranged from prewar to a
+  Ferrari 246 GT.
+videos:
+  # Video by 車の世界NOW.
+  - youtube_id: RgfubtP3BZg
+    label_en: Report on the weekend
+  # Video by an entrant's own channel (togi hideki).
+  - youtube_id: fS7VCcGel_Q
+    label_en: A 1953 MG TD on the run

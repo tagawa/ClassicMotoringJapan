@@ -1,0 +1,25 @@
+slug: marronnier-run
+name_en: Marronnier Run in Nikko
+name_ja: マロニエラン イン 日光
+organizer: マロニエラン実行委員会 (Marronnier Run organising committee)
+official_url: https://marronnier-run.com/
+# The eligibility and the hotel night are from the organiser's 2023 outline
+# (marronnier_run_about_2023.JPG), the only outline on the site. The 2020 to 2022 gap
+# is from 車の世界NOW's 2023 report (Z74B_5M_hYk); the 2024 and 2026 cancellations
+# are notices on the site. 1980 is stated for 2023 only, so it is on that edition.
+summary_en: >
+  A two-day meeting, first held in April 1990 and usually in spring.
+  Day one is a run over the Irohazaka and along Lake Chuzenji, then a night at the
+  Chuzenji Kanaya Hotel; day two is a concours d'elegance. In 2023 entry was for imported cars built up to 1980,
+  supercars of any age, and cars the organiser approved. None ran from 2020 to
+  2022, or in 2024 and 2026. The 2027 date is not announced.
+prefecture: Tochigi
+venue_en: Chuzenji Kanaya Hotel, Lake Chuzenji, Nikko
+# OSM's point for the hotel, reverse-checked to Chugushi, Nikko. GSI has no entry for
+# the name, and no source here gives the street address.
+lat: 36.7519
+lon: 139.4635
+typical_eras: [Prewar, 1950s, 1960s, 1970s]
+# The site is written for entrants and says nothing about spectators.
+spectator_fee_jpy: null
+last_verified: 2026-11-20

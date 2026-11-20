@@ -1,0 +1,45 @@
+slug: marronnier-run
+year: 2023
+status: confirmed
+start: 2023-09-30
+end: 2023-10-01
+# From the organiser's outline (marronnier_run_about_2023.JPG), linked from the About page
+# as 開催概要書(2023). It calls this the 33rd; 車の世界NOW's report calls it the 34th.
+# The parties at the hotel are left out of the route, being for entrants only.
+source_url: https://marronnier-run.com/about/index.html
+last_verified: 2026-11-20
+sequence: 0
+cutoff_year: 1980
+route_en: >
+  The 33rd running, with the Chuzenji Kanaya Hotel booked out for the entrants.
+  The outline gives no route between the arena and the hotel.
+route:
+  - date: 2023-09-30
+    checkpoints:
+      - start_time: "08:30"
+        end_time: "09:30"
+        place_en: Nikko Kirifuri Ice Arena, car park 2 (meeting and start)
+        place_ja: 日光霧降アイスアリーナ
+        prefecture: Tochigi
+        lat: 36.7608
+        lon: 139.6099
+      - start_time: "17:00"
+        place_en: Chuzenji Kanaya Hotel (finish)
+        place_ja: 中禅寺金谷ホテル
+        prefecture: Tochigi
+        lat: 36.7519
+        lon: 139.4635
+  - date: 2023-10-01
+    checkpoints:
+      - start_time: "10:00"
+        # The outline starts the final party at 12:00, so the concours ends then.
+        end_time: "12:00"
+        place_en: Chuzenji Kanaya Hotel (concours d'elegance)
+        place_ja: 中禅寺金谷ホテル
+        prefecture: Tochigi
+        lat: 36.7519
+        lon: 139.4635
+videos:
+  # Video by 車の世界NOW.
+  - youtube_id: Z74B_5M_hYk
+    label_en: Report on the weekend
