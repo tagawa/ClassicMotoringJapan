@@ -1,0 +1,23 @@
+name: Check what's due
+
+# A trial to 2026-12-22 (spec, section 6, Upkeep). A failed run means a post-event check
+# or a recheck is waiting; GitHub emails whoever last edited the cron line below.
+# Separate from build.yml so something being due never stops the site publishing.
+on:
+  schedule:
+    - cron: "0 0 * * *"  # daily, 09:00 in Japan
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  due:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: python scripts/check_due.py
