@@ -239,6 +239,17 @@ def _stripes(colours, across: bool) -> str:
         for i, c in enumerate(colours))
 
 
+
+def _star(cx: float, cy: float, r: float) -> str:
+    """A five-pointed star, point up, as one path."""
+    points = []
+    for i in range(10):
+        radius = r if i % 2 == 0 else r * 0.382
+        angle = math.pi / 2 + i * math.pi / 5
+        points.append(f"{round(cx + radius * math.cos(angle), 2)} {round(cy - radius * math.sin(angle), 2)}")
+    return f'<path fill="#FFDE00" d="M{"L".join(points)}z"/>'
+
+
 # The /ja/ page's lede and meta description, the same sentence, as on the home page.
 JA_LEDE = ("日本各地のクラシックカーイベントの日程です。"
            "ルート、エントリーリスト、動画などの詳細は英語のページにあります。")
@@ -268,6 +279,10 @@ PREFECTURES_JA = {
 COUNTRIES = {
     "BR": ("Brazil", '<path fill="#009739" d="M0 0h30v20H0z"/><path fill="#FEDD00" d="M15 2l12.5 8L15 18 2.5 10z"/>'
            '<circle fill="#012169" cx="15" cy="10" r="4.5"/>'),
+    # The small stars are drawn upright rather than turned to face the large one: at flag size
+    # the turn cannot be seen.
+    "CN": ("China", '<path fill="#EE1C25" d="M0 0h30v20H0z"/>' + _star(5, 5, 3)
+           + "".join(_star(x, y, 1) for x, y in ((10, 2), (12, 4), (12, 7), (10, 9)))),
     "DE": ("Germany", _stripes(("#000000", "#DD0000", "#FFCC00"), across=False)),
     "FR": ("France", _stripes(("#000091", "#FFFFFF", "#E1000F"), across=True)),
     # The red saltire is counterchanged, which the clip path does: each arm shows on one side

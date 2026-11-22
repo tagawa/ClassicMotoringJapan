@@ -6,15 +6,26 @@ end: 2026-11-21
 # From the guide for entrants dated 2026-09-01 (download/20a_coppac_di_tokyo_annai.pdf),
 # whose text is outlined, so it has to be rendered to read. It gives the timetable as
 # planned (予定): reception from 8:30, start from 10:00, finish from 12:00.
-source_url: https://www.coppa-di-tokyo.com/
-last_verified: 2026-10-27
+# The cars, years and countries are from the entry list image linked below, posted
+# 2026-11-20 (entrylist.html). The list's countries I, D, F, USA, SWE and C are written
+# as IT, DE, FR, US, SE and CN.
+# - Entry 78, a Porsche 904 re-creation, has dashes for its year and country, so it has
+#   neither here; its flag is the make's.
+# - Entry 79 is an empty row, left out.
+# - Entry 0, a 2024 BYD, is on the list despite the 1976 cutoff; the list does not say why.
+source_url: https://www.coppa-di-tokyo.com/imgentrylist/entrylist2026_02.jpg
+last_verified: 2026-11-22
 sequence: 0
+videos:
+  # Video by nakanaka_jp.
+  - youtube_id: l5kudZ01Dkg
+    label_en: Cars arriving at the start in Shiodome
 # From the 2026 guide. On the edition, not the event: the 2025 entry list has
 # later cars and no source gives that year's limit.
 cutoff_year: 1976
 route_en: >
-  The 20th edition. The organiser gives these times as planned (予定), and has
-  not yet published the route through Tokyo or the entry list.
+  The 20th edition. The organiser gave these times as planned (予定), and
+  published no route through Tokyo.
 route:
   - date: 2026-11-21
     checkpoints:
@@ -30,3 +41,398 @@ route:
         place_en: Shiodome Nishi Park (finish)
         place_ja: 汐留西公園
         prefecture: Tokyo
+list_as_of: 2026-11-20
+cars:
+  - entry_no: "0"
+    year: 2024
+    make: BYD
+    model: "Seal RWD"
+    country: CN
+  - entry_no: "1"
+    year: 1937
+    make: Alvis
+    model: "4.3 Litre Vanden Plas Tourer"
+    country: GB
+  - entry_no: "2"
+    year: 1921
+    make: Vauxhall
+    model: "30/98 E-Type Velox Tourer"
+    country: GB
+  - entry_no: "3"
+    year: 1926
+    make: Bentley
+    model: "3 Litre Speed Model"
+    country: GB
+  - entry_no: "4"
+    year: 1956
+    make: Bentley
+    model: "S1 Continental Fastback Coupé by H.J. Mulliner"
+    country: GB
+  - entry_no: "5"
+    year: 1933
+    make: Austin
+    model: "7"
+    country: GB
+  - entry_no: "6"
+    year: 1960
+    make: Messerschmitt
+    model: "KR200"
+    country: DE
+  - entry_no: "7"
+    year: 1960
+    make: Messerschmitt
+    model: "KR200"
+    country: DE
+  - entry_no: "8"
+    year: 1958
+    make: Messerschmitt
+    model: "KR200"
+    country: DE
+  - entry_no: "9"
+    year: 1964
+    make: Heinkel
+    model: "Trojan 200"
+    country: GB
+  - entry_no: "10"
+    year: 1959
+    make: BMW
+    model: "600"
+    country: DE
+  - entry_no: "11"
+    year: 1969
+    make: Fiat
+    model: "500"
+    country: IT
+  - entry_no: "12"
+    year: 1971
+    make: Fiat
+    model: "500 F"
+    country: IT
+  - entry_no: "13"
+    year: 1936
+    make: Fiat
+    model: "Siata 508S Balilla"
+    country: IT
+  - entry_no: "14"
+    year: 1937
+    make: Fiat
+    model: "Siata Topolino Gran Sport"
+    country: IT
+  - entry_no: "15"
+    year: 1939
+    make: Fiat
+    model: "Siata Topolino Pescara"
+    country: IT
+  - entry_no: "16"
+    year: 1949
+    make: Siata
+    model: Amica
+    country: IT
+  - entry_no: "17"
+    year: 1957
+    make: Bandini
+    model: "750 S Saponetta"
+    country: IT
+  - entry_no: "18"
+    year: 1968
+    make: Bandini
+    model: Saloncino
+    country: IT
+  - entry_no: "19"
+    year: 1947
+    make: Cisitalia
+    model: "202 SC"
+    country: IT
+  - entry_no: "20"
+    year: 1955
+    make: Porsche
+    model: "550 Spyder"
+    country: DE
+  - entry_no: "21"
+    year: 1958
+    make: Porsche
+    model: "356 Zagato"
+    country: DE
+  - entry_no: "22"
+    year: 1959
+    make: Fiat-Abarth
+    model: "750 Record Monza"
+    country: IT
+  - entry_no: "23"
+    year: 1957
+    make: Fiat-Abarth
+    model: "750 GT Zagato Corsa"
+    country: IT
+  - entry_no: "24"
+    year: 1958
+    make: Fiat-Abarth
+    model: "750 GT Zagato"
+    country: IT
+  - entry_no: "25"
+    year: 1959
+    make: Fiat-Abarth
+    model: "750 GT Zagato"
+    country: IT
+  - entry_no: "26"
+    year: 1963
+    make: Fiat-Abarth
+    model: Monomille
+    country: IT
+  - entry_no: "27"
+    year: 1957
+    make: Alfa Romeo
+    model: "Giulietta SVZ"
+    country: IT
+  - entry_no: "28"
+    year: 1961
+    make: Alfa Romeo
+    model: "Giulietta SZ"
+    country: IT
+  - entry_no: "29"
+    year: 1962
+    make: Alfa Romeo
+    model: "Giulietta SZ2"
+    country: IT
+  - entry_no: "30"
+    year: 1964
+    make: Alfa Romeo
+    model: "Giulia TZ"
+    country: IT
+  - entry_no: "31"
+    year: 1966
+    make: Lancia
+    model: "Flavia Sport 1800 Zagato"
+    country: IT
+  - entry_no: "32"
+    year: 1968
+    make: Lancia
+    model: "Flavia Coupé"
+    country: IT
+  - entry_no: "33"
+    year: 1964
+    make: Lancia
+    model: "Fulvia 2C"
+    country: IT
+  - entry_no: "34"
+    year: 1953
+    make: Lancia
+    model: Appia
+    country: IT
+  - entry_no: "35"
+    year: 1960
+    make: Alfa Romeo
+    model: "Giulietta Spider"
+    country: IT
+  - entry_no: "36"
+    year: 1961
+    make: Alfa Romeo
+    model: "Giulietta Spider"
+    country: IT
+  - entry_no: "37"
+    year: 1958
+    make: Alfa Romeo
+    model: "Giulietta Spider"
+    country: IT
+  - entry_no: "38"
+    year: 1965
+    make: Alfa Romeo
+    model: "Giulia Spider Veloce"
+    country: IT
+  - entry_no: "39"
+    year: 1963
+    make: Alfa Romeo
+    model: "Giulia Spider Barchetta"
+    country: IT
+  - entry_no: "40"
+    year: 1966
+    make: Alfa Romeo
+    model: "Spider Duetto"
+    country: IT
+  - entry_no: "41"
+    year: 1969
+    make: Alfa Romeo
+    model: "Spider Duetto"
+    country: IT
+  - entry_no: "42"
+    year: 1969
+    make: Alfa Romeo
+    model: "GT 1300 Junior"
+    country: IT
+  - entry_no: "43"
+    year: 1974
+    make: Alfa Romeo
+    model: "GT 1600 Junior"
+    country: IT
+  - entry_no: "44"
+    year: 1974
+    make: Lancia
+    model: Stratos
+    country: IT
+  - entry_no: "45"
+    year: 1974
+    make: Lancia
+    model: Stratos
+    country: IT
+  - entry_no: "46"
+    year: 1972
+    make: Ferrari
+    model: "Dino 246 GT"
+    country: IT
+  - entry_no: "47"
+    year: 1975
+    make: Ferrari
+    model: "Dino 308 GT4"
+    country: IT
+  - entry_no: "48"
+    year: 1975
+    make: Citroën
+    model: SM
+    country: FR
+  - entry_no: "49"
+    year: 1975
+    make: Citroën
+    model: "2CV"
+    country: FR
+  - entry_no: "50"
+    year: 1960
+    make: Panhard
+    model: "PL17"
+    country: FR
+  - entry_no: "51"
+    year: 1964
+    make: Renault
+    model: Dauphine
+    country: FR
+  - entry_no: "52"
+    year: 1957
+    make: Porsche
+    model: "356A"
+    country: DE
+  - entry_no: "53"
+    year: 1960
+    make: Porsche
+    model: "356B Super 90 Roadster"
+    country: DE
+  - entry_no: "54"
+    year: 1961
+    make: Porsche
+    model: "356B Roadster"
+    country: DE
+  - entry_no: "55"
+    year: 1966
+    make: Ford
+    model: Cortina
+    country: GB
+  - entry_no: "56"
+    year: 1960
+    make: Morris
+    model: "Mini-Minor"
+    country: GB
+  - entry_no: "57"
+    year: 1965
+    make: MG
+    model: "Midget Mk II"
+    country: GB
+  - entry_no: "58"
+    year: 1995
+    make: "TOM'S"
+    model: Angel
+    country: GB
+  - entry_no: "59"
+    year: 1958
+    make: Buckler
+    model: "DD-2"
+    country: GB
+  - entry_no: "60"
+    year: 1961
+    make: TVR
+    model: Grantura
+    country: GB
+  - entry_no: "61"
+    year: 1963
+    make: Lotus
+    model: "Elite Tony Bates Fastback"
+    country: GB
+  - entry_no: "62"
+    year: 1969
+    make: Lotus
+    model: "Elan Series 4"
+    country: GB
+  - entry_no: "63"
+    year: 1969
+    make: Lotus
+    model: "Europa Series 2"
+    country: GB
+  - entry_no: "64"
+    year: 1955
+    make: Triumph
+    model: "TR2"
+    country: GB
+  - entry_no: "65"
+    year: 1955
+    make: Triumph
+    model: "TR2"
+    country: GB
+  - entry_no: "66"
+    year: 1955
+    make: Triumph
+    model: "TR3"
+    country: GB
+  - entry_no: "67"
+    year: 1965
+    make: Triumph
+    model: "TR4A"
+    country: GB
+  - entry_no: "68"
+    year: 1954
+    make: Austin-Healey
+    model: "100/4 BN1"
+    country: GB
+  - entry_no: "69"
+    year: 1950
+    make: Morgan
+    model: "4/4 Series 1"
+    country: GB
+  - entry_no: "70"
+    year: 1967
+    make: Jaguar
+    model: "E-Type Series 1 4.2"
+    country: GB
+  - entry_no: "71"
+    year: 1966
+    make: Jaguar
+    model: "E-Type Series 1 4.2"
+    country: GB
+  - entry_no: "72"
+    year: 1968
+    make: Volvo
+    model: "1800S"
+    country: SE
+  - entry_no: "73"
+    year: 1955
+    make: Mercedes-Benz
+    model: "190SL"
+    country: DE
+  - entry_no: "74"
+    year: 1970
+    make: Mercedes-Benz
+    model: "280SL"
+    country: DE
+  - entry_no: "75"
+    year: 1962
+    make: Chevrolet
+    model: "Corvette C1"
+    country: US
+  - entry_no: "76"
+    year: 1957
+    make: Ford
+    model: Thunderbird
+    country: US
+  - entry_no: "77"
+    year: 1962
+    make: Ford
+    model: Thunderbird
+    country: US
+  - entry_no: "78"
+    make: Porsche
+    model: "904 Re-creation"

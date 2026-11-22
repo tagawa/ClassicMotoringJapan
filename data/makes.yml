@@ -1,9 +1,9 @@
 # A make's home country, for a car whose entry list prints no country of its own.
 # One make per line in alphabetical order, with a code scripts/build.py has a flag for
-# (COUNTRIES there: BR, DE, FR, GB, IT, JP, SE, US). null is a decision too: no one country
+# (COUNTRIES there: BR, CN, DE, FR, GB, IT, JP, SE, US). null is a decision too: no one country
 # fits, so such a car shows no flag unless its edition file gives it a `country`.
 # A car's own `country` always wins over this table.
-# 56 of these pairings are the Coppa organisers' own, from their entry lists; the rest are ours.
+# 57 of these pairings are the Coppa organisers' own, from their entry lists; the rest are ours.
 Abarth: IT
 AC: GB
 Alfa Romeo: IT
@@ -29,6 +29,7 @@ Bristol: GB
 Buckler: GB
 Bugatti: FR
 Buick: US
+BYD: CN
 Cadillac: US
 Caterham: GB
 Chevrolet: US
@@ -107,6 +108,7 @@ Stanguellini: IT
 Subaru: JP
 Suzuki: JP
 Swallow: GB
+TOM'S: JP  # a Japanese tuner; its Angel on the 2026 Coppa di Tokyo list is marked GB, which the car carries
 Toyota: JP
 Triumph: GB
 Turner: GB

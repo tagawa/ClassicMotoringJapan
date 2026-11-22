@@ -2343,6 +2343,11 @@ class EntryListFlagTests(unittest.TestCase):
         # Volkswagen's table entry is DE, so without its own code a Fusca would show Germany's flag.
         self.assertEqual(build.COUNTRIES["BR"][0], "Brazil")
 
+    def test_china_has_a_flag_for_the_byd_on_the_2026_coppa_di_tokyo_list(self):
+        name, art = build.COUNTRIES["CN"]
+        self.assertEqual(name, "China")
+        self.assertEqual(art.count("#FFDE00"), 5, "one large star and four small ones")
+
     def test_every_country_has_a_name_and_a_drawing_with_ids_of_its_own(self):
         ids = []
         for code, (name, art) in build.COUNTRIES.items():
