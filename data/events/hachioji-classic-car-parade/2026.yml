@@ -5,14 +5,488 @@ start: 2026-11-22
 end: 2026-11-22
 start_time: "12:00"
 end_time: "13:00"
-# The 47th festival. The site's timetable, which still mentions "the 16th" and so
-# looks carried over from 2025, has the cars leaving the city hall at 11:50, the
-# lead car at the Tama Goryo junction at 12:20 and the last at 13:00.
+# The 47th festival. The site's timetable has the cars leaving the city hall at
+# 11:50, the lead car at the Tama Goryo junction at 12:20 and the last at 13:00.
 source_url: https://classiccar802.moo.jp/
-last_verified: 2026-10-04
+last_verified: 2026-11-22
 sequence: 0
 route_en: >
   From the city hall car park to Oiwake junction, then westbound on Koshu-kaido
   to the junction at the entrance to the Musashi Imperial Graveyard (武蔵野陵入口),
-  where the parade disperses. The 2026 running order and route map are not
-  published yet.
+  where the parade disperses.
+# Group 2 (classic cars) of the running order posted on 18 November
+# (images/2026classiccar_tirashi_ura.png). Group 1, guests' cars with no age limit,
+# and group 3, police and fire vehicles, are left out. Numbers 43 and 58 are vacant.
+# Entry 63 has no year (年式不明). Entry 110 is printed ダイムラーベンツ 450SL under
+# the make メルセデス・ベンツ, and 39 is printed プリンス54 under 日産.
+list_as_of: 2026-11-18
+cars:
+  - entry_no: "1"
+    year: 1965
+    make: Subaru
+    model: "360"
+  - entry_no: "2"
+    year: 1967
+    make: Daihatsu
+    model: Midget MP5
+  - entry_no: "3"
+    year: 1967
+    make: Mitsubishi
+    model: Minica
+  - entry_no: "4"
+    year: 1970
+    make: Mitsubishi
+    model: Minicab LT30
+  - entry_no: "5"
+    year: 1971
+    make: Mitsubishi
+    model: Minica Skipper
+  - entry_no: "6"
+    year: 1972
+    make: Suzuki
+    model: Fronte Coupé GXCF
+  - entry_no: "7"
+    year: 1972
+    make: Honda
+    model: Life
+  - entry_no: "8"
+    year: 1967
+    make: Hino
+    model: Contessa 1300 Sedan
+  - entry_no: "9"
+    year: 1969
+    make: Mazda
+    model: Cosmo Sport
+  - entry_no: "10"
+    year: 1973
+    make: Mazda
+    model: Savanna
+  - entry_no: "11"
+    year: 1969
+    make: Mitsubishi
+    model: Jeep J3
+  - entry_no: "12"
+    year: 1970
+    make: Mitsubishi
+    model: Colt Galant GTO-MR
+  - entry_no: "13"
+    year: 1975
+    make: Isuzu
+    model: Florian
+  - entry_no: "14"
+    year: 1975
+    make: Isuzu
+    model: Florian
+  - entry_no: "15"
+    year: 1965
+    make: Toyota
+    model: Sports 800
+  - entry_no: "16"
+    year: 1965
+    make: Toyota
+    model: Sports 800
+  - entry_no: "17"
+    year: 1965
+    make: Toyota
+    model: Sports 800
+  - entry_no: "18"
+    year: 1965
+    make: Toyota
+    model: Sports 800
+  - entry_no: "19"
+    year: 1966
+    make: Toyota
+    model: Sports 800
+  - entry_no: "20"
+    year: 1966
+    make: Toyota
+    model: Sports 800
+  - entry_no: "21"
+    year: 1966
+    make: Toyota
+    model: Sports 800
+  - entry_no: "22"
+    year: 1966
+    make: Toyota
+    model: Sports 800
+  - entry_no: "23"
+    year: 1966
+    make: Toyota
+    model: Sports 800
+  - entry_no: "24"
+    year: 1966
+    make: Toyota
+    model: Toyopet Corona
+  - entry_no: "25"
+    year: 1970
+    make: Toyota
+    model: Toyopet Crown
+  - entry_no: "26"
+    year: 1972
+    make: Toyota
+    model: Crown MS60
+  - entry_no: "27"
+    year: 1972
+    make: Toyota
+    model: Sprinter Trueno
+  - entry_no: "28"
+    year: 1974
+    make: Toyota
+    model: Sprinter Coupé 1400XL
+  - entry_no: "29"
+    year: 1974
+    make: Toyota
+    model: Celica 1600GT Liftback
+  - entry_no: "30"
+    year: 1975
+    make: Toyota
+    model: Celica GTV (Daruma)
+  - entry_no: "31"
+    year: 1975
+    make: Toyota
+    model: Celica LB 2000GT
+  - entry_no: "32"
+    year: 1975
+    make: Toyota
+    model: Celica LB 2000GT
+  - entry_no: "33"
+    year: 1975
+    make: Toyota
+    model: Celica 2000GT
+  - entry_no: "34"
+    year: 1962
+    make: Nissan
+    model: Datsun Bluebird 1200DX
+  - entry_no: "35"
+    year: 1963
+    make: Nissan
+    model: Bluebird 1200 Fancy DX
+  - entry_no: "36"
+    year: 1967
+    make: Datsun
+    model: Bluebird 1300DX
+  - entry_no: "37"
+    year: 1972
+    make: Datsun
+    model: Bluebird 1600 Deluxe
+  - entry_no: "38"
+    year: 1964
+    make: Nissan
+    model: Cedric Custom
+  - entry_no: "39"
+    year: 1965
+    make: Prince
+    model: "54"
+  - entry_no: "40"
+    year: 1968
+    make: Nissan
+    model: Gloria
+  - entry_no: "41"
+    year: 1963
+    make: Datsun
+    model: Fairlady SP310
+  - entry_no: "42"
+    year: 1968
+    make: Datsun
+    model: Fairlady 2000
+  - entry_no: "44"
+    year: 1972
+    make: Nissan
+    model: Fairlady 240ZG
+  - entry_no: "45"
+    year: 1974
+    make: Nissan
+    model: Fairlady Z S30
+  - entry_no: "46"
+    year: 1969
+    make: Nissan
+    model: Skyline 4-door GT-R
+  - entry_no: "47"
+    year: 1971
+    make: Nissan
+    model: Skyline 2000HT GT-R
+  - entry_no: "48"
+    year: 1972
+    make: Nissan
+    model: Skyline 2000GT-X (KGC10)
+  - entry_no: "49"
+    year: 1973
+    make: Nissan
+    model: Skyline 2000GT-R
+  - entry_no: "50"
+    year: 1969
+    make: Autobianchi
+    model: Bianchina Cabriolet
+  - entry_no: "51"
+    year: 1967
+    make: Alfa Romeo
+    model: GT 1300 Junior
+  - entry_no: "52"
+    year: 1969
+    make: Alfa Romeo
+    model: GT 1300 Junior
+  - entry_no: "53"
+    year: 1971
+    make: Alfa Romeo
+    model: 1750GTV Mk II
+  - entry_no: "54"
+    year: 1972
+    make: Alfa Romeo
+    model: (model not given)
+  - entry_no: "55"
+    year: 1973
+    make: Alfa Romeo
+    model: 1600 Junior Z
+  - entry_no: "56"
+    year: 1975
+    make: Alpine
+    model: A110
+  - entry_no: "57"
+    year: 1943
+    make: Willys
+    model: MB
+  - entry_no: "59"
+    year: 1950
+    make: MG
+    model: TD
+  - entry_no: "60"
+    year: 1958
+    make: MG
+    model: MGA
+  - entry_no: "61"
+    year: 1974
+    make: MG
+    model: MGB
+  - entry_no: "62"
+    year: 1975
+    make: MG
+    model: Midget
+  - entry_no: "63"
+    make: Austin
+    model: 1000 Pickup
+  - entry_no: "64"
+    year: 1958
+    make: Austin-Healey
+    model: 100-6
+  - entry_no: "65"
+    year: 1959
+    make: Austin-Healey
+    model: Sprite
+  - entry_no: "66"
+    year: 1960
+    make: Austin-Healey
+    model: Sprite Mk I
+  - entry_no: "67"
+    year: 1965
+    make: Sammio
+    model: Spitfire
+  - entry_no: "68"
+    year: 1955
+    make: Chevrolet
+    model: Corvette
+  - entry_no: "69"
+    year: 1959
+    make: Chevrolet
+    model: Corvette
+  - entry_no: "70"
+    year: 1966
+    make: Chevrolet
+    model: Corvette Sting Ray
+  - entry_no: "71"
+    year: 1972
+    make: Chevrolet
+    model: Corvette
+  - entry_no: "72"
+    year: 1971
+    make: Simca
+    model: 1200S Coupé
+  - entry_no: "73"
+    year: 1957
+    make: Triumph
+    model: TR3A
+  - entry_no: "74"
+    year: 1967
+    make: Triumph
+    model: Vitesse Convertible
+  - entry_no: "75"
+    year: 1971
+    make: Vanden Plas
+    model: Princess 1300
+  - entry_no: "76"
+    year: 1958
+    make: BMW
+    model: "600"
+  - entry_no: "77"
+    year: 1960
+    make: BMW
+    model: Isetta 300
+  - entry_no: "78"
+    year: 1961
+    make: BMW
+    model: Isetta 300
+  - entry_no: "79"
+    year: 1974
+    make: BMW
+    model: 2002 Turbo
+  - entry_no: "80"
+    year: 1963
+    make: Fiat
+    model: "500"
+  - entry_no: "81"
+    year: 1967
+    make: Fiat-Abarth
+    model: 1000TC
+  - entry_no: "82"
+    year: 1970
+    make: Fiat
+    model: 500 Giannini
+  - entry_no: "83"
+    year: 1966
+    make: Ford
+    model: Mustang Convertible
+    country: US
+  - entry_no: "84"
+    year: 1971
+    make: Ford
+    model: Mustang Mach 1
+    country: US
+  - entry_no: "85"
+    year: 1964
+    make: Volkswagen
+    model: Karmann Ghia Convertible
+  - entry_no: "86"
+    year: 1966
+    make: Volkswagen
+    model: Type 2
+  - entry_no: "87"
+    year: 1967
+    make: Volkswagen
+    model: Type 2
+  - entry_no: "88"
+    year: 1970
+    make: Volkswagen
+    model: Karmann Ghia
+  - entry_no: "89"
+    year: 1972
+    make: Volvo
+    model: 1800ES
+  - entry_no: "90"
+    year: 1960
+    make: Porsche
+    model: 356 B Cabriolet
+  - entry_no: "91"
+    year: 1964
+    make: Porsche
+    model: 356 C
+  - entry_no: "92"
+    year: 1965
+    make: Porsche
+    model: 356 C
+  - entry_no: "93"
+    year: 1963
+    make: Porsche
+    model: 356 C
+  - entry_no: "94"
+    year: 1970
+    make: Porsche
+    model: 911 T Targa
+  - entry_no: "95"
+    year: 1977
+    make: Porsche
+    model: 930 Turbo
+  - entry_no: "96"
+    year: 1953
+    make: Mercedes-Benz
+    model: 170S
+  - entry_no: "97"
+    year: 1956
+    make: Mercedes-Benz
+    model: 220S
+  - entry_no: "98"
+    year: 1959
+    make: Mercedes-Benz
+    model: 220SE Coupé
+  - entry_no: "99"
+    year: 1960
+    make: Mercedes-Benz
+    model: "190"
+  - entry_no: "100"
+    year: 1962
+    make: Mercedes-Benz
+    model: 190SL
+  - entry_no: "101"
+    year: 1967
+    make: Mercedes-Benz
+    model: 250SL
+  - entry_no: "102"
+    year: 1967
+    make: Mercedes-Benz
+    model: 250SE (W111)
+  - entry_no: "103"
+    year: 1968
+    make: Mercedes-Benz
+    model: 280SL
+  - entry_no: "104"
+    year: 1969
+    make: Mercedes-Benz
+    model: 280SE Cabriolet
+  - entry_no: "105"
+    year: 1970
+    make: Mercedes-Benz
+    model: 280SE 3.5 Cabriolet
+  - entry_no: "106"
+    year: 1970
+    make: Mercedes-Benz
+    model: 280SL
+  - entry_no: "107"
+    year: 1970
+    make: Mercedes-Benz
+    model: 280SL
+  - entry_no: "108"
+    year: 1971
+    make: Mercedes-Benz
+    model: 280SE 3.5 Coupé
+  - entry_no: "109"
+    year: 1972
+    make: Mercedes-Benz
+    model: 280SE 3.5 (W108)
+  - entry_no: "110"
+    year: 1974
+    make: Mercedes-Benz
+    model: 450SL
+  - entry_no: "111"
+    year: 1964
+    make: Morris
+    model: Mini Cooper 970S Mk I
+  - entry_no: "112"
+    year: 1964
+    make: Morris
+    model: Mini Cooper 1275S
+  - entry_no: "113"
+    year: 1965
+    make: Morris
+    model: Mini Traveller Mk I
+  - entry_no: "114"
+    year: 1969
+    make: Morris
+    model: Mini Traveller Mk II
+  - entry_no: "115"
+    year: 1969
+    make: Morris
+    model: "1300"
+  - entry_no: "116"
+    year: 1964
+    make: Lancia
+    model: Fulvia 2C
+  - entry_no: "117"
+    year: 1966
+    make: Lotus
+    model: Elan S3 SE
+  - entry_no: "118"
+    year: 1974
+    make: Lotus
+    model: Europa SP
+  - entry_no: "119"
+    year: 1971
+    make: Subaru
+    model: 1300G Sports Sedan
