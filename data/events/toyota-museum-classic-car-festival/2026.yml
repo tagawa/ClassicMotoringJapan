@@ -88,7 +88,7 @@ cars:
   - entry_no: "13"
     year: 1969
     make: Porsche
-    model: 911S
+    model: 911 S
     country: DE
   - entry_no: "14"
     year: 1988
@@ -248,7 +248,7 @@ cars:
   - entry_no: "45"
     year: 1973
     make: Ferrari
-    model: Dino 246GT
+    model: Dino 246 GT
     country: IT
   - entry_no: "46"
     year: 1971

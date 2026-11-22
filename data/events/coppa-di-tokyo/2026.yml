@@ -306,17 +306,17 @@ cars:
   - entry_no: "52"
     year: 1957
     make: Porsche
-    model: "356A"
+    model: 356 A
     country: DE
   - entry_no: "53"
     year: 1960
     make: Porsche
-    model: "356B Super 90 Roadster"
+    model: 356 B Super 90 Roadster
     country: DE
   - entry_no: "54"
     year: 1961
     make: Porsche
-    model: "356B Roadster"
+    model: 356 B Roadster
     country: DE
   - entry_no: "55"
     year: 1966

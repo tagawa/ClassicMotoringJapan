@@ -467,7 +467,7 @@ cars:
   - entry_no: "39"
     year: 1964
     make: Porsche
-    model: 356C
+    model: 356 C
   - entry_no: "41"
     year: 1968
     make: Toyota
@@ -503,7 +503,7 @@ cars:
   - entry_no: "51"
     year: 1960
     make: Porsche
-    model: 356B
+    model: 356 B
   - entry_no: "52"
     year: 1960
     make: Jaguar

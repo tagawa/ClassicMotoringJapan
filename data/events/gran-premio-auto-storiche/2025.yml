@@ -7,7 +7,7 @@ end: 2025-05-11
 # list page (entry_list/index.html), which prints no date, so list_as_of is the day it
 # was read. Entry 39 is crossed out (×) on the list and left out. Each car's country is
 # the list's own column. Spellings corrected from the list: Speedstar to Speedster (16),
-# 365C to 356C (19), and the makes' and models' capitals to the house casing.
+# 365C to 356 C (19), and the makes' and models' capitals to the house casing.
 source_url: http://www.auto-storiche.jp/2025/gran_premio/outline/index.html
 last_verified: 2026-11-01
 sequence: 0
@@ -96,7 +96,7 @@ cars:
   - entry_no: "16"
     year: 1958
     make: Porsche
-    model: "356A Speedster Zagato"
+    model: 356 A Speedster Zagato
     country: DE
   - entry_no: "17"
     year: 1959
@@ -106,12 +106,12 @@ cars:
   - entry_no: "18"
     year: 1960
     make: Porsche
-    model: "356B"
+    model: 356 B
     country: DE
   - entry_no: "19"
     year: 1964
     make: Porsche
-    model: "356C Cabriolet"
+    model: 356 C Cabriolet
     country: DE
   - entry_no: "20"
     year: 1969
@@ -156,7 +156,7 @@ cars:
   - entry_no: "28"
     year: 1972
     make: Ferrari
-    model: Dino 246GT
+    model: Dino 246 GT
     country: IT
   - entry_no: "29"
     year: 1968
@@ -186,7 +186,7 @@ cars:
   - entry_no: "34"
     year: 1969
     make: Alfa Romeo
-    model: Giulia 1300GT Junior
+    model: Giulia GT 1300 Junior
     country: IT
   - entry_no: "35"
     year: 1964

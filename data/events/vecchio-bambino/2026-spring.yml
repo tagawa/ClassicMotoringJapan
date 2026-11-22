@@ -158,11 +158,11 @@ cars:
   - entry_no: "18"
     year: 1957
     make: Porsche
-    model: 356A Speedster
+    model: 356 A Speedster
   - entry_no: "19"
     year: 1958
     make: Porsche
-    model: 356A Cabriolet
+    model: 356 A Cabriolet
   - entry_no: "20"
     year: 1958
     make: Triumph
@@ -266,7 +266,7 @@ cars:
   - entry_no: "45"
     year: 1969
     make: Alfa Romeo
-    model: Giulia GT1300 Junior
+    model: Giulia GT 1300 Junior
   - entry_no: "46"
     year: 1969
     make: Alfa Romeo
@@ -346,7 +346,7 @@ cars:
   - entry_no: "64"
     year: 1970
     make: Nissan
-    model: Fairlady Z 432
+    model: Fairlady Z432
   - entry_no: "65"
     year: 1975
     make: Nissan

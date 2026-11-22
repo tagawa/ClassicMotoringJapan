@@ -474,7 +474,7 @@ cars:
   - entry_no: "41"
     year: 1958
     make: Porsche
-    model: 356A
+    model: 356 A
   - entry_no: "43"
     year: 1969
     make: Toyota
@@ -518,7 +518,7 @@ cars:
   - entry_no: "54"
     year: 1957
     make: Porsche
-    model: 356A Speedster
+    model: 356 A Speedster
   - entry_no: "55"
     year: 1957
     make: Mercedes-Benz
@@ -542,11 +542,11 @@ cars:
   - entry_no: "61"
     year: 1963
     make: Porsche
-    model: 356C Cabriolet
+    model: 356 C Cabriolet
   - entry_no: "62"
     year: 1967
     make: MG
-    model: MGB-GT
+    model: MGB GT
 videos:
   - youtube_id: t3UUnZ7g5P0
     label_en: Day 1

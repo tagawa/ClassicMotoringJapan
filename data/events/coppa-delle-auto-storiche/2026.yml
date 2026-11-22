@@ -112,7 +112,7 @@ cars:
   - entry_no: "19"
     year: 1964
     make: Porsche
-    model: "356C"
+    model: 356 C
     country: DE
   - entry_no: "20"
     year: 1964
@@ -122,7 +122,7 @@ cars:
   - entry_no: "21"
     year: 1959
     make: Porsche
-    model: "356B"
+    model: 356 B
     country: DE
   - entry_no: "22"
     year: 1972
@@ -132,7 +132,7 @@ cars:
   - entry_no: "23"
     year: 1973
     make: Porsche
-    model: "911S"
+    model: 911 S
     country: DE
   - entry_no: "24"
     year: 1971
@@ -152,7 +152,7 @@ cars:
   - entry_no: "27"
     year: 1970
     make: Isuzu
-    model: Bellett 1600GT-R
+    model: Bellett 1600GTR
     country: JP
   - entry_no: "28"
     year: 1953
@@ -247,7 +247,7 @@ cars:
   - entry_no: "46"
     year: 1973
     make: Alfa Romeo
-    model: GT1600 Junior
+    model: GT 1600 Junior
     country: IT
   - entry_no: "47"
     year: 1966

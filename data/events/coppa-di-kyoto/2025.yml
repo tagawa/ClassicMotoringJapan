@@ -269,12 +269,12 @@ cars:
   - entry_no: "42"
     year: 1956
     make: Porsche
-    model: 356A
+    model: 356 A
     country: DE
   - entry_no: "43"
     year: 1957
     make: Porsche
-    model: 356A
+    model: 356 A
     country: DE
   - entry_no: "44"
     year: 1964
@@ -284,7 +284,7 @@ cars:
   - entry_no: "45"
     year: 1973
     make: Porsche
-    model: 911S
+    model: 911 S
     country: DE
   - entry_no: "46"
     year: 1973

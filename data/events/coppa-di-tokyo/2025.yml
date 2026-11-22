@@ -228,7 +228,7 @@ cars:
   - entry_no: "42"
     year: 1968
     make: Alfa Romeo
-    model: Giulia 1300 GT Junior
+    model: Giulia GT 1300 Junior
     country: IT
   - entry_no: "43"
     year: 1973
@@ -243,7 +243,7 @@ cars:
   - entry_no: "45"
     year: 1957
     make: Porsche
-    model: 356A
+    model: 356 A
     country: DE
   - entry_no: "46"
     year: 1955
@@ -386,12 +386,12 @@ cars:
   - entry_no: "75"
     year: 1971
     make: Porsche
-    model: 911S
+    model: 911 S
     country: DE
   - entry_no: "76"
     year: 1970
     make: Porsche
-    model: 911T
+    model: 911 T
     country: DE
   - entry_no: "77"
     year: 2015

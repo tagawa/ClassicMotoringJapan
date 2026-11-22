@@ -276,7 +276,7 @@ cars:
   - entry_no: "A55"
     year: 1974
     make: Isuzu
-    model: 117 Coupe
+    model: 117 Coupé
     country: JP
   - entry_no: "A56"
     year: 1971
@@ -386,7 +386,7 @@ cars:
   - entry_no: "B5"
     year: 1971
     make: Porsche
-    model: 911T Narrow
+    model: 911 T Narrow
     country: DE
   - entry_no: "B6"
     year: 1993
@@ -406,7 +406,7 @@ cars:
   - entry_no: "B9"
     year: 1971
     make: Porsche
-    model: 911S Targa
+    model: 911 S Targa
     country: DE
   - entry_no: "B10"
     year: 1985

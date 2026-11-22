@@ -99,7 +99,7 @@ cars:
     model: Elan S4 Sprint
   - entry_no: "C9"
     make: Porsche
-    model: 356C
+    model: 356 C
   - entry_no: "C10"
     make: Datsun
     model: Bluebird 1600 SSS Coupé
@@ -130,7 +130,7 @@ cars:
     country: GB
   - entry_no: "D3"
     make: Porsche
-    model: 911S
+    model: 911 S
   - entry_no: "D5"
     make: Riley
     model: "1.5"

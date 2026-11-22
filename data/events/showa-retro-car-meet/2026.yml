@@ -63,7 +63,7 @@ cars:
   - entry_no: "56"
     year: 1967
     make: Fiat
-    model: 500F
+    model: 500 F
   - entry_no: "39"
     year: 1972
     make: Fiat
@@ -137,7 +137,7 @@ cars:
   - entry_no: "97"
     year: 1961
     make: Jaguar
-    model: MK2
+    model: Mk2
   - entry_no: "136"
     year: 2024
     make: Lamborghini
@@ -321,7 +321,7 @@ cars:
   - entry_no: "57"
     year: 1972
     make: Nissan
-    model: Fairlady Z 432-R
+    model: Fairlady Z432-R
   - entry_no: "78"
     year: 1972
     make: Nissan

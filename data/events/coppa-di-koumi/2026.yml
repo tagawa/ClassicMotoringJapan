@@ -216,7 +216,7 @@ cars:
   - entry_no: "24"
     year: 1973
     make: Dino
-    model: 246GT
+    model: 246 GT
     country: IT
   - entry_no: "25"
     year: 1969
@@ -246,12 +246,12 @@ cars:
   - entry_no: "30"
     year: 1958
     make: Porsche
-    model: 356A
+    model: 356 A
     country: DE
   - entry_no: "31"
     year: 1959
     make: Porsche
-    model: 356A
+    model: 356 A
     country: DE
   - entry_no: "32"
     year: 1959
@@ -276,12 +276,12 @@ cars:
   - entry_no: "36"
     year: 1963
     make: Porsche
-    model: 356B Super 90
+    model: 356 B Super 90
     country: DE
   - entry_no: "37"
     year: 1963
     make: Porsche
-    model: 356B Super 90
+    model: 356 B Super 90
     country: DE
   - entry_no: "38"
     year: 1954
@@ -371,17 +371,17 @@ cars:
   - entry_no: "58"
     year: 1972
     make: Porsche
-    model: 911T
+    model: 911 T
     country: DE
   - entry_no: "59"
     year: 1972
     make: Porsche
-    model: 911T
+    model: 911 T
     country: DE
   - entry_no: "60"
     year: 1962
     make: Porsche
-    model: 356B Super 90
+    model: 356 B Super 90
     country: DE
   - entry_no: "61"
     year: 1989

@@ -113,10 +113,10 @@ cars:
     model: Spitfire Mk III
   - entry_no: "C12"
     make: Porsche
-    model: 356B S90
+    model: 356 B S90
   - entry_no: "C13"
     make: Porsche
-    model: 356A Speedster
+    model: 356 A Speedster
   - entry_no: "C14"
     make: Lotus
     model: Elan S4 Sprint
@@ -125,7 +125,7 @@ cars:
     model: Celica
   - entry_no: "D2"
     make: Isuzu
-    model: Bellett GT-R
+    model: Bellett GTR
   - entry_no: "D3"
     make: Ginetta
     model: G4

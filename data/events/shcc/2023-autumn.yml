@@ -93,7 +93,7 @@ cars:
     model: Elan Sprint
   - entry_no: "C6"
     make: Porsche
-    model: 356B
+    model: 356 B
   - entry_no: "C7"
     make: Turner
     model: Unknown
@@ -138,7 +138,7 @@ cars:
     model: Sunny Van
   - entry_no: "D7"
     make: Porsche
-    model: 911S
+    model: 911 S
   - entry_no: "D8"
     make: Jaguar
     model: XK120

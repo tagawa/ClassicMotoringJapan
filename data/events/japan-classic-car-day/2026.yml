@@ -151,7 +151,7 @@ cars:
   - entry_no: "23"
     year: 1949
     make: OSCA
-    model: MT-4
+    model: MT4
     country: IT
   - entry_no: "24"
     year: 1949
@@ -166,12 +166,12 @@ cars:
   - entry_no: "26"
     year: 1954
     make: Aston Martin
-    model: DB2/4 MK1
+    model: DB2/4 Mk1
     country: GB
   - entry_no: "27"
     year: 1954
     make: Aston Martin
-    model: DB2/4 MK1 DHC
+    model: DB2/4 Mk1 DHC
     country: GB
   - entry_no: "28"
     year: 1952
@@ -332,7 +332,7 @@ cars:
   - entry_no: "59"
     year: 1969
     make: Triumph
-    model: Vitesse MK2
+    model: Vitesse Mk2
     country: GB
   - entry_no: "60"
     year: 1971
@@ -362,7 +362,7 @@ cars:
   - entry_no: "65"
     year: 1968
     make: Porsche
-    model: 911T
+    model: 911 T
     country: DE
   - entry_no: "66"
     year: 1972
