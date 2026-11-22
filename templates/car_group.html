@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block main %}
+<h1>{{ page.title }}</h1>
+
+<h2 id="events">Events where {{ page.title }} cars have run</h2>
+<ul class="event-lines">
+{% for line in page.events %}
+  <li class="event-line"><a href="{{ root }}events/{{ line.slug }}/">{{ line.ev.name_en }}</a>: <a href="{{ root }}{{ line.row.path }}">{{ line.text }}</a>. <span class="next-dates">{% for d in line.dates %}{% if not loop.first %}<span class="date-sep">; </span>{% endif %}<span class="next-date" data-start="{{ d.start.isoformat() }}" data-ends="{{ d.end.isoformat() }}">{{ d.text }}</span>{% endfor %}</span><span class="no-next"{% if line.dates %} hidden{% endif %}>Next date not announced</span></li>
+{% endfor %}
+</ul>
+
+<h2 id="entry-lists">Entry lists</h2>
+<p>{{ page.totals }}.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Entry lists">
+  <table>
+    <thead><tr><th scope="col">Edition</th><th scope="col">Date</th><th scope="col">Count</th></tr></thead>
+    <tbody>
+{% for x in page.lists %}
+      <tr><td><a href="{{ root }}{{ x.row.path }}">{{ x.row.full_name }}</a></td><td>{{ x.when }}</td><td>{{ x.text }}{% if x.row.list_provisional %}, provisional list{% endif %}</td></tr>
+{% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<p>Counts come only from events whose organisers publish entry lists.</p>
+{% endblock %}
+
+{% block scripts %}
+{# The build never reads the clock: it renders every date from each counted edition on,
+   and this keeps the first whose last day has not ended in Japan, then sorts soonest first. #}
+<script>
+  (function () {
+    var list = document.querySelector("ul.event-lines");
+    if (!list) return;
+    var todayInJapan = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+    var items = list.getElementsByTagName("li"), lines = [], i, j;
+    for (i = 0; i < items.length; i++) {
+      var li = items[i], dates = li.querySelectorAll(".next-date"), seps = li.querySelectorAll(".date-sep"), next = null;
+      for (j = 0; j < dates.length; j++) {
+        if (next || dates[j].getAttribute("data-ends") < todayInJapan) dates[j].setAttribute("hidden", "");
+        else next = dates[j];
+      }
+      for (j = 0; j < seps.length; j++) seps[j].setAttribute("hidden", "");
+      if (next) li.querySelector(".no-next").setAttribute("hidden", "");
+      else li.querySelector(".no-next").removeAttribute("hidden");
+      lines.push({ li: li, start: next ? next.getAttribute("data-start") : null, at: i });
+    }
+    lines.sort(function (a, b) {
+      if (a.start !== b.start) {
+        if (a.start === null) return 1;
+        if (b.start === null) return -1;
+        return a.start < b.start ? -1 : 1;
+      }
+      // Ties keep the build's A to Z order; old engines' sort is not stable.
+      return a.at - b.at;
+    });
+    for (i = 0; i < lines.length; i++) list.appendChild(lines[i].li);
+  })();
+</script>
+{% endblock %}
+
+{% block footer %}
+{% if latest %}
+  <p>Most recent check: {{ latest.isoformat() }}</p>
+{% endif %}
+{% endblock %}

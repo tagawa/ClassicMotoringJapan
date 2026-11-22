@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% from "icons.html" import flag, flag_defs %}
+{% block main %}
+<h1>Cars by make</h1>
+{% if flags %}
+{{ flag_defs(flags) }}
+{% endif %}
+<ul class="make-index">
+{% for line in lines %}
+  <li class="make-line">{% if line.country %}{{ flag(line.country) }}{% endif %}<span class="make-name">{% if line.page %}<a href="{{ line.page.slug }}/">{{ line.make }}</a>{% else %}{{ line.make }}{% endif %}</span>: {{ line.text }}.{% if line.see %} See {{ line.page.title }}.{% endif %}</li>
+{% endfor %}
+</ul>
+<p>Counts come only from events whose organisers publish entry lists.</p>
+{% endblock %}
+
+{% block footer %}
+{% if latest %}
+  <p>Most recent check: {{ latest.isoformat() }}</p>
+{% endif %}
+{% endblock %}

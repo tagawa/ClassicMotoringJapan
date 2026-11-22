@@ -290,5 +290,89 @@ class YearStripTest(unittest.TestCase):
         self.assertFalse(s["strip_visible"])
 
 
+
+@unittest.skipIf(sync_playwright is None, "playwright not installed")
+class NextDateTest(unittest.TestCase):
+    """A make page shows each event's next date by Japan's date, soonest first (spec section 5)."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = Path(tempfile.mkdtemp())
+        data = cls.tmp / "data"
+        (data / "events").mkdir(parents=True)
+        (data / "makes.yml").write_text("Nissan: JP\n", encoding="utf-8")
+        later = {"bravo": [("2027", "2027-05-08", "2027-05-08", "confirmed")],
+                 "charlie": [("2027", "2027-03-13", "2027-03-14", "confirmed")],
+                 "echo": [("2027", "2027-02-01", "2027-02-01", "cancelled"),
+                          ("2028", "2028-04-01", "2028-04-01", "confirmed")],
+                 "foxtrot": [("2027", "2027-03-13", "2027-03-13", "confirmed")]}
+        for slug in ("alpha", "bravo", "charlie", "delta", "echo", "foxtrot"):
+            write_event(data, slug, name_en=slug.capitalize())
+            day = "2026-03-14" if slug == "alpha" else "2026-05-10"
+            write_instance(data, slug, 2026, instance_yaml(slug, 2026, day, day, extra=(
+                f"list_as_of: {day[:8]}20\ncars:\n  - entry_no: \"1\"\n    make: Nissan\n    model: Skyline\n")))
+            for stem, start, end, status in later.get(slug, []):
+                write_instance(data, slug, stem, instance_yaml(slug, int(stem), start, end, status=status))
+        build.build(data, cls.tmp / "site")
+        cls.url = (cls.tmp / "site" / "cars" / "nissan" / "index.html").as_uri()
+        try:
+            cls.pw = sync_playwright().start()
+            cls.browser = cls.pw.chromium.launch()
+        except Exception as e:
+            shutil.rmtree(cls.tmp)
+            raise unittest.SkipTest(f"chromium unavailable: {e}")
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.browser.close()
+        cls.pw.stop()
+        shutil.rmtree(cls.tmp)
+
+    def lines_at(self, utc_instant: str) -> list[tuple]:
+        """(event, visible dates, placeholder visible) per line, in the order shown."""
+        ctx = self.browser.new_context(timezone_id="Europe/London")
+        page = ctx.new_page()
+        page.clock.set_fixed_time(utc_instant)
+        page.goto(self.url)
+        lines = [(li.locator("a").first.inner_text(), li.locator(".next-date:visible").all_inner_texts(),
+                  li.locator(".no-next").is_visible())
+                 for li in page.locator("li.event-line").all()]
+        ctx.close()
+        return lines
+
+    def line(self, lines, name):
+        return next(item for item in lines if item[0] == name)
+
+    def test_shows_first_date_not_ended(self):
+        lines = self.lines_at("2026-12-01T03:00:00Z")
+        self.assertEqual(self.line(lines, "Bravo")[1:], (["Sat 8 May 2027"], False))
+        self.assertEqual(self.line(lines, "Echo")[1:], (["Sat 1 Apr 2028"], False))
+
+    def test_no_edition_left_says_not_announced(self):
+        lines = self.lines_at("2026-12-01T03:00:00Z")
+        self.assertEqual(self.line(lines, "Alpha")[1:], ([], True))
+        self.assertEqual(self.line(lines, "Delta")[1:], ([], True))
+
+    def test_sorts_soonest_first_then_a_to_z(self):
+        self.assertEqual([item[0] for item in self.lines_at("2026-12-01T03:00:00Z")],
+                         ["Charlie", "Foxtrot", "Bravo", "Echo", "Alpha", "Delta"])
+
+    def test_same_next_date_keeps_a_to_z(self):
+        # Passes without the script too, since the build's order is A to Z: a guard on the final order.
+        names = [item[0] for item in self.lines_at("2026-12-01T03:00:00Z")]
+        self.assertLess(names.index("Charlie"), names.index("Foxtrot"))
+
+    def test_still_shown_on_last_day_in_japan(self):
+        # 23:30 on 14 March in Japan: Charlie's second day is still running.
+        lines = self.lines_at("2027-03-14T14:30:00Z")
+        self.assertEqual(self.line(lines, "Charlie")[1:], (["Sat 13 to Sun 14 Mar 2027"], False))
+
+    def test_date_drops_once_ended_in_japan(self):
+        # 00:30 on 15 March in Japan.
+        lines = self.lines_at("2027-03-14T15:30:00Z")
+        self.assertEqual(self.line(lines, "Charlie")[1:], ([], True))
+        self.assertEqual([item[0] for item in lines], ["Bravo", "Echo", "Alpha", "Charlie", "Delta", "Foxtrot"])
+
+
 if __name__ == "__main__":
     unittest.main()

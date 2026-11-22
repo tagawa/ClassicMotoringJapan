@@ -22,6 +22,7 @@ from xml.sax.saxutils import escape as xml_escape
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from calendars import build_ics, ics_calendar
+from car_pages import INDEX_DESCRIPTION, group_pages, index_flags, make_index
 from cards import draw_card, plan_cards
 from charts import year_chart
 from formatting import (fmt_domain, fmt_fee, fmt_fee_ja, fmt_month_ja, fmt_span_ja, fmt_weekday, mark_ja,
@@ -34,7 +35,7 @@ from rows import make_rows, month_groups
 from settings import (ABOUT_DESCRIPTION, ARD_PATH, ARD_PREDECESSOR_PATH, CONTENT_SIGNAL, CONTENT_USAGE,
                       COUNTRIES, FEED_FILE, INDEXNOW_KEY, ISSUES_URL, JA_LEDE, PREFECTURES_JA, ROOT,
                       SHARE_SIZE, SITE_LEDE, SITE_NAME, SITE_URL, YOUTUBE_CHANNEL_URL)
-from validate import BuildError, load_and_validate, load_makes
+from validate import BuildError, load_and_validate, load_make_groups, load_makes
 
 def reset_out_dir(out_dir: Path) -> None:
     """Empty out_dir, but only if it is empty or holds a previous build."""
@@ -51,7 +52,12 @@ def reset_out_dir(out_dir: Path) -> None:
 def build(data_dir: Path, out_dir: Path,
           templates_dir: Path = ROOT / "templates", static_dir: Path = ROOT / "static") -> None:
     events, editions = load_and_validate(data_dir)
-    rows = make_rows(events, editions, load_makes(data_dir))
+    makes = load_makes(data_dir)
+    groups = load_make_groups(data_dir, makes)
+    rows = make_rows(events, editions, makes)
+    car_groups = group_pages(rows, groups)
+    # Each make in an edition's car table links to its group's page, where one exists.
+    make_pages = {member: page["path"] for page in car_groups for member in page["members"]}
     og, cards, errors = plan_cards(events, rows)
     if errors:
         raise BuildError(errors)
@@ -127,7 +133,7 @@ def build(data_dir: Path, out_dir: Path,
                 **common, root="../../../", canonical=r["abs_url"],
                 title=f"{r['full_name']}: {r['parts_phrase']}",
                 description=edition_description(r),
-                ev=ev, r=r, ed=ed, photo=photo_info(ev), og_image=og[r["path"]],
+                ev=ev, r=r, ed=ed, photo=photo_info(ev), og_image=og[r["path"]], make_pages=make_pages,
                 jsonld=[r["jsonld"], build_breadcrumbs(r)]))
             sitemap.append((r["abs_url"], ed["last_verified"]))
 
@@ -136,6 +142,21 @@ def build(data_dir: Path, out_dir: Path,
         description=ABOUT_DESCRIPTION, og_image=og["site"], jsonld=[]))
     # The page describes the site, not the data, so no verified date stands behind it.
     sitemap.append((f"{SITE_URL}/about/", None))
+
+    cars_verified = max((r["ed"]["last_verified"] for r in rows if r["cars"]), default=None)
+    make_lines = make_index(rows, makes, groups, car_groups)
+    write("cars/index.html", env.get_template("cars.html").render(
+        **common, root="../", canonical=f"{SITE_URL}/cars/", title=f"Cars by make | {SITE_NAME}",
+        description=INDEX_DESCRIPTION, og_image=og["site"], lines=make_lines, flags=index_flags(make_lines),
+        latest=cars_verified, jsonld=[]))
+    sitemap.append((f"{SITE_URL}/cars/", cars_verified))
+    for page in car_groups:
+        # No brand suffix: the title names something on its own (spec 8).
+        write(f"{page['path']}index.html", env.get_template("car_group.html").render(
+            **common, root="../../", canonical=f"{SITE_URL}/{page['path']}",
+            title=f"{page['title']} at classic car events in Japan", description=page["description"],
+            og_image=og["site"], page=page, latest=page["verified"], jsonld=[]))
+        sitemap.append((f"{SITE_URL}/{page['path']}", page["verified"]))
 
     # Pages serves this for a missing path at any depth, so links must be root-absolute.
     write("404.html", env.get_template("404.html").render(
@@ -151,7 +172,7 @@ def build(data_dir: Path, out_dir: Path,
                         f"Sitemap: {SITE_URL}/sitemap.xml\n"
                         f"Agentmap: {SITE_URL}/{ARD_PATH}\n")
     write("api/events.json", build_api(rows))
-    write("llms.txt", build_llms_txt(rows, events))
+    write("llms.txt", build_llms_txt(rows, events, car_groups))
     ard = build_ard_catalog()
     write(ARD_PATH, ard)
     write(ARD_PREDECESSOR_PATH, ard)

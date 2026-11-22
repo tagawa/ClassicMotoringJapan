@@ -54,7 +54,7 @@ def build_api(rows: list[dict]) -> str:
     return json.dumps(feed, indent=2, ensure_ascii=False, default=str) + "\n"
 
 
-def build_llms_txt(rows: list[dict], events: dict) -> str:
+def build_llms_txt(rows: list[dict], events: dict, car_groups: list[dict] = ()) -> str:
     lines = [f"# {SITE_NAME}", "", f"> {SITE_LEDE}", "",
              "Each record is transcribed from the organiser's own page and carries the date "
              "it was last checked against it. All dates and times are Japan time.", "",
@@ -75,6 +75,10 @@ def build_llms_txt(rows: list[dict], events: dict) -> str:
         for r in ev_rows:
             if r["has_page"]:
                 lines.append(f"  - [{r['full_name']}]({r['abs_url']}): {r['parts_phrase'].lower()}.")
+    lines += ["", "## Cars", "",
+              f"- [Cars by make]({SITE_URL}/cars/): every make on a published entry list, with its counts."]
+    lines += [f"  - [{page['title']}]({SITE_URL}/{page['path']}): events where these cars have run, "
+              "and every list including them." for page in car_groups]
     lines += ["", "## Site", "",
               f"- [About]({SITE_URL}/about/): where the facts come from, how they are checked, "
               "and where to report an error.",

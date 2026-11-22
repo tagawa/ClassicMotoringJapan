@@ -70,3 +70,12 @@
 </figure>
 {% endif %}
 {%- endmacro %}
+
+{# Each flag a page uses is drawn once, then referenced by every flag() on the page. #}
+{% macro flag_defs(flags) -%}
+<svg class="flag-defs" width="0" height="0" aria-hidden="true" focusable="false"><defs>{% for f in flags %}<g id="flag-{{ f.code | lower }}">{{ f.art | safe }}</g>{% endfor %}</defs></svg>
+{%- endmacro %}
+
+{% macro flag(code) -%}
+<svg class="flag" viewBox="0 0 30 20" width="24" height="16" role="img" aria-label="{{ countries[code][0] }}" focusable="false"><title>{{ countries[code][0] }}</title><use xlink:href="#flag-{{ code | lower }}"/></svg>
+{%- endmacro %}

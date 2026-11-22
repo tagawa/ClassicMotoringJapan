@@ -535,6 +535,66 @@ class CoordinateTests(unittest.TestCase):
         self.assertIn("q=Another%20Field", html)
 
 
+class MakeGroupsFileTests(unittest.TestCase):
+    """data/make_groups.yml (spec 4.11): checked against makes.yml, one group per make."""
+
+    MAKES = {"Nissan": "JP", "Datsun": "JP", "Prince": "JP", "Lotus": "GB"}
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp)
+
+    def load(self, text: str, makes=None):
+        (self.tmp / "make_groups.yml").write_text(text, encoding="utf-8")
+        return validate.load_make_groups(self.tmp, self.MAKES if makes is None else makes)
+
+    def errors(self, text: str, makes=None) -> str:
+        with self.assertRaises(validate.ValidationError) as caught:
+            self.load(text, makes)
+        return "\n".join(caught.exception.errors)
+
+    def test_groups_come_back_in_file_order_with_the_rest_as_groups_of_one(self):
+        self.assertEqual(self.load("Nissan: [Nissan, Datsun, Prince]\n"),
+                         {"Nissan": ["Nissan", "Datsun", "Prince"], "Lotus": ["Lotus"]})
+
+    def test_member_missing_from_makes_fails(self):
+        msg = self.errors("Nissan: [Nissan, Datsun]\n", makes={"Nissan": "JP"})
+        self.assertIn("Datsun", msg)
+        self.assertIn("makes.yml", msg)
+
+    def test_make_in_two_groups_fails(self):
+        msg = self.errors("Nissan: [Nissan, Datsun]\nPrince: [Prince, Datsun]\n")
+        self.assertRegex(msg, r"Datsun.*Nissan.*Prince")
+
+    def test_first_member_must_be_the_key(self):
+        self.assertIn("Nissan", self.errors("Nissan: [Datsun, Nissan]\n"))
+
+    def test_value_must_be_a_list(self):
+        self.assertIn("Nissan", self.errors("Nissan: Datsun\n"))
+
+    def test_group_listed_twice_fails(self):
+        self.assertIn("listed twice", self.errors("Nissan: [Nissan]\nNissan: [Nissan, Datsun]\n"))
+
+    def test_no_groups_file_gives_groups_of_one(self):
+        self.assertEqual(validate.load_make_groups(self.tmp, {"A": None, "B": "GB"}), {"A": ["A"], "B": ["B"]})
+
+    def test_make_slug(self):
+        for name, slug in (("Citroën", "citroen"), ("TOM'S", "toms"), ("Mercedes-Benz", "mercedes-benz"),
+                           ("Alfa Romeo", "alfa-romeo")):
+            with self.subTest(name=name):
+                self.assertEqual(validate.make_slug(name), slug)
+
+    def test_colliding_slugs_fail(self):
+        # Neither make is on a list: a group that crosses the page bar later must not collide.
+        (self.tmp / "makes.yml").write_text("Citroën: FR\nCitroen: FR\n", encoding="utf-8")
+        msg = self.errors("", makes=validate.load_makes(self.tmp))
+        self.assertIn("citroen", msg)
+        self.assertIn("Citroën", msg)
+        self.assertIn("Citroen", msg)
+
+
 class StandaloneValidateTests(unittest.TestCase):
     def test_duplicate_make_is_refused_without_importing_build(self):
         # tools/cars.py and check_links.py import validate alone, so its YAML loader must not

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "icons.html" import map_link, video_icon, calendar_links, drop_passed, hero %}
+{% from "icons.html" import map_link, video_icon, calendar_links, drop_passed, hero, flag, flag_defs %}
 {# Seen from above, nose along +x, which rotate="auto" turns to the line's heading. Without
    SMIL it stays at the origin, outside the drawn line, and the still map shows (spec 4.8). #}
 {% macro map_car(path_id, car) -%}
@@ -183,7 +183,7 @@
 {% endif %}
 {% if r.flags %}
 {# Outside the fold: a definition inside a closed details is not drawn in every browser. #}
-<svg class="flag-defs" width="0" height="0" aria-hidden="true" focusable="false"><defs>{% for flag in r.flags %}<g id="flag-{{ flag.code | lower }}">{{ flag.art | safe }}</g>{% endfor %}</defs></svg>
+{{ flag_defs(r.flags) }}
 {% endif %}
 {% if summarised %}
 <details class="all-cars">
@@ -194,7 +194,7 @@
     <thead><tr>{% for col in r.car_columns %}<th scope="col">{{ col.label }}</th>{% endfor %}</tr></thead>
     <tbody>
 {% for car in r.cars %}
-      <tr>{% for col in r.car_columns %}<td{% if col.num %} class="num"{% elif col.key == "make" and r.flags %} class="{{ "flagged" if car.country else "unflagged" }}"{% endif %}>{% if col.key == "make" and car.country %}<svg class="flag" viewBox="0 0 30 20" width="24" height="16" role="img" aria-label="{{ countries[car.country][0] }}" focusable="false"><title>{{ countries[car.country][0] }}</title><use xlink:href="#flag-{{ car.country | lower }}"/></svg>{% endif %}{{ car.get(col.key, "") }}</td>{% endfor %}</tr>
+      <tr>{% for col in r.car_columns %}<td{% if col.num %} class="num"{% elif col.key == "make" and r.flags %} class="{{ "flagged" if car.country else "unflagged" }}"{% endif %}>{% if col.key == "make" and car.country %}{{ flag(car.country) }}{% endif %}{% if col.key == "make" and car.make in make_pages %}<a href="{{ root }}{{ make_pages[car.make] }}">{{ car.make }}</a>{% else %}{{ car.get(col.key, "") }}{% endif %}</td>{% endfor %}</tr>
 {% endfor %}
     </tbody>
   </table>

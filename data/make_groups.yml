@@ -1,0 +1,13 @@
+# Makes that an enthusiast of one would also follow, gathered onto one page under /cars/
+# (spec 4.11). One group per line: the key names the group and is also its first member.
+# Every member must be a make in makes.yml, and a make may be in one group at most.
+# A make in no group is a group of one. Grouping joins makes that are one company or its
+# own sub-brand; makes with shared history followed as separate marques stay apart
+# (Austin and Austin-Healey, Morris and Mini, Lotus and Caterham). Owner, 2026-11-22.
+Austin-Healey: [Austin-Healey, Healey]
+BMW: [BMW, BMW Alpina]
+Ferrari: [Ferrari, Dino]
+Fiat: [Fiat, Fiat-Abarth, Abarth]
+Mazda: [Mazda, Eunos, Efini, Autozam]
+Nissan: [Nissan, Datsun, Prince, Nissan Diesel]
+Toyota: [Toyota, Lexus]

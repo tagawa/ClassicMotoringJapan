@@ -71,7 +71,7 @@ a:focus-visible, summary:focus-visible, .table-wrap:focus-visible {
 /* Japanese breaks between any two characters; keep the links whole, and the heading to its <wbr>s. */
 .ja-events a { white-space: nowrap; }
 h1:lang(ja) { word-break: keep-all; }
-.language { margin-left: 16px; }
+.site-nav, .language { margin-left: 16px; }
 /* Filled, unlike the status badges, because it is the one thing on the list to act on first. */
 .badge.weekend { background: #8C1C24; color: #FFFFFF; }
 /* The space goes after the date, not before the badge: beside it on a phone, flush under it

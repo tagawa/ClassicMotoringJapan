@@ -1,0 +1,397 @@
+"""The cars section: /cars/ and one page per make group (spec 4.11 and section 5)."""
+
+import re
+import shutil
+import tempfile
+import unittest
+from pathlib import Path
+
+from helpers import cars_yaml, display_cars_yaml, instance_yaml, make_fixture, write_event, write_instance
+import build  # noqa: E402
+import validate  # noqa: E402
+
+MAKES = ("Austin-Healey: GB\nDatsun: JP\nFord: null\nHealey: GB\nLotus: GB\nNissan: JP\nNissan Diesel: JP\n"
+         "Prince: JP\nUnknown: null\n")
+GROUPS = "Nissan: [Nissan, Datsun, Prince, Nissan Diesel]\nAustin-Healey: [Austin-Healey, Healey]\n"
+
+# One edition per event: its slug, its year, its cars and, optionally, a dict of `verified`,
+# `as_of` and `day` (the one day it runs, 10 May unless given). Cars given as makes are an entry list; as (make, model) pairs, a
+# display list. Nissan's group is on 3 editions, so it gets a page; Lotus is on 2, and
+# Unknown on 2. meet-d, checked last, has no Nissan group car.
+NISSAN_LISTS = (("meet-a", 2025, ["Nissan", "Nissan", "Lotus"]),
+                ("meet-b", 2026, ["Datsun", "Datsun", "Datsun"], {"verified": "2026-09-25"}),
+                ("meet-c", 2026, ["Nissan Diesel", "Lotus", "Unknown"]),
+                ("meet-d", 2026, ["Unknown"], {"verified": "2026-10-05"}))
+
+
+def write_site(data: Path, lists, makes=MAKES, groups=GROUPS) -> None:
+    for slug, year, cars, *opts in lists:
+        opts = opts[0] if opts else {}
+        as_of = opts.get("as_of", f"{year}-05-12")
+        car_list = (display_cars_yaml(cars, as_of=as_of) if isinstance(cars[0], tuple)
+                    else cars_yaml([1970] * len(cars), as_of=as_of, makes=cars))
+        write_event(data, slug, name_en=slug.replace("-", " ").title())
+        day = opts.get("day", f"{year}-05-10")
+        write_instance(data, slug, year, instance_yaml(
+            slug, year, day, day, verified=opts.get("verified", "2026-09-20"),
+            extra=car_list))
+    (data / "makes.yml").write_text(makes, encoding="utf-8")
+    if groups is not None:
+        (data / "make_groups.yml").write_text(groups, encoding="utf-8")
+
+
+def text_of(html: str) -> str:
+    return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", html))
+
+
+class CarsSiteCase(unittest.TestCase):
+    LISTS = NISSAN_LISTS
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = Path(tempfile.mkdtemp())
+        cls.data, cls.out = cls.tmp / "data", cls.tmp / "site"
+        write_site(cls.data, cls.LISTS)
+        build.build(cls.data, cls.out)
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.tmp)
+
+    def page(self, rel: str) -> str:
+        return (self.out / rel).read_text(encoding="utf-8")
+
+    def index_line(self, make: str) -> str:
+        """The /cars/ list item for one make, as markup."""
+        items = re.findall(r"<li[^>]*>.*?</li>", self.page("cars/index.html"), re.S)
+        found = [item for item in items if re.search(rf">{re.escape(make)}<", item)]
+        self.assertEqual(len(found), 1, f"{make}: expected one line, found {len(found)}")
+        return found[0]
+
+
+class GroupPageTests(CarsSiteCase):
+    def test_three_editions_get_a_page(self):
+        self.assertTrue((self.out / "cars/nissan/index.html").is_file())
+
+    def test_two_editions_line_no_page(self):
+        self.assertFalse((self.out / "cars/lotus").exists())
+        self.assertNotIn("<a ", self.index_line("Lotus"))
+
+    def test_unknown_gets_no_line(self):
+        index = text_of(self.page("cars/index.html"))
+        self.assertIn("Lotus", index)
+        self.assertNotIn("Unknown", index)
+
+    def test_title_names_members_with_two_or_more(self):
+        html = self.page("cars/nissan/index.html")
+        self.assertIn("<title>Nissan and Datsun at classic car events in Japan</title>", html)
+        self.assertRegex(html, r"<h1>Nissan and Datsun</h1>")
+
+    def test_single_car_member_left_out_of_title(self):
+        html = self.page("cars/nissan/index.html")
+        title = re.search(r"<title>(.*?)</title>", html).group(1)
+        h1 = re.search(r"<h1>(.*?)</h1>", html).group(1)
+        self.assertNotIn("Nissan Diesel", title + h1)
+        self.assertIn('href="nissan/"', self.index_line("Nissan Diesel"))
+
+    def test_grouped_member_line_points_to_page(self):
+        line = self.index_line("Datsun")
+        self.assertIn('href="nissan/"', line)
+        self.assertIn("See Nissan and Datsun", text_of(line))
+
+    def test_make_alone_in_its_group_has_no_see(self):
+        self.assertNotIn("See", text_of(self.index_line("Lotus")))
+
+    def test_index_is_a_to_z(self):
+        makes = re.findall(r'<span class="make-name">(?:<a [^>]*>)?([^<]+)<', self.page("cars/index.html"))
+        self.assertEqual(makes, ["Datsun", "Lotus", "Nissan", "Nissan Diesel"])
+
+    def test_cars_pages_are_byte_identical(self):
+        out2 = self.tmp / "site2"
+        build.build(self.data, out2)
+        files = sorted(p.relative_to(self.out) for p in (self.out / "cars").rglob("*") if p.is_file())
+        self.assertEqual(len(files), 2, "expected /cars/ and /cars/nissan/")
+        for rel in files:
+            self.assertEqual((self.out / rel).read_bytes(), (out2 / rel).read_bytes(), str(rel))
+
+    def test_group_page_check_date_is_its_own_lists_latest(self):
+        self.assertIn("Most recent check: 2026-09-25", self.page("cars/nissan/index.html"))
+
+    def test_index_check_date_is_the_latest_list(self):
+        self.assertIn("Most recent check: 2026-10-05", self.page("cars/index.html"))
+
+    def test_sitemap_lists_cars_pages(self):
+        sitemap = self.page("sitemap.xml")
+        self.assertIn("<loc>https://classicmotoringjapan.com/cars/</loc><lastmod>2026-10-05</lastmod>", sitemap)
+        self.assertIn("<loc>https://classicmotoringjapan.com/cars/nissan/</loc><lastmod>2026-09-25</lastmod>",
+                      sitemap)
+        self.assertNotIn("/cars/lotus/", sitemap)
+
+    def test_entry_table_make_links_to_group_page(self):
+        self.assertIn('<a href="../../../cars/nissan/">Datsun</a></td>', self.page("events/meet-b/2026/index.html"))
+
+    def test_make_without_page_is_not_linked(self):
+        html = self.page("events/meet-c/2026/index.html")
+        self.assertIn('<a href="../../../cars/nissan/">Nissan Diesel</a></td>', html)
+        self.assertRegex(html, r"</svg>Lotus</td>")
+        self.assertIn(">Unknown</td>", html)
+
+    def test_api_has_no_cars_pages(self):
+        api = self.page("api/events.json")
+        self.assertIn("events/meet-b/2026/", api)
+        self.assertNotIn("/cars/", api)
+
+    def test_llms_txt_lists_cars_pages(self):
+        llms = self.page("llms.txt")
+        self.assertIn("## Cars\n\n- [Cars by make](https://classicmotoringjapan.com/cars/): "
+                      "every make on a published entry list, with its counts.\n"
+                      "  - [Nissan and Datsun](https://classicmotoringjapan.com/cars/nissan/): "
+                      "events where these cars have run, and every list including them.\n", llms)
+        self.assertNotIn("/cars/lotus/", llms)
+        self.assertLess(llms.index("## Events"), llms.index("## Cars"))
+
+
+class CountsTests(CarsSiteCase):
+    """A display list names models, not cars, so its count is kept apart (spec section 5)."""
+    LISTS = (("rally-a", 2025, ["Lotus", "Lotus", "Nissan", "Nissan", "Nissan"]),
+             ("show-b", 2026, [("Lotus", "Elan"), ("Lotus", "Europa"), ("Lotus", "Seven"), ("Ford", "Model A"),
+                               ("Ford", "Model T"), ("Ford", "Anglia"), ("Datsun", "Fairlady")]),
+             # Checked before the event, so its list is provisional.
+             ("rally-c", 2026, ["Nissan", "Datsun"],
+              {"day": "2026-06-14", "as_of": "2026-05-01", "verified": "2026-05-01"}))
+
+    def test_index_models_never_added_into_cars(self):
+        line = text_of(self.index_line("Lotus"))
+        self.assertIn("Lotus : 2 cars at 2 editions, 3 models on display.", line)
+        self.assertNotIn("5 cars", line)
+
+    def test_index_display_only_make(self):
+        self.assertIn("Ford : 3 models on display at 1 edition.", text_of(self.index_line("Ford")))
+
+    def test_index_flag_from_makes_yml(self):
+        self.assertIn('xlink:href="#flag-gb"', self.index_line("Lotus"))
+        self.assertNotIn('class="flag"', self.index_line("Ford"))
+        self.assertEqual(self.page("cars/index.html").count('<g id="flag-gb">'), 1)
+
+    def test_group_totals_models_never_added(self):
+        # Also proves the display list counts towards the 3-edition bar: the page exists.
+        self.assertIn("5 cars at 2 editions, and 1 model on display at 1 edition",
+                      text_of(self.page("cars/nissan/index.html")))
+
+    def test_two_members_at_one_edition_count_once(self):
+        # rally-c has both Nissan and Datsun: counted twice, the totals would say 3 editions.
+        text = text_of(self.page("cars/nissan/index.html"))
+        self.assertIn("5 cars at 2 editions", text)
+        self.assertNotIn("at 3 editions", text)
+
+    def entry_rows(self) -> dict:
+        html = self.page("cars/nissan/index.html")
+        rows = re.findall(r"<tr>.*?</tr>", html.split('id="entry-lists"', 1)[1], re.S)
+        return {re.search(r">(Rally A|Show B|Rally C) ", row).group(1): text_of(row) for row in rows[1:]}
+
+    def test_entry_lists_table_marks_provisional(self):
+        rows = self.entry_rows()
+        self.assertEqual(sorted(rows), ["Rally A", "Rally C", "Show B"])
+        self.assertIn("provisional", rows["Rally C"])
+        self.assertNotIn("provisional", rows["Rally A"])
+        self.assertNotIn("provisional", rows["Show B"])
+
+    def test_entry_lists_newest_first_with_counts(self):
+        rows = self.entry_rows()
+        self.assertEqual(list(rows), ["Rally C", "Show B", "Rally A"])
+        self.assertIn("3 cars", rows["Rally A"])
+        self.assertIn("1 model on display", rows["Show B"])
+
+    def test_display_table_make_links_too(self):
+        self.assertIn('<a href="../../../cars/nissan/">Datsun</a></td>', self.page("events/show-b/2026/index.html"))
+
+    def test_entry_list_links_to_the_edition(self):
+        self.assertIn('href="../../events/rally-a/2025/"', self.page("cars/nissan/index.html"))
+
+    def test_caveat_on_both_pages_as_plain_text(self):
+        for rel in ("cars/index.html", "cars/nissan/index.html"):
+            with self.subTest(page=rel):
+                html = self.page(rel)
+                self.assertIn("<p>Counts come only from events whose organisers publish entry lists.</p>", html)
+
+
+def write_edition(data: Path, slug: str, stem, day: str, status="confirmed", cars=None,
+                  as_of=None, verified="2026-09-20") -> None:
+    """One edition; cars as in write_site, listed as of the day after unless as_of is given."""
+    extra = ""
+    if cars:
+        as_of = as_of or day[:8] + f"{int(day[8:]) + 1:02d}"
+        extra = (display_cars_yaml(cars, as_of=as_of) if isinstance(cars[0], tuple)
+                 else cars_yaml([1970] * len(cars), as_of=as_of, makes=cars))
+    write_instance(data, slug, stem, instance_yaml(slug, int(str(stem)[:4]), day, day, status=status,
+                                                   extra=extra, verified=verified))
+
+
+class EventsSectionTests(unittest.TestCase):
+    """"Events where <group> cars have run", as the build renders it, before any script."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = Path(tempfile.mkdtemp())
+        data = cls.tmp / "data"
+        (data / "events").mkdir(parents=True)
+        (data / "makes.yml").write_text(MAKES, encoding="utf-8")
+        (data / "make_groups.yml").write_text(GROUPS, encoding="utf-8")
+        events = {
+            "own-date": [("2026", "2026-05-10", "confirmed", ["Nissan", "Nissan"], None, "2026-09-20"),
+                         # Checked before its own day, so the list is provisional.
+                         ("2027", "2027-05-09", "confirmed", ["Nissan", "Nissan", "Datsun"], "2027-01-10",
+                          "2027-01-10")],
+            "cancelled-later": [("2026", "2026-05-10", "confirmed", ["Nissan"], None, "2026-09-20"),
+                                ("2027", "2027-05-09", "cancelled", None, None, "2026-09-20"),
+                                ("2028", "2028-05-14", "confirmed", None, None, "2026-09-20")],
+            "tentative-next": [("2026", "2026-05-10", "confirmed", ["Datsun"], None, "2026-09-20"),
+                               ("2027", "2027-05-09", "tentative", None, None, "2026-09-20"),
+                               ("2028", "2028-05-14", "confirmed", None, None, "2026-09-20")],
+            "only-cancelled": [("2026", "2026-05-10", "cancelled", ["Nissan"], None, "2026-09-20")],
+            "older-list": [("2025", "2025-05-11", "confirmed", ["Nissan"], None, "2026-09-20"),
+                           ("2026", "2026-05-10", "confirmed", ["Lotus"], None, "2026-09-20")],
+            "show-event": [("2026-spring", "2026-05-10", "confirmed",
+                            [("Datsun", "Fairlady"), ("Nissan", "Skyline"), ("Prince", "Gloria")], None,
+                            "2026-09-20")],
+        }
+        for slug, editions in events.items():
+            write_event(data, slug, name_en=slug.replace("-", " ").title())
+            for stem, day, status, cars, as_of, verified in editions:
+                write_edition(data, slug, stem, day, status=status, cars=cars, as_of=as_of, verified=verified)
+        build.build(data, cls.tmp / "site")
+        cls.html = (cls.tmp / "site/cars/nissan/index.html").read_text(encoding="utf-8")
+        section = cls.html.split('id="events"', 1)[1].split("</ul>", 1)[0]
+        cls.lines = {re.search(r'events/([a-z-]+)/"', item).group(1): item
+                     for item in re.findall(r'<li class="event-line">.*?</li>', section, re.S)}
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.tmp)
+
+    def dates(self, slug: str) -> list[tuple]:
+        return re.findall(r'<span class="next-date" data-start="([\d-]+)" data-ends="([\d-]+)">([^<]*)</span>',
+                          self.lines[slug])
+
+    def test_heading_names_the_group(self):
+        self.assertRegex(self.html, r'<h2 id="events">Events where Nissan and Datsun cars have run</h2>')
+
+    def test_upcoming_list_shows_its_own_date(self):
+        self.assertIn("3 on the provisional entry list", text_of(self.lines["own-date"]))
+        self.assertEqual([d[1] for d in self.dates("own-date")], ["2027-05-09"])
+
+    def test_cancelled_later_edition_is_skipped(self):
+        self.assertEqual([d[1] for d in self.dates("cancelled-later")], ["2026-05-10", "2028-05-14"])
+
+    def test_tentative_edition_is_marked(self):
+        dates = {d[1]: d[2] for d in self.dates("tentative-next")}
+        self.assertEqual(sorted(dates), ["2026-05-10", "2027-05-09", "2028-05-14"])
+        self.assertTrue(dates["2027-05-09"].endswith("(dates not confirmed)"), dates["2027-05-09"])
+        self.assertNotIn("not confirmed", dates["2026-05-10"] + dates["2028-05-14"])
+
+    def test_no_date_rendered_shows_placeholder_without_script(self):
+        self.assertEqual(self.dates("only-cancelled"), [])
+        self.assertIn('<span class="no-next">Next date not announced</span>', self.lines["only-cancelled"])
+
+    def test_placeholder_hidden_when_dates_exist(self):
+        self.assertIn('<span class="no-next" hidden>Next date not announced</span>', self.lines["cancelled-later"])
+
+    def test_build_orders_events_a_to_z(self):
+        self.assertEqual(list(self.lines), ["cancelled-later", "older-list", "only-cancelled", "own-date",
+                                            "show-event", "tentative-next"])
+
+    def test_count_from_latest_list_including_group(self):
+        self.assertIn("1 at the 2025 edition", text_of(self.lines["older-list"]))
+        self.assertIn('href="../../events/older-list/2025/"', self.lines["older-list"])
+
+    def test_display_count_text(self):
+        self.assertIn("3 models on display at the Spring 2026 edition", text_of(self.lines["show-event"]))
+
+    def test_dates_carry_their_first_and_last_day(self):
+        self.assertEqual(self.dates("cancelled-later")[0][:2], ("2026-05-10", "2026-05-10"))
+
+
+class UnknownOnThreeEditionsTests(CarsSiteCase):
+    LISTS = (("meet-a", 2025, ["Unknown", "Lotus"]), ("meet-b", 2026, ["Unknown"]), ("meet-c", 2026, ["Unknown"]))
+
+    def test_unknown_gets_no_page_even_at_three_editions(self):
+        self.assertTrue((self.out / "cars/index.html").is_file())
+        self.assertFalse((self.out / "cars/unknown").exists())
+        self.assertNotIn("Unknown", text_of(self.page("cars/index.html")))
+
+
+class ThreeNamedMembersTests(CarsSiteCase):
+    LISTS = (("meet-a", 2025, ["Nissan", "Nissan"]), ("meet-b", 2026, ["Datsun", "Datsun"]),
+             ("meet-c", 2026, ["Prince", "Prince"]))
+
+    def test_three_named_members_joined_with_and(self):
+        self.assertIn("<h1>Nissan, Datsun and Prince</h1>", self.page("cars/nissan/index.html"))
+
+
+class KeyWithoutCarsTests(CarsSiteCase):
+    LISTS = (("meet-a", 2025, ["Healey", "Healey"]), ("meet-b", 2026, ["Healey"]), ("meet-c", 2026, ["Healey"]))
+
+    def test_title_skips_key_without_cars(self):
+        self.assertIn("<h1>Healey</h1>", self.page("cars/austin-healey/index.html"))
+
+
+class TitleIsTheMakeTests(CarsSiteCase):
+    """Healey's single car leaves the page titled Austin-Healey alone."""
+    LISTS = (("meet-a", 2025, ["Austin-Healey", "Healey"]), ("meet-b", 2026, ["Austin-Healey"]),
+             ("meet-c", 2026, ["Austin-Healey"]))
+
+    def test_no_see_where_the_page_is_titled_by_the_make(self):
+        self.assertNotIn("See", text_of(self.index_line("Austin-Healey")))
+        self.assertIn("See Austin-Healey.", text_of(self.index_line("Healey")))
+
+
+class CollidingSlugsTests(unittest.TestCase):
+    def test_colliding_slugs_fail_the_build(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            data = Path(tmp) / "data"
+            write_site(data, (("meet-a", 2026, ["Lotus"]),), makes="Citroën: FR\nCitroen: FR\nLotus: GB\n",
+                       groups=None)
+            with self.assertRaises(validate.BuildError) as caught:
+                build.build(data, Path(tmp) / "site")
+            self.assertIn("cars/citroen/", "\n".join(caught.exception.errors))
+
+
+class HeaderLinkTests(unittest.TestCase):
+    """Every page's header links Cars, resolved from that page's own depth."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = Path(tempfile.mkdtemp())
+        cls.out = cls.tmp / "site"
+        make_fixture(cls.tmp / "data")
+        build.build(cls.tmp / "data", cls.out)
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.tmp)
+
+    def nav(self, rel: str) -> str:
+        found = re.findall(r'<a class="site-nav"([^>]*)>Cars</a>', (self.out / rel).read_text(encoding="utf-8"))
+        self.assertEqual(len(found), 1, rel)
+        return found[0]
+
+    def test_header_links_cars_on_every_page(self):
+        pages = [p for p in self.out.rglob("*.html") if p.name != "404.html"]
+        self.assertGreater(len(pages), 5)
+        for page in pages:
+            rel = page.relative_to(self.out)
+            with self.subTest(page=str(rel)):
+                href = re.search(r'href="([^"]*)"', self.nav(str(rel))).group(1)
+                self.assertEqual((page.parent / href / "index.html").resolve(),
+                                 (self.out / "cars/index.html").resolve())
+                self.assertTrue((self.out / "cars/index.html").is_file())
+
+    def test_japanese_page_marks_the_link_english(self):
+        self.assertIn('lang="en"', self.nav("ja/index.html"))
+
+    def test_404_link_is_root_absolute(self):
+        self.assertIn('href="/cars/"', self.nav("404.html"))
+
+
+if __name__ == "__main__":
+    unittest.main()

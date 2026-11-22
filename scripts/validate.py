@@ -409,6 +409,16 @@ def _unique_mapping(loader, node):
 _UniqueKeyLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, _unique_mapping)
 
 
+def _load_unique_yaml(path: Path):
+    """A data table where a key listed twice is an error, not YAML's silent last-one-wins."""
+    try:
+        return yaml.load(path.read_text(encoding="utf-8"), Loader=_UniqueKeyLoader)
+    except yaml.constructor.ConstructorError as e:
+        raise ValidationError([f"{path.name}: {e.problem}"])
+    except yaml.YAMLError as e:
+        raise ValidationError([f"{path.name}: YAML syntax error: {e}"])
+
+
 def load_makes(data_dir: Path) -> dict:
     """data/makes.yml: each make's home country, or None where no one country fits.
 
@@ -418,12 +428,7 @@ def load_makes(data_dir: Path) -> dict:
     path = data_dir / "makes.yml"
     if not path.exists():
         return {}
-    try:
-        makes = yaml.load(path.read_text(encoding="utf-8"), Loader=_UniqueKeyLoader)
-    except yaml.constructor.ConstructorError as e:
-        raise ValidationError([f"makes.yml: {e.problem}"])
-    except yaml.YAMLError as e:
-        raise ValidationError([f"makes.yml: YAML syntax error: {e}"])
+    makes = _load_unique_yaml(path)
     if not isinstance(makes, dict):
         raise ValidationError(["makes.yml: must be a list of makes, each with a country, e.g. Lancia: IT"])
     errors = [f"makes.yml: {make}: must be one of {sorted(COUNTRIES)}, the countries the site has a flag for, "
@@ -571,3 +576,48 @@ def _check_photo(ev: dict, data_dir: Path, rel: str, errors: list[str]) -> None:
     if w < PHOTO_MIN_WIDTH or h < need_h:
         errors.append(f"{src_rel}: {w}x{h} is too small. It needs at least {PHOTO_MIN_WIDTH} wide and "
                       f"{need_h} high, so the page stays sharp on a high-density screen")
+
+
+def make_slug(name: str) -> str:
+    """A make page's URL word: Citroën gives citroen, TOM'S gives toms."""
+    name = unicodedata.normalize("NFKD", name.replace("'", "").replace("\u2019", ""))
+    name = "".join(ch for ch in name if not unicodedata.combining(ch)).lower()
+    return re.sub(r"[^a-z0-9]+", "-", name).strip("-")
+
+
+def load_make_groups(data_dir: Path, makes: dict) -> dict[str, list[str]]:
+    """data/make_groups.yml (spec 4.11): group name to members in file order.
+
+    Every make in makes.yml that no group names is a group of one, so each make has
+    exactly one group and every group a slug.
+    """
+    path = data_dir / "make_groups.yml"
+    listed = (_load_unique_yaml(path) if path.exists() else None) or {}
+    if not isinstance(listed, dict):
+        raise ValidationError(["make_groups.yml: must be one group per line, e.g. Nissan: [Nissan, Datsun]"])
+    errors: list[str] = []
+    owner: dict[str, str] = {}
+    for name, members in listed.items():
+        if not (isinstance(members, list) and members and all(isinstance(m, str) for m in members)):
+            errors.append(f"make_groups.yml: {name}: must be a list of makes, e.g. {name}: [{name}, Other]")
+            continue
+        if members[0] != name:
+            errors.append(f"make_groups.yml: {name}: the list must start with {name}, the make the group is named after")
+        for member in members:
+            if member not in makes:
+                errors.append(f"make_groups.yml: {name}: {member} is not a make in makes.yml")
+            elif member in owner:
+                errors.append(f"make_groups.yml: {member} is in two groups, {owner[member]} and {name}")
+            else:
+                owner[member] = name
+    groups = {name: members for name, members in listed.items() if isinstance(members, list)}
+    groups.update({make: [make] for make in makes if make not in owner})
+    by_slug: dict[str, list[str]] = {}
+    for name in groups:
+        by_slug.setdefault(make_slug(name), []).append(name)
+    errors += [f"make_groups.yml: {' and '.join(names)} would share the page cars/{slug}/; "
+               f"group them, or rename one in makes.yml"
+               for slug, names in by_slug.items() if len(names) > 1]
+    if errors:
+        raise ValidationError(errors)
+    return groups
