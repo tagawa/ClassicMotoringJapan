@@ -74,7 +74,7 @@ def make_rows(events: dict, editions: list, makes: dict | None = None) -> list[d
             "edition": edition, "display_name": display_name,
             "full_name": f"{display_name} {year}",
             "label": f"{edition} {year}" if edition else str(year),
-            "has_page": has_page, "sections": sections, "jumps": jumps, "page_parts": page_parts, "parts_phrase": parts_phrase, "event_notes": event_notes_phrase(ev), "path": path, "abs_url": f"{SITE_URL}/{path}",
+            "has_page": has_page, "sections": sections, "jumps": jumps, "parts_phrase": parts_phrase, "event_notes": event_notes_phrase(ev), "path": path, "abs_url": f"{SITE_URL}/{path}",
             "uid": f"{slug}-{ed_id}@{UID_DOMAIN}",
             # A saved copy never updates, so only a date that should not move is offered as one.
             "ics_path": f"events/{slug}/{ed_id}.ics" if ed["status"] == "confirmed" else None,

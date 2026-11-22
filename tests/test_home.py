@@ -3,12 +3,9 @@
 import datetime as dt
 import json
 import re
-import shutil
-import tempfile
 import unittest
-from pathlib import Path
 
-from helpers import CARS, instance_yaml, make_fixture, ROOT, ROUTE, write_event, write_instance
+from helpers import CARS, instance_yaml, make_fixture, ROOT, ROUTE, temp_dir, write_event, write_instance
 import build  # noqa: E402
 import formatting  # noqa: E402
 
@@ -18,7 +15,7 @@ class HomeRowFactsTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.tmp = Path(tempfile.mkdtemp())
+        cls.tmp = temp_dir(cls)
         data = cls.tmp / "data"
         write_event(data, "tour", name_en="Tour", extra="cutoff_year: 1975\n")
         write_instance(data, "tour", 2026, instance_yaml("tour", 2026, "2026-10-18", "2026-10-19", extra=ROUTE))
@@ -40,9 +37,6 @@ class HomeRowFactsTests(unittest.TestCase):
         cls.rows = {key: " ".join(re.sub(r"<[^>]+>", "", meta.replace("<br>", " ")).split())
                     for key, meta in cls.markup.items()}
 
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.tmp)
 
     def test_every_edition_has_a_row(self):
         # The assertions below read rows by name, so a regex that found none would pass them all.
@@ -134,15 +128,12 @@ class EditionWhenTests(unittest.TestCase):
     """The facts block's When row carries the weekdays too."""
 
     def page(self, start: str, end: str, extra: str = "") -> str:
-        tmp = Path(tempfile.mkdtemp())
-        try:
-            data = tmp / "data"
-            write_event(data, "meet")
-            write_instance(data, "meet", 2026, instance_yaml("meet", 2026, start, end, extra=extra + CARS))
-            build.build(data, tmp / "site")
-            return (tmp / "site" / "events" / "meet" / "2026" / "index.html").read_text(encoding="utf-8")
-        finally:
-            shutil.rmtree(tmp)
+        tmp = temp_dir(self)
+        data = tmp / "data"
+        write_event(data, "meet")
+        write_instance(data, "meet", 2026, instance_yaml("meet", 2026, start, end, extra=extra + CARS))
+        build.build(data, tmp / "site")
+        return (tmp / "site" / "events" / "meet" / "2026" / "index.html").read_text(encoding="utf-8")
 
     def test_an_all_day_edition(self):
         # The date opens the row; the add-to-calendar links follow it.
@@ -162,7 +153,7 @@ class HomeMonthGroupTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.tmp = Path(tempfile.mkdtemp())
+        cls.tmp = temp_dir(cls)
         data = cls.tmp / "data"
         for slug, start, end in (("alpha", "2026-10-18", "2026-10-18"), ("bravo", "2026-10-18", "2026-10-18"),
                                  ("charlie", "2026-10-18", "2026-10-19"), ("delta", "2026-10-24", "2026-10-25"),
@@ -176,9 +167,6 @@ class HomeMonthGroupTests(unittest.TestCase):
                               r'<span class="visually-hidden">(.*?)</span>.*?</time></div>(.*?)</ul>\s*</li>',
                               cls.list)
 
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.tmp)
 
     def test_a_heading_per_month_in_date_order(self):
         self.assertEqual(re.findall(r"<h3>(.*?)</h3>", self.list), ["October 2026", "November 2026", "February 2027"])
@@ -218,14 +206,11 @@ class HomeHeadingTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.tmp = Path(tempfile.mkdtemp())
+        cls.tmp = temp_dir(cls)
         make_fixture(cls.tmp / "data")
         build.build(cls.tmp / "data", cls.tmp / "site")
         cls.html = (cls.tmp / "site" / "index.html").read_text(encoding="utf-8")
 
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.tmp)
 
     def test_the_list_of_every_edition_is_headed_neutrally_in_the_markup(self):
         self.assertIn('<h2 id="upcoming-h">Events</h2>', self.html)
@@ -242,15 +227,12 @@ class HomeTimeAwareTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.tmp = Path(tempfile.mkdtemp())
+        cls.tmp = temp_dir(cls)
         make_fixture(cls.tmp / "data")
         build.build(cls.tmp / "data", cls.tmp / "site")
         cls.html = (cls.tmp / "site" / "index.html").read_text(encoding="utf-8")
         cls.script = cls.html[cls.html.index("<script>\n  (function () {"):]
 
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.tmp)
 
     def test_past_events_fold_under_a_heading_and_a_summary_the_script_counts(self):
         # A real h2, so the past months' h3s are not taken for part of Upcoming (WCAG 1.3.1).

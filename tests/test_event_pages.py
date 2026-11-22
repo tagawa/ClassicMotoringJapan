@@ -3,12 +3,10 @@
 import json
 import re
 import shutil
-import tempfile
 import unittest
-from pathlib import Path
 
 from helpers import (CARS, cars_yaml, display_cars_yaml, instance_yaml, jsonld_blocks, make_fixture, ROOT,
-                     ROUTE, ROUTE_ONE_DAY, unfold, write_event, write_instance)
+                     ROUTE, ROUTE_ONE_DAY, temp_dir, unfold, write_event, write_instance)
 import build  # noqa: E402
 import settings  # noqa: E402
 import validate  # noqa: E402
@@ -19,16 +17,13 @@ class VerifiedPlacementTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.tmp = Path(tempfile.mkdtemp())
+        cls.tmp = temp_dir(cls)
         cls.out = cls.tmp / "site"
         make_fixture(cls.tmp / "data")
         build.build(cls.tmp / "data", cls.out)
         cls.edition = (cls.out / "events/autumn-rally/2026/index.html").read_text(encoding="utf-8")
         cls.event = (cls.out / "events/autumn-rally/index.html").read_text(encoding="utf-8")
 
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.tmp)
 
     def facts(self, html: str) -> str:
         return re.search(r'(?s)<dl class="facts">.*?</dl>', html).group(0)
@@ -57,8 +52,7 @@ class VerifiedPlacementTests(unittest.TestCase):
                     self.assertNotIn(claim, text.lower(), path)
 
     def page(self, event_extra="", url="https://example.com/meet/", status="confirmed") -> tuple[str, str]:
-        tmp = Path(tempfile.mkdtemp())
-        self.addCleanup(shutil.rmtree, tmp)
+        tmp = temp_dir(self)
         write_event(tmp / "data", "meet", extra=event_extra)
         text = instance_yaml("meet", 2026, "2026-10-18", "2026-10-18", status=status, extra=CARS)
         write_instance(tmp / "data", "meet", 2026, text.replace("https://example.com/meet/2026/", url))
@@ -93,12 +87,10 @@ class EntryListProvisionalTests(unittest.TestCase):
     """An entry list published before the event only warns while we have not re-checked."""
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = temp_dir(self)
         self.data = self.tmp / "data"
         write_event(self.data, "meet")
 
-    def tearDown(self):
-        shutil.rmtree(self.tmp)
 
     def edition_page(self, verified: str) -> str:
         write_instance(self.data, "meet", 2026,
@@ -137,7 +129,7 @@ class VideoTests(unittest.TestCase):
     """A past edition embeds its videos; later editions link back to the latest of them."""
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = temp_dir(self)
         self.data = self.tmp / "data"
         write_event(self.data, "meet")
         write_instance(self.data, "meet", 2024, instance_yaml("meet", 2024, "2024-10-18", "2024-10-18",
@@ -147,8 +139,6 @@ class VideoTests(unittest.TestCase):
         write_instance(self.data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-19",
                                                               extra=ROUTE))
 
-    def tearDown(self):
-        shutil.rmtree(self.tmp)
 
     def page(self, stem) -> str:
         build.build(self.data, self.tmp / "site")
@@ -267,7 +257,7 @@ class PastEditionTests(unittest.TestCase):
     """Videos exist only once an edition has run, so they mark the page as a look back."""
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = temp_dir(self)
         self.data = self.tmp / "data"
         write_event(self.data, "meet")
         write_instance(self.data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-19",
@@ -276,8 +266,6 @@ class PastEditionTests(unittest.TestCase):
                                                               extra=ROUTE.replace("2026-10-1", "2027-10-1")
                                                               + CARS))
 
-    def tearDown(self):
-        shutil.rmtree(self.tmp)
 
     def page(self, stem) -> str:
         build.build(self.data, self.tmp / "site")
@@ -355,8 +343,7 @@ class EventNotesLinkTests(unittest.TestCase):
     """The edition page's link to the event page names only the notes that page has."""
 
     def page(self, extra: str) -> str:
-        tmp = Path(tempfile.mkdtemp())
-        self.addCleanup(shutil.rmtree, tmp)
+        tmp = temp_dir(self)
         write_event(tmp / "data", "meet", extra=extra)
         write_instance(tmp / "data", "meet", 2026,
                        instance_yaml("meet", 2026, "2026-10-18", "2026-10-18", extra=CARS))
@@ -385,15 +372,12 @@ class EntryListHeadingTests(unittest.TestCase):
     """The two strips look alike, so each part of an entry list says what it counts."""
 
     def page(self, cars: str) -> str:
-        tmp = Path(tempfile.mkdtemp())
-        try:
-            data = tmp / "data"
-            write_event(data, "meet")
-            write_instance(data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-18", extra=cars))
-            build.build(data, tmp / "site")
-            return (tmp / "site" / "events" / "meet" / "2026" / "index.html").read_text(encoding="utf-8")
-        finally:
-            shutil.rmtree(tmp)
+        tmp = temp_dir(self)
+        data = tmp / "data"
+        write_event(data, "meet")
+        write_instance(data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-18", extra=cars))
+        build.build(data, tmp / "site")
+        return (tmp / "site" / "events" / "meet" / "2026" / "index.html").read_text(encoding="utf-8")
 
     def subheadings(self, html: str) -> list[str]:
         return re.findall(r"<h3>(.*?)</h3>", html)
@@ -447,18 +431,15 @@ class EntryListFlagTests(unittest.TestCase):
 
     def site(self, cars: str, makes: str = "") -> dict:
         """makes, when given, is the text of data/makes.yml: each make's home country."""
-        tmp = Path(tempfile.mkdtemp())
-        try:
-            data = tmp / "data"
-            write_event(data, "meet")
-            if makes:
-                (data / "makes.yml").write_text(makes, encoding="utf-8")
-            write_instance(data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-18", extra=cars))
-            build.build(data, tmp / "site")
-            return {"page": (tmp / "site" / "events" / "meet" / "2026" / "index.html").read_text(encoding="utf-8"),
-                    "json": (tmp / "site" / "api" / "events.json").read_text(encoding="utf-8")}
-        finally:
-            shutil.rmtree(tmp)
+        tmp = temp_dir(self)
+        data = tmp / "data"
+        write_event(data, "meet")
+        if makes:
+            (data / "makes.yml").write_text(makes, encoding="utf-8")
+        write_instance(data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-18", extra=cars))
+        build.build(data, tmp / "site")
+        return {"page": (tmp / "site" / "events" / "meet" / "2026" / "index.html").read_text(encoding="utf-8"),
+                "json": (tmp / "site" / "api" / "events.json").read_text(encoding="utf-8")}
 
     def test_the_flag_sits_before_the_make_and_names_its_country_for_those_who_cannot_see_it(self):
         html = self.site(self.FLAGGED)["page"]
@@ -562,7 +543,7 @@ class LatinOnlyNameTests(unittest.TestCase):
     """
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = temp_dir(self)
         data = self.tmp / "data"
         write_event(data, "latin-fes", name_en="Latin Fes", name_ja=None)
         write_instance(data, "latin-fes", 2026,
@@ -574,8 +555,6 @@ class LatinOnlyNameTests(unittest.TestCase):
         self.home_html = (out / "index.html").read_text(encoding="utf-8")
         self.ics = unfold((out / settings.FEED_FILE).read_bytes().decode("utf-8"))
 
-    def tearDown(self):
-        shutil.rmtree(self.tmp)
 
     def test_no_page_carries_an_empty_japanese_line(self):
         for name, html in (("event", self.event_html), ("edition", self.edition_html),
@@ -596,15 +575,12 @@ class LatinOnlyNameTests(unittest.TestCase):
         self.assertIn('lang="ja">テストイベント', self.pages_with_ja())
 
     def pages_with_ja(self) -> str:
-        tmp = Path(tempfile.mkdtemp())
-        try:
-            data = tmp / "data"
-            write_event(data, "meet")
-            write_instance(data, "meet", 2026, instance_yaml("meet", 2026, "2026-11-22", "2026-11-22"))
-            build.build(data, tmp / "site")
-            return (tmp / "site" / "events" / "meet" / "index.html").read_text(encoding="utf-8")
-        finally:
-            shutil.rmtree(tmp)
+        tmp = temp_dir(self)
+        data = tmp / "data"
+        write_event(data, "meet")
+        write_instance(data, "meet", 2026, instance_yaml("meet", 2026, "2026-11-22", "2026-11-22"))
+        build.build(data, tmp / "site")
+        return (tmp / "site" / "events" / "meet" / "index.html").read_text(encoding="utf-8")
 
 
 class UnannouncedFeeTests(unittest.TestCase):
@@ -615,7 +591,7 @@ class UnannouncedFeeTests(unittest.TestCase):
     """
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = temp_dir(self)
         data = self.tmp / "data"
         write_event(data, "fee-pending", name_en="Fee Pending", fee=None)
         write_instance(data, "fee-pending", 2026,
@@ -625,8 +601,6 @@ class UnannouncedFeeTests(unittest.TestCase):
         self.event_html = (self.out / "events/fee-pending/index.html").read_text(encoding="utf-8")
         self.home_html = (self.out / "index.html").read_text(encoding="utf-8")
 
-    def tearDown(self):
-        shutil.rmtree(self.tmp)
 
     def test_the_pages_say_the_admission_is_unannounced_rather_than_free(self):
         for name, html in (("event", self.event_html), ("home", self.home_html)):
@@ -644,8 +618,7 @@ class UnannouncedFeeTests(unittest.TestCase):
         self.assertRegex(css, r"(?m)^#past-list \.fee-unannounced \{ display: none; \}")
 
     def pages_with_entry_list(self, fee) -> dict:
-        tmp = Path(tempfile.mkdtemp())
-        self.addCleanup(shutil.rmtree, tmp)
+        tmp = temp_dir(self)
         write_event(tmp / "data", "meet", fee=fee)
         write_instance(tmp / "data", "meet", 2026,
                        instance_yaml("meet", 2026, "2026-11-03", "2026-11-03", extra=CARS))
@@ -685,7 +658,7 @@ class HeldEditionTests(unittest.TestCase):
     """
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = temp_dir(self)
         data = self.tmp / "data"
         write_event(data, "meet")
         write_instance(data, "meet", 2025, instance_yaml("meet", 2025, "2025-10-18", "2025-10-19"))
@@ -696,8 +669,6 @@ class HeldEditionTests(unittest.TestCase):
         build.build(data, self.tmp / "site")
         self.html = (self.tmp / "site/events/meet/index.html").read_text(encoding="utf-8")
 
-    def tearDown(self):
-        shutil.rmtree(self.tmp)
 
     def test_a_confirmed_edition_carries_its_last_day(self):
         self.assertIn('<span data-last-day="2025-10-19">Confirmed</span>', self.html)
@@ -722,7 +693,7 @@ class DisplayListTests(unittest.TestCase):
     """
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = temp_dir(self)
         data = self.tmp / "data"
         write_event(data, "meet")
         write_instance(data, "meet", 2026,
@@ -732,8 +703,6 @@ class DisplayListTests(unittest.TestCase):
         self.html = (self.tmp / "site" / "events" / "meet" / "2026" / "index.html").read_text(encoding="utf-8")
         self.event_html = (self.tmp / "site" / "events" / "meet" / "index.html").read_text(encoding="utf-8")
 
-    def tearDown(self):
-        shutil.rmtree(self.tmp)
 
     def headers(self) -> list[str]:
         return re.findall(r'<th scope="col">(.*?)</th>', self.html)
@@ -768,8 +737,7 @@ class EditionPrefectureTests(unittest.TestCase):
     """An event that moves between prefectures: each edition is printed with the one it ran in."""
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
-        self.addCleanup(shutil.rmtree, self.tmp)
+        self.tmp = temp_dir(self)
         self.out = self.tmp / "site"
 
     def build_with(self, edition_extra: str) -> None:
@@ -826,15 +794,12 @@ class OnThisPageTests(unittest.TestCase):
     """A jump to each section of a long edition page, counted from what the section shows."""
 
     def page(self, extra: str) -> str:
-        tmp = Path(tempfile.mkdtemp())
-        try:
-            data = tmp / "data"
-            write_event(data, "meet")
-            write_instance(data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-19", extra=extra))
-            build.build(data, tmp / "site")
-            return (tmp / "site" / "events" / "meet" / "2026" / "index.html").read_text(encoding="utf-8")
-        finally:
-            shutil.rmtree(tmp)
+        tmp = temp_dir(self)
+        data = tmp / "data"
+        write_event(data, "meet")
+        write_instance(data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-19", extra=extra))
+        build.build(data, tmp / "site")
+        return (tmp / "site" / "events" / "meet" / "2026" / "index.html").read_text(encoding="utf-8")
 
     def jumps(self, html: str) -> list[tuple[str, str]]:
         nav = re.search(r'(?s)<nav class="on-this-page" aria-label="On this page">(.*?)</nav>', html)

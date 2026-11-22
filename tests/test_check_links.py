@@ -1,13 +1,11 @@
 """Tests for scripts/check_links.py. Offline: every fetch is a stand-in."""
 import datetime as dt
-import shutil
 import sys
-import tempfile
 import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from helpers import ROOT, instance_yaml, write_event, write_instance  # noqa: E402
+from helpers import ROOT, instance_yaml, temp_dir, write_event, write_instance  # noqa: E402
 
 import check_links  # noqa: E402  (scripts/ is on the path via helpers)
 
@@ -17,7 +15,7 @@ OEMBED = check_links.OEMBED_URL + "gDq-2nEG3Y8"
 class CollectTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.tmp = Path(tempfile.mkdtemp())
+        cls.tmp = temp_dir(cls)
         data = cls.tmp / "data"
         write_event(data, "meet", extra="summary_en: Run by [the club](https://club.example.com/).\n")
         write_instance(data, "meet", 2026, instance_yaml(
@@ -28,9 +26,6 @@ class CollectTests(unittest.TestCase):
             extra="route_en: Same as [the club page](https://club.example.com/).\n"))
         cls.urls = check_links.collect_urls(data)
 
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.tmp)
 
     def test_finds_every_kind_of_link_and_where_it_is_used(self):
         self.assertEqual(self.urls, {
@@ -49,8 +44,7 @@ class CourseMapLinkTests(unittest.TestCase):
     """An organiser takes a course map down after the day; that must not email anyone."""
 
     def urls(self, today: str) -> dict:
-        tmp = Path(tempfile.mkdtemp())
-        self.addCleanup(shutil.rmtree, tmp)
+        tmp = temp_dir(self)
         write_event(tmp / "data", "meet")
         write_instance(tmp / "data", "meet", 2026, instance_yaml(
             "meet", 2026, "2026-11-08", "2026-11-08",

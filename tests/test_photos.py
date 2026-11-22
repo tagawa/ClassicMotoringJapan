@@ -4,7 +4,6 @@ import re
 import shutil
 import struct
 import sys
-import tempfile
 import unittest
 from pathlib import Path
 
@@ -16,7 +15,7 @@ import build  # noqa: E402
 import photos  # noqa: E402
 import settings  # noqa: E402
 import validate  # noqa: E402
-from helpers import (HeadParser, instance_yaml, make_fixture, write_event,  # noqa: E402
+from helpers import (HeadParser, instance_yaml, make_fixture, temp_dir, write_event,  # noqa: E402
                      write_instance, CARS)
 
 OWN_PHOTO = "photo:\n  alt_en: A red coupe on the start line\n  year: 2025\n"
@@ -75,11 +74,9 @@ def errors_for(data: Path, out: Path) -> str:
 
 class PhotoValidationTests(unittest.TestCase):
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = temp_dir(self)
         self.data, self.out = self.tmp / "data", self.tmp / "site"
 
-    def tearDown(self):
-        shutil.rmtree(self.tmp)
 
     def test_a_photo_field_needs_its_file(self):
         write_event(self.data, "meet", extra=OWN_PHOTO)
@@ -144,7 +141,7 @@ class PhotoValidationTests(unittest.TestCase):
 class PhotoOutputTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.tmp = Path(tempfile.mkdtemp())
+        cls.tmp = temp_dir(cls)
         cls.data, cls.out = cls.tmp / "data", cls.tmp / "site"
         write_event(cls.data, "own", name_en="Own Meet", extra=OWN_PHOTO)
         write_photo(cls.data, "own")
@@ -154,9 +151,6 @@ class PhotoOutputTests(unittest.TestCase):
         write_event(cls.data, "bare", name_en="Bare Meet")
         build.build(cls.data, cls.out)
 
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.tmp)
 
     def page(self, rel: str) -> str:
         return (self.out / rel).read_text(encoding="utf-8")
@@ -224,16 +218,13 @@ class PhotoOutputTests(unittest.TestCase):
 class ShareCardTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.tmp = Path(tempfile.mkdtemp())
+        cls.tmp = temp_dir(cls)
         cls.data, cls.out = cls.tmp / "data", cls.tmp / "site"
         make_fixture(cls.data)
         build.build(cls.data, cls.out)
         cls.pages = {p.relative_to(cls.out).as_posix(): p.read_text(encoding="utf-8")
                      for p in cls.out.rglob("*.html") if p.name != "404.html"}
 
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.tmp)
 
     def test_every_page_has_a_share_image_that_exists(self):
         for rel, html in self.pages.items():
@@ -266,12 +257,9 @@ class ShareCardTests(unittest.TestCase):
         self.assertEqual(meta["og:image:alt"], "Hill Climb Autumn 2026. Sun 25 Oct 2026. Shizuoka.")
 
     def test_a_name_too_long_for_the_card_fails_the_build(self):
-        tmp = Path(tempfile.mkdtemp())
-        try:
-            write_event(tmp / "data", "long", name_en=" ".join(["Extraordinarily"] * 12))
-            self.assertIn("events/long.yml", errors_for(tmp / "data", tmp / "site"))
-        finally:
-            shutil.rmtree(tmp)
+        tmp = temp_dir(self)
+        write_event(tmp / "data", "long", name_en=" ".join(["Extraordinarily"] * 12))
+        self.assertIn("events/long.yml", errors_for(tmp / "data", tmp / "site"))
 
 
 if __name__ == "__main__":

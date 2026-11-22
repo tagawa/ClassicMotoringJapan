@@ -2,12 +2,9 @@
 
 import datetime as dt
 import re
-import shutil
-import tempfile
 import unittest
-from pathlib import Path
 
-from helpers import cars_yaml, display_cars_yaml, instance_yaml, ROUTE, write_event, write_instance
+from helpers import cars_yaml, display_cars_yaml, instance_yaml, ROUTE, temp_dir, write_event, write_instance
 import build  # noqa: E402
 import charts  # noqa: E402
 
@@ -61,7 +58,7 @@ class RouteChartTests(unittest.TestCase):
 
 class RouteChartRenderingTests(unittest.TestCase):
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = temp_dir(self)
         data = self.tmp / "data"
         write_event(data, "meet")
         write_instance(data, "meet", 2026,
@@ -69,8 +66,6 @@ class RouteChartRenderingTests(unittest.TestCase):
         build.build(data, self.tmp / "site")
         self.html = (self.tmp / "site/events/meet/2026/index.html").read_text(encoding="utf-8")
 
-    def tearDown(self):
-        shutil.rmtree(self.tmp)
 
     def test_one_chart_row_per_day(self):
         self.assertEqual(self.html.count('class="chart-track"'), 2)
@@ -90,7 +85,7 @@ class DecadeStripTests(unittest.TestCase):
     """The entry list's shape, drawn from the same rows the table renders."""
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = temp_dir(self)
         data = self.tmp / "data"
         write_event(data, "meet")
         write_instance(data, "meet", 2026,
@@ -99,8 +94,6 @@ class DecadeStripTests(unittest.TestCase):
         build.build(data, self.tmp / "site")
         self.html = (self.tmp / "site" / "events" / "meet" / "2026" / "index.html").read_text(encoding="utf-8")
 
-    def tearDown(self):
-        shutil.rmtree(self.tmp)
 
     def strip(self) -> str:
         return re.search(r'(?s)<ol class="chart decades">.*?</ol>', self.html).group(0)
@@ -125,15 +118,12 @@ class DecadeStripTests(unittest.TestCase):
         self.assertEqual(self.strip().count('<span class="chart-track" aria-hidden="true">'), 4)
 
     def page(self, cars: str) -> str:
-        tmp = Path(tempfile.mkdtemp())
-        try:
-            data = tmp / "data"
-            write_event(data, "meet")
-            write_instance(data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-18", extra=cars))
-            build.build(data, tmp / "site")
-            return (tmp / "site" / "events" / "meet" / "2026" / "index.html").read_text(encoding="utf-8")
-        finally:
-            shutil.rmtree(tmp)
+        tmp = temp_dir(self)
+        data = tmp / "data"
+        write_event(data, "meet")
+        write_instance(data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-18", extra=cars))
+        build.build(data, tmp / "site")
+        return (tmp / "site" / "events" / "meet" / "2026" / "index.html").read_text(encoding="utf-8")
 
     # An organiser's list sometimes leaves one car's year blank; the car still entered.
     UNDATED = '  - entry_no: "03"\n    make: Test\n    model: Car\n'
@@ -157,32 +147,26 @@ class DecadeStripTests(unittest.TestCase):
         self.assertNotIn("<th scope=\"col\">Year</th>", html)
 
     def test_an_edition_without_an_entry_list_has_no_strip(self):
-        tmp = Path(tempfile.mkdtemp())
-        try:
-            data = tmp / "data"
-            write_event(data, "meet")
-            write_instance(data, "meet", 2026,
-                           instance_yaml("meet", 2026, "2026-10-18", "2026-10-19", extra=ROUTE))
-            build.build(data, tmp / "site")
-            html = (tmp / "site" / "events" / "meet" / "2026" / "index.html").read_text(encoding="utf-8")
-            self.assertNotIn("chart decades", html)
-        finally:
-            shutil.rmtree(tmp)
+        tmp = temp_dir(self)
+        data = tmp / "data"
+        write_event(data, "meet")
+        write_instance(data, "meet", 2026,
+                       instance_yaml("meet", 2026, "2026-10-18", "2026-10-19", extra=ROUTE))
+        build.build(data, tmp / "site")
+        html = (tmp / "site" / "events" / "meet" / "2026" / "index.html").read_text(encoding="utf-8")
+        self.assertNotIn("chart decades", html)
 
 
 class MakeStripTests(unittest.TestCase):
     """Which makes turned out in numbers, counted from the same rows the table renders."""
 
     def page(self, cars: str) -> str:
-        tmp = Path(tempfile.mkdtemp())
-        try:
-            data = tmp / "data"
-            write_event(data, "meet")
-            write_instance(data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-18", extra=cars))
-            build.build(data, tmp / "site")
-            return (tmp / "site" / "events" / "meet" / "2026" / "index.html").read_text(encoding="utf-8")
-        finally:
-            shutil.rmtree(tmp)
+        tmp = temp_dir(self)
+        data = tmp / "data"
+        write_event(data, "meet")
+        write_instance(data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-18", extra=cars))
+        build.build(data, tmp / "site")
+        return (tmp / "site" / "events" / "meet" / "2026" / "index.html").read_text(encoding="utf-8")
 
     def strip(self, makes: list[str]) -> str:
         html = self.page(cars_yaml([1955] * len(makes), makes=makes))

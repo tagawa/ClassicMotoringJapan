@@ -8,7 +8,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from helpers import CARS, HeadParser, instance_yaml, jsonld_blocks, ROOT, write_event, write_instance
+from helpers import CARS, HeadParser, instance_yaml, jsonld_blocks, ROOT, temp_dir, write_event, write_instance
 import build  # noqa: E402
 import validate  # noqa: E402
 
@@ -17,11 +17,9 @@ class ProseLengthTests(unittest.TestCase):
     """Long prose hides its own facts, so the build refuses it."""
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = temp_dir(self)
         self.data = self.tmp / "data"
 
-    def tearDown(self):
-        shutil.rmtree(self.tmp)
 
     def build_with_summary(self, words: int):
         # One word per sentence, so the first sentence stays inside the description cap.
@@ -49,11 +47,9 @@ class DescriptionLengthTests(unittest.TestCase):
     """An event page's snippet is its summary's first sentence, so that sentence has to fit one."""
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = temp_dir(self)
         self.data = self.tmp / "data"
 
-    def tearDown(self):
-        shutil.rmtree(self.tmp)
 
     def build_with_first_sentence(self, chars: int):
         sentence = "A" + "a" * (chars - 2) + "."
@@ -87,11 +83,9 @@ class CombinedProseTests(unittest.TestCase):
     """Fields that land in one block on the page are capped on what the reader sees."""
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = temp_dir(self)
         self.data = self.tmp / "data"
 
-    def tearDown(self):
-        shutil.rmtree(self.tmp)
 
     def build_with(self, **fields):
         extra = "".join(f"{k}: {' '.join(['word'] * n)}\n" for k, n in fields.items())
@@ -134,11 +128,9 @@ class EditorialProseTests(unittest.TestCase):
            "arrival window for every checkpoint.")
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = temp_dir(self)
         self.data = self.tmp / "data"
 
-    def tearDown(self):
-        shutil.rmtree(self.tmp)
 
     def build_with_prose(self, text: str, field="summary_en"):
         write_event(self.data, "meet", extra=f"{field}: {json.dumps(text)}\n")
@@ -200,11 +192,9 @@ class HouseStyleTests(unittest.TestCase):
     """English text in the data uses no em dashes and British spelling (spec 4.7)."""
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = temp_dir(self)
         self.data = self.tmp / "data"
 
-    def tearDown(self):
-        shutil.rmtree(self.tmp)
 
     def build_event(self, **event):
         write_event(self.data, "meet", **event)
@@ -262,11 +252,9 @@ class ProseLinkTests(unittest.TestCase):
     LINKED = "It fills a car park inside [Fuji Speedway](https://en.fujispeedway.jp/) on the day."
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = temp_dir(self)
         self.data = self.tmp / "data"
 
-    def tearDown(self):
-        shutil.rmtree(self.tmp)
 
     def build_with_prose(self, text: str, field="summary_en") -> str:
         write_event(self.data, "meet", extra=f"{field}: {json.dumps(text)}\n")
@@ -342,12 +330,10 @@ class ProseLinkTests(unittest.TestCase):
 
 class ValidationTests(unittest.TestCase):
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = temp_dir(self)
         self.data = self.tmp / "data"
         write_event(self.data, "meet")
 
-    def tearDown(self):
-        shutil.rmtree(self.tmp)
 
     def assert_build_fails(self, expected: str):
         with self.assertRaises(validate.ValidationError) as ctx:
@@ -478,11 +464,9 @@ class CoordinateTests(unittest.TestCase):
     """A pin is data like any other: checked, or absent. Never approximated."""
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = temp_dir(self)
         self.data = self.tmp / "data"
 
-    def tearDown(self):
-        shutil.rmtree(self.tmp)
 
     def build_with(self, event_extra="", edition_extra=""):
         write_event(self.data, "meet", extra=event_extra)
@@ -541,10 +525,8 @@ class MakeGroupsFileTests(unittest.TestCase):
     MAKES = {"Nissan": "JP", "Datsun": "JP", "Prince": "JP", "Lotus": "GB"}
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = temp_dir(self)
 
-    def tearDown(self):
-        shutil.rmtree(self.tmp)
 
     def load(self, text: str, makes=None):
         (self.tmp / "make_groups.yml").write_text(text, encoding="utf-8")

@@ -3,14 +3,12 @@
 Needs Playwright with Chromium. Skipped when Playwright isn't installed, which is
 the normal case here and on GitHub (see the README's local checks).
 """
-import shutil
 import sys
-import tempfile
 import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from helpers import instance_yaml, write_event, write_instance  # noqa: E402
+from helpers import instance_yaml, temp_dir, write_event, write_instance  # noqa: E402
 import build  # noqa: E402
 
 try:
@@ -23,7 +21,7 @@ except ImportError:
 class PastEventsTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.tmp = Path(tempfile.mkdtemp())
+        cls.tmp = temp_dir(cls)
         data = cls.tmp / "data"
         write_event(data, "past-meet", name_en="Past Meet")
         write_instance(data, "past-meet", 2026, instance_yaml("past-meet", 2026, "2026-10-19", "2026-10-19"))
@@ -35,14 +33,12 @@ class PastEventsTest(unittest.TestCase):
             cls.pw = sync_playwright().start()
             cls.browser = cls.pw.chromium.launch()
         except Exception as e:
-            shutil.rmtree(cls.tmp)
             raise unittest.SkipTest(f"chromium unavailable: {e}")
 
     @classmethod
     def tearDownClass(cls):
         cls.browser.close()
         cls.pw.stop()
-        shutil.rmtree(cls.tmp)
 
     def sections_at(self, utc_instant: str) -> dict:
         ctx = self.browser.new_context(timezone_id="Europe/London")
@@ -86,7 +82,7 @@ class MonthSplitTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.tmp = Path(tempfile.mkdtemp())
+        cls.tmp = temp_dir(cls)
         data = cls.tmp / "data"
         for slug, day in (("early", "2026-10-04"), ("late", "2026-10-25"), ("next", "2026-11-01")):
             write_event(data, slug, name_en=slug.capitalize())
@@ -97,14 +93,12 @@ class MonthSplitTest(unittest.TestCase):
             cls.pw = sync_playwright().start()
             cls.browser = cls.pw.chromium.launch()
         except Exception as e:
-            shutil.rmtree(cls.tmp)
             raise unittest.SkipTest(f"chromium unavailable: {e}")
 
     @classmethod
     def tearDownClass(cls):
         cls.browser.close()
         cls.pw.stop()
-        shutil.rmtree(cls.tmp)
 
     def headings_at(self, utc_instant: str) -> dict:
         ctx = self.browser.new_context(timezone_id="Europe/London")
@@ -138,7 +132,7 @@ class WeekendAndTodayTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.tmp = Path(tempfile.mkdtemp())
+        cls.tmp = temp_dir(cls)
         data = cls.tmp / "data"
         # 2026-10-17 is a Saturday.
         for slug, start, end in (("friday", "2026-10-16", "2026-10-16"), ("sunday", "2026-10-18", "2026-10-18"),
@@ -152,14 +146,12 @@ class WeekendAndTodayTest(unittest.TestCase):
             cls.pw = sync_playwright().start()
             cls.browser = cls.pw.chromium.launch()
         except Exception as e:
-            shutil.rmtree(cls.tmp)
             raise unittest.SkipTest(f"chromium unavailable: {e}")
 
     @classmethod
     def tearDownClass(cls):
         cls.browser.close()
         cls.pw.stop()
-        shutil.rmtree(cls.tmp)
 
     def at(self, utc_instant: str) -> dict:
         ctx = self.browser.new_context(timezone_id="Europe/London")
@@ -199,7 +191,7 @@ class CalendarLinksTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.tmp = Path(tempfile.mkdtemp())
+        cls.tmp = temp_dir(cls)
         data = cls.tmp / "data"
         write_event(data, "meet")
         write_instance(data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-19", "2026-10-19"))
@@ -209,14 +201,12 @@ class CalendarLinksTest(unittest.TestCase):
             cls.pw = sync_playwright().start()
             cls.browser = cls.pw.chromium.launch()
         except Exception as e:
-            shutil.rmtree(cls.tmp)
             raise unittest.SkipTest(f"chromium unavailable: {e}")
 
     @classmethod
     def tearDownClass(cls):
         cls.browser.close()
         cls.pw.stop()
-        shutil.rmtree(cls.tmp)
 
     def links_at(self, utc_instant: str) -> int:
         ctx = self.browser.new_context(timezone_id="Europe/London")
@@ -240,7 +230,7 @@ class YearStripTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.tmp = Path(tempfile.mkdtemp())
+        cls.tmp = temp_dir(cls)
         data = cls.tmp / "data"
         write_event(data, "meet")
         for year in (2025, 2026, 2027):
@@ -252,14 +242,12 @@ class YearStripTest(unittest.TestCase):
             cls.pw = sync_playwright().start()
             cls.browser = cls.pw.chromium.launch()
         except Exception as e:
-            shutil.rmtree(cls.tmp)
             raise unittest.SkipTest(f"chromium unavailable: {e}")
 
     @classmethod
     def tearDownClass(cls):
         cls.browser.close()
         cls.pw.stop()
-        shutil.rmtree(cls.tmp)
 
     def strip_at(self, utc_instant: str) -> dict:
         ctx = self.browser.new_context(timezone_id="Europe/London")
@@ -297,7 +285,7 @@ class NextDateTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.tmp = Path(tempfile.mkdtemp())
+        cls.tmp = temp_dir(cls)
         data = cls.tmp / "data"
         (data / "events").mkdir(parents=True)
         (data / "makes.yml").write_text("Nissan: JP\n", encoding="utf-8")
@@ -319,14 +307,12 @@ class NextDateTest(unittest.TestCase):
             cls.pw = sync_playwright().start()
             cls.browser = cls.pw.chromium.launch()
         except Exception as e:
-            shutil.rmtree(cls.tmp)
             raise unittest.SkipTest(f"chromium unavailable: {e}")
 
     @classmethod
     def tearDownClass(cls):
         cls.browser.close()
         cls.pw.stop()
-        shutil.rmtree(cls.tmp)
 
     def lines_at(self, utc_instant: str) -> list[tuple]:
         """(event, visible dates, placeholder visible) per line, in the order shown."""

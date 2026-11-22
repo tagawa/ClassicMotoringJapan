@@ -173,7 +173,7 @@ def _check_house_style(v: str, where: str, errors: list[str]) -> None:
         word = match.group(0)
         errors.append(f"{where}: {word!r} is American spelling; write "
                       f"{AMERICAN_SPELLINGS[word.lower()]!r}. If it is part of a proper name, "
-                      f"add the name to AMERICAN_SPELLING_NAMES in scripts/build.py")
+                      f"add the name to AMERICAN_SPELLING_NAMES in scripts/validate.py")
 
 
 def _check_links(v: str, where: str, errors: list[str]) -> None:

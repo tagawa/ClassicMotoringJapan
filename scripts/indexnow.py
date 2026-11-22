@@ -108,7 +108,7 @@ def main(argv: list[str]) -> int:
         print(f"IndexNow answered {status} for {len(urls)} page(s): {result}")
         if result == "fail":
             print(f"::error::IndexNow rejected the request ({status}). Check INDEXNOW_KEY in "
-                  f"scripts/build.py and that {KEY_URL} is live.")
+                  f"scripts/settings.py and that {KEY_URL} is live.")
             return 1
         if result == "warn":
             print(f"::warning::IndexNow did not accept the pages ({status}). They go again "

@@ -2,14 +2,11 @@
 
 import json
 import re
-import shutil
-import tempfile
 import unittest
-from pathlib import Path
 
 import yaml
 
-from helpers import CARS, instance_yaml, ROOT, ROUTE, write_event, write_instance
+from helpers import CARS, instance_yaml, ROOT, ROUTE, temp_dir, write_event, write_instance
 import build  # noqa: E402
 import maps  # noqa: E402
 import rows  # noqa: E402
@@ -20,7 +17,7 @@ class RouteTests(unittest.TestCase):
     """A route is structured data, so a skimmer can find a time and a place."""
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = temp_dir(self)
         self.data = self.tmp / "data"
         write_event(self.data, "meet")
         write_instance(self.data, "meet", 2026,
@@ -28,8 +25,6 @@ class RouteTests(unittest.TestCase):
         build.build(self.data, self.tmp / "site")
         self.html = (self.tmp / "site/events/meet/2026/index.html").read_text(encoding="utf-8")
 
-    def tearDown(self):
-        shutil.rmtree(self.tmp)
 
     def test_the_json_feed_repeats_the_route_the_page_tabulates(self):
         feed = json.loads((self.tmp / "site/api/events.json").read_text(encoding="utf-8"))
@@ -65,7 +60,7 @@ class JapanMapTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.tmp = Path(tempfile.mkdtemp())
+        cls.tmp = temp_dir(cls)
         data = cls.tmp / "data"
         write_event(data, "tokyo-meet", name_en="Tokyo Meet", extra="lat: 35.6812\nlon: 139.7671\n")
         write_instance(data, "tokyo-meet", 2026, instance_yaml("tokyo-meet", 2026, "2026-10-18", "2026-10-18"))
@@ -78,9 +73,6 @@ class JapanMapTests(unittest.TestCase):
         cls.html = (cls.tmp / "site" / "index.html").read_text(encoding="utf-8")
         cls.entries = re.findall(r'<li data-end="[^"]*">.*?</li>', cls.html, re.S)
 
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.tmp)
 
     def test_the_map_corners_are_the_projection_limits(self):
         self.assertEqual(maps.map_point(maps.MAP_LAT[1], maps.MAP_LON[0]), (0, 0))
@@ -129,8 +121,7 @@ class JapanMapTests(unittest.TestCase):
         self.assertEqual(self.html.count('<use xlink:href="#japan"'), 2)
 
     def test_no_coordinates_anywhere_means_no_maps(self):
-        tmp = Path(tempfile.mkdtemp())
-        self.addCleanup(shutil.rmtree, tmp)
+        tmp = temp_dir(self)
         write_event(tmp / "data", "meet")
         write_instance(tmp / "data", "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-18"))
         build.build(tmp / "data", tmp / "site")
@@ -162,8 +153,7 @@ class CourseMapTests(unittest.TestCase):
     """A time-trial course read from the organiser's PDF, drawn on the edition page (spec 4.8)."""
 
     def page(self, extra: str, status="confirmed") -> str:
-        tmp = Path(tempfile.mkdtemp())
-        self.addCleanup(shutil.rmtree, tmp)
+        tmp = temp_dir(self)
         write_event(tmp / "data", "meet")
         write_instance(tmp / "data", "meet", 2026,
                        instance_yaml("meet", 2026, "2026-11-08", "2026-11-08", status=status, extra=extra))
@@ -171,8 +161,7 @@ class CourseMapTests(unittest.TestCase):
         return (tmp / "site/events/meet/2026/index.html").read_text(encoding="utf-8")
 
     def errors(self, extra: str) -> str:
-        tmp = Path(tempfile.mkdtemp())
-        self.addCleanup(shutil.rmtree, tmp)
+        tmp = temp_dir(self)
         write_event(tmp / "data", "meet")
         write_instance(tmp / "data", "meet", 2026,
                        instance_yaml("meet", 2026, "2026-11-08", "2026-11-08", extra=extra))
@@ -357,8 +346,7 @@ class RouteMapTests(unittest.TestCase):
     """A rally's stops on the coastline, joined in order by straight lines (spec 4.8)."""
 
     def page(self, extra: str) -> str:
-        tmp = Path(tempfile.mkdtemp())
-        self.addCleanup(shutil.rmtree, tmp)
+        tmp = temp_dir(self)
         write_event(tmp / "data", "rally")
         write_instance(tmp / "data", "rally", 2026,
                        instance_yaml("rally", 2026, "2026-10-18", "2026-10-19", extra=extra))
@@ -366,8 +354,7 @@ class RouteMapTests(unittest.TestCase):
         return (tmp / "site/events/rally/2026/index.html").read_text(encoding="utf-8")
 
     def errors(self, extra: str) -> str:
-        tmp = Path(tempfile.mkdtemp())
-        self.addCleanup(shutil.rmtree, tmp)
+        tmp = temp_dir(self)
         write_event(tmp / "data", "rally")
         write_instance(tmp / "data", "rally", 2026,
                        instance_yaml("rally", 2026, "2026-10-18", "2026-10-19", extra=extra))

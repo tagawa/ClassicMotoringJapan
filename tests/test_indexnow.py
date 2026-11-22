@@ -1,15 +1,13 @@
 """Tests for scripts/indexnow.py. Offline: the live site and the endpoint are stand-ins."""
 import re
-import shutil
 import sys
-import tempfile
 import unittest
 from pathlib import Path
 
 import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from helpers import ROOT, make_fixture  # noqa: E402
+from helpers import ROOT, make_fixture, temp_dir  # noqa: E402
 import build  # noqa: E402
 import settings  # noqa: E402
 
@@ -19,14 +17,11 @@ import indexnow  # noqa: E402  (scripts/ is on the path via helpers)
 class KeyFileTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.tmp = Path(tempfile.mkdtemp())
+        cls.tmp = temp_dir(cls)
         cls.out = cls.tmp / "site"
         make_fixture(cls.tmp / "data")
         build.build(cls.tmp / "data", cls.out)
 
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.tmp)
 
     def test_key_file_sits_at_the_root_and_holds_only_the_key(self):
         # At the root, because a key file in a folder only covers URLs under that folder.
@@ -46,16 +41,13 @@ class KeyFileTests(unittest.TestCase):
 class ChangedUrlsTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.tmp = Path(tempfile.mkdtemp())
+        cls.tmp = temp_dir(cls)
         cls.out = cls.tmp / "site"
         make_fixture(cls.tmp / "data")
         build.build(cls.tmp / "data", cls.out)
         cls.urls = indexnow.sitemap_urls(cls.out)
         cls.home = f"{settings.SITE_URL}/"
 
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.tmp)
 
     def live(self, overrides=None):
         """A live site identical to the build, except where overrides says otherwise."""

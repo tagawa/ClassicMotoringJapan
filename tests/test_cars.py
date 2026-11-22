@@ -1,12 +1,11 @@
 """The cars section: /cars/ and one page per make group (spec 4.11 and section 5)."""
 
 import re
-import shutil
 import tempfile
 import unittest
 from pathlib import Path
 
-from helpers import cars_yaml, display_cars_yaml, instance_yaml, make_fixture, write_event, write_instance
+from helpers import cars_yaml, display_cars_yaml, instance_yaml, make_fixture, temp_dir, write_event, write_instance
 import build  # noqa: E402
 import validate  # noqa: E402
 
@@ -49,14 +48,11 @@ class CarsSiteCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.tmp = Path(tempfile.mkdtemp())
+        cls.tmp = temp_dir(cls)
         cls.data, cls.out = cls.tmp / "data", cls.tmp / "site"
         write_site(cls.data, cls.LISTS)
         build.build(cls.data, cls.out)
 
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.tmp)
 
     def page(self, rel: str) -> str:
         return (self.out / rel).read_text(encoding="utf-8")
@@ -232,7 +228,7 @@ class EventsSectionTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.tmp = Path(tempfile.mkdtemp())
+        cls.tmp = temp_dir(cls)
         data = cls.tmp / "data"
         (data / "events").mkdir(parents=True)
         (data / "makes.yml").write_text(MAKES, encoding="utf-8")
@@ -265,9 +261,6 @@ class EventsSectionTests(unittest.TestCase):
         cls.lines = {re.search(r'events/([a-z-]+)/"', item).group(1): item
                      for item in re.findall(r'<li class="event-line">.*?</li>', section, re.S)}
 
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.tmp)
 
     def dates(self, slug: str) -> list[tuple]:
         return re.findall(r'<span class="next-date" data-start="([\d-]+)" data-ends="([\d-]+)">([^<]*)</span>',
@@ -361,14 +354,11 @@ class HeaderLinkTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.tmp = Path(tempfile.mkdtemp())
+        cls.tmp = temp_dir(cls)
         cls.out = cls.tmp / "site"
         make_fixture(cls.tmp / "data")
         build.build(cls.tmp / "data", cls.out)
 
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.tmp)
 
     def nav(self, rel: str) -> str:
         found = re.findall(r'<a class="site-nav"([^>]*)>Cars</a>', (self.out / rel).read_text(encoding="utf-8"))

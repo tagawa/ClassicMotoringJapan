@@ -1,12 +1,12 @@
-"""Checks on templates and static/: spelling, em dashes, stylesheet tokens, script syntax."""
+"""Checks on templates and static/: spelling, em dashes, stylesheet tokens, script syntax, message pointers."""
 
+import ast
 import re
-import shutil
 import tempfile
 import unittest
 from pathlib import Path
 
-from helpers import CARS, instance_yaml, make_fixture, ROOT, ROUTE, write_event, write_instance
+from helpers import CARS, instance_yaml, make_fixture, ROOT, ROUTE, temp_dir, write_event, write_instance
 import build  # noqa: E402
 
 
@@ -173,7 +173,7 @@ class ScrollableTableTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.tmp = Path(tempfile.mkdtemp())
+        cls.tmp = temp_dir(cls)
         make_fixture(cls.tmp / "data")
         write_event(cls.tmp / "data", "tour")
         write_instance(cls.tmp / "data", "tour", 2026,
@@ -182,9 +182,6 @@ class ScrollableTableTests(unittest.TestCase):
         cls.pages = {p.relative_to(cls.tmp / "site").as_posix(): p.read_text(encoding="utf-8")
                      for p in (cls.tmp / "site").rglob("*.html")}
 
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.tmp)
 
     def test_every_table_box_is_a_named_focusable_region(self):
         boxes = [(name, box) for name, html in self.pages.items()
@@ -231,6 +228,42 @@ class ScriptSyntaxTests(unittest.TestCase):
         for name, body in scripts:
             with self.subTest(template=name):
                 self.assertEqual(old_browser_breakers(body), [])
+
+
+def named_settings(root) -> list[tuple[str, str, str]]:
+    """(file, NAME, path) for every "NAME in scripts/x.py" a message tells the reader to edit."""
+    found = set()
+    for folder in ("scripts", "tools", "video"):
+        for path in sorted((root / folder).glob("*.py")):
+            for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+                # An f-string split over lines is one node, so a pointer broken across them is still found.
+                if isinstance(node, ast.JoinedStr):
+                    text = "".join(v.value if isinstance(v, ast.Constant) else "{}" for v in node.values)
+                elif isinstance(node, ast.Constant) and isinstance(node.value, str):
+                    text = node.value
+                else:
+                    continue
+                for match in re.finditer(r"\b([A-Z][A-Z0-9_]{2,}) in ((?:scripts|tools|video)/\w+\.py)", text):
+                    found.add((path.relative_to(root).as_posix(), *match.groups()))
+    return sorted(found)
+
+
+class MessagePointerTests(unittest.TestCase):
+    """A message that names where a setting lives names the file that defines it, after any move."""
+
+    def test_the_finder_reads_a_pointer_split_across_lines(self):
+        tmp = temp_dir(self)
+        (tmp / "scripts").mkdir()
+        (tmp / "scripts" / "x.py").write_text('m = (f"edit {a} KEY in "\n     f"scripts/y.py")\n', encoding="utf-8")
+        self.assertEqual(named_settings(tmp), [("scripts/x.py", "KEY", "scripts/y.py")])
+
+    def test_each_named_setting_is_defined_in_the_file_named(self):
+        pointers = named_settings(ROOT)
+        self.assertGreater(len(pointers), 0)
+        for source, name, target in pointers:
+            with self.subTest(f"{source}: {name} in {target}"):
+                defined = re.search(rf"(?m)^{name}\b\s*(:[^=\n]*)?=", (ROOT / target).read_text(encoding="utf-8"))
+                self.assertIsNotNone(defined, f"{name} is not defined in {target}")
 
 
 if __name__ == "__main__":

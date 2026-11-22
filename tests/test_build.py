@@ -7,16 +7,13 @@ Shared helpers are in helpers.py.
 
 import json
 import re
-import shutil
-import tempfile
 import unittest
 import xml.etree.ElementTree as ET
-from pathlib import Path
 from urllib.parse import urljoin
 
 import yaml
 
-from helpers import (CARS, instance_yaml, jsonld_blocks, make_fixture, ROOT, unfold, write_event,
+from helpers import (CARS, instance_yaml, jsonld_blocks, make_fixture, ROOT, temp_dir, unfold, write_event,
                      write_instance)
 import build  # noqa: E402
 import settings  # noqa: E402
@@ -26,7 +23,7 @@ import validate  # noqa: E402
 class BuildOutputTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.tmp = Path(tempfile.mkdtemp())
+        cls.tmp = temp_dir(cls)
         cls.data, cls.out = cls.tmp / "data", cls.tmp / "site"
         make_fixture(cls.data)
         build.build(cls.data, cls.out)
@@ -37,9 +34,6 @@ class BuildOutputTests(unittest.TestCase):
         cls.pages = {p.relative_to(cls.out).as_posix(): p.read_text(encoding="utf-8")
                      for p in cls.out.rglob("*.html") if p.name != "404.html"}
 
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.tmp)
 
     def jsonld_by_name(self) -> dict:
         """Event blocks only: a page's breadcrumb trail is structured data too, but not an edition."""
@@ -568,15 +562,12 @@ class NotFoundPageTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.tmp = Path(tempfile.mkdtemp())
+        cls.tmp = temp_dir(cls)
         cls.out = cls.tmp / "site"
         make_fixture(cls.tmp / "data")
         build.build(cls.tmp / "data", cls.out)
         cls.html = (cls.out / "404.html").read_text(encoding="utf-8")
 
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.tmp)
 
     def test_every_internal_link_is_root_absolute(self):
         # A relative link would resolve against the broken URL and 404 in turn.
@@ -621,15 +612,12 @@ class AboutPageTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.tmp = Path(tempfile.mkdtemp())
+        cls.tmp = temp_dir(cls)
         cls.out = cls.tmp / "site"
         make_fixture(cls.tmp / "data")
         build.build(cls.tmp / "data", cls.out)
         cls.html = (cls.out / "about/index.html").read_text(encoding="utf-8")
 
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.tmp)
 
     def test_has_one_heading_and_a_brand_suffixed_title(self):
         self.assertEqual(self.html.count("<h1>"), 1)
@@ -667,7 +655,7 @@ class SiteCopyTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.tmp = Path(tempfile.mkdtemp())
+        cls.tmp = temp_dir(cls)
         cls.out = cls.tmp / "site"
         make_fixture(cls.tmp / "data")
         write_instance(cls.tmp / "data", "hill-climb", "2027-spring",
@@ -675,9 +663,6 @@ class SiteCopyTests(unittest.TestCase):
                                      extra=CARS))
         build.build(cls.tmp / "data", cls.out)
 
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.tmp)
 
     def html(self, rel: str) -> str:
         return (self.out / rel).read_text(encoding="utf-8")
@@ -719,15 +704,12 @@ class FathomEventTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.tmp = Path(tempfile.mkdtemp())
+        cls.tmp = temp_dir(cls)
         make_fixture(cls.tmp / "data")
         out = cls.tmp / "site"
         build.build(cls.tmp / "data", out)
         cls.pages = {str(p.relative_to(out)): p.read_text(encoding="utf-8") for p in out.rglob("*.html")}
 
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.tmp)
 
     def counted(self, html: str) -> list[tuple[str, str]]:
         """Each counted element's opening tag, with the event it reports."""
@@ -770,15 +752,12 @@ class SiteFooterLinkTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.tmp = Path(tempfile.mkdtemp())
+        cls.tmp = temp_dir(cls)
         make_fixture(cls.tmp / "data")
         out = cls.tmp / "site"
         build.build(cls.tmp / "data", out)
         cls.pages = {str(p.relative_to(out)): p.read_text(encoding="utf-8") for p in out.rglob("*.html")}
 
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.tmp)
 
     def test_every_footer_links_the_channel_the_issues_and_about(self):
         for rel, html in self.pages.items():
@@ -793,12 +772,10 @@ class SiteFooterLinkTests(unittest.TestCase):
 
 class OutputFolderTests(unittest.TestCase):
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self.tmp = temp_dir(self)
         self.data = self.tmp / "data"
         write_event(self.data, "meet")
 
-    def tearDown(self):
-        shutil.rmtree(self.tmp)
 
     def test_refuses_to_delete_a_folder_that_is_not_a_build(self):
         precious = self.tmp / "precious"

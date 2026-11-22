@@ -5,12 +5,22 @@ Importing this puts scripts/ on the path, so a test file can import build and it
 
 import json
 import re
+import shutil
 import sys
+import tempfile
 from html.parser import HTMLParser
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
+
+
+def temp_dir(case) -> Path:
+    """A new empty folder, deleted after the test, or after the class when given one."""
+    path = Path(tempfile.mkdtemp())
+    # A class cleanup also runs when setUpClass fails partway, which a tearDownClass does not.
+    (case.addClassCleanup if isinstance(case, type) else case.addCleanup)(shutil.rmtree, path)
+    return path
 
 
 def write_event(data: Path, slug: str, name_en="Test Event", name_ja="テストイベント",

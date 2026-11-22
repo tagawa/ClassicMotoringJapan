@@ -4,13 +4,10 @@ An offline proxy for a phone subscribed to the feed, so a manual pass with one s
 """
 
 import re
-import shutil
-import tempfile
 import unittest
-from pathlib import Path
 from urllib.parse import urljoin
 
-from helpers import CARS, instance_yaml, write_event, write_instance
+from helpers import CARS, instance_yaml, temp_dir, write_event, write_instance
 import build  # noqa: E402
 import settings  # noqa: E402
 
@@ -20,7 +17,7 @@ class AddToCalendarTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.tmp = Path(tempfile.mkdtemp())
+        cls.tmp = temp_dir(cls)
         data = cls.tmp / "data"
         write_event(data, "meet", name_en="Meet")
         write_instance(data, "meet", 2025, instance_yaml("meet", 2025, "2025-10-19", "2025-10-19", status="cancelled"))
@@ -35,9 +32,6 @@ class AddToCalendarTests(unittest.TestCase):
         cls.out = cls.tmp / "site"
         build.build(data, cls.out)
 
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.tmp)
 
     def html(self, rel: str) -> str:
         # Bytes first: read_text would turn the calendar's CRLF line ends into LF.

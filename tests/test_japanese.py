@@ -2,13 +2,10 @@
 
 import datetime as dt
 import re
-import shutil
-import tempfile
 import unittest
 from html.parser import HTMLParser
-from pathlib import Path
 
-from helpers import instance_yaml, ROOT, ROUTE_ONE_DAY, write_event, write_instance
+from helpers import instance_yaml, ROOT, ROUTE_ONE_DAY, temp_dir, write_event, write_instance
 import build  # noqa: E402
 import formatting  # noqa: E402
 import settings  # noqa: E402
@@ -56,7 +53,7 @@ class JapanesePageTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.tmp = Path(tempfile.mkdtemp())
+        cls.tmp = temp_dir(cls)
         data = cls.tmp / "data"
         write_event(data, "meet", name_en="Meet")
         write_instance(data, "meet", 2025, instance_yaml("meet", 2025, "2025-10-19", "2025-10-19", status="cancelled"))
@@ -73,9 +70,6 @@ class JapanesePageTests(unittest.TestCase):
         cls.html = (cls.out / "ja" / "index.html").read_text(encoding="utf-8")
         cls.home = (cls.out / "index.html").read_text(encoding="utf-8")
 
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.tmp)
 
     def row(self, start: str) -> str:
         """The list item for the edition starting on that date."""
@@ -197,7 +191,7 @@ class JapaneseRunTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.tmp = Path(tempfile.mkdtemp())
+        cls.tmp = temp_dir(cls)
         data = cls.tmp / "data"
         write_event(data, "meet", extra=(
             "organizer: テスト実行委員会 (Test Committee)\n"
@@ -210,9 +204,6 @@ class JapaneseRunTests(unittest.TestCase):
         cls.event = (cls.tmp / "site/events/meet/index.html").read_text(encoding="utf-8")
         cls.edition = (cls.tmp / "site/events/meet/2026/index.html").read_text(encoding="utf-8")
 
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.tmp)
 
     def test_the_checker_finds_japanese_left_unmarked(self):
         # Proves the page tests below can fail.

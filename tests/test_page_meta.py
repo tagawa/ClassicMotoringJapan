@@ -4,14 +4,12 @@ These are offline proxies for Google's Rich Results Test, so a manual pass with 
 """
 
 import re
-import shutil
-import tempfile
 import unittest
 from pathlib import Path
 from urllib.parse import urljoin
 
 from helpers import (CARS, display_cars_yaml, HeadParser, instance_yaml, jsonld_blocks, make_fixture, ROUTE,
-                     write_event, write_instance)
+                     temp_dir, write_event, write_instance)
 import build  # noqa: E402
 import settings  # noqa: E402
 
@@ -36,14 +34,11 @@ class PageDescriptionTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.tmp = Path(tempfile.mkdtemp())
+        cls.tmp = temp_dir(cls)
         cls.out = cls.tmp / "site"
         make_description_fixture(cls.tmp / "data")
         build.build(cls.tmp / "data", cls.out)
 
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.tmp)
 
     def head(self, rel: str) -> HeadParser:
         return HeadParser((self.out / rel).read_text(encoding="utf-8"))
@@ -119,14 +114,11 @@ class BreadcrumbTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.tmp = Path(tempfile.mkdtemp())
+        cls.tmp = temp_dir(cls)
         cls.out = cls.tmp / "site"
         make_fixture(cls.tmp / "data")
         build.build(cls.tmp / "data", cls.out)
 
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.tmp)
 
     PAGE = "events/hill-climb/2026-autumn/index.html"
 
@@ -177,8 +169,7 @@ class StructuredDataOrganizerTests(unittest.TestCase):
     a blog post or an Instagram account, which would be a false claim about its website."""
 
     def test_organizer_has_a_name_and_no_url(self):
-        tmp = Path(tempfile.mkdtemp())
-        self.addCleanup(shutil.rmtree, tmp)
+        tmp = temp_dir(self)
         write_event(tmp / "data", "meet", extra="organizer: Test Club\n")
         write_instance(tmp / "data", "meet", 2026, instance_yaml("meet", 2026, "2026-11-03", "2026-11-03"))
         build.build(tmp / "data", tmp / "site")
