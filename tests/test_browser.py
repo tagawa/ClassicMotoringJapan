@@ -10,7 +10,8 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from test_build import build, instance_yaml, write_event, write_instance  # noqa: E402
+from helpers import instance_yaml, write_event, write_instance  # noqa: E402
+import build  # noqa: E402
 
 try:
     from playwright.sync_api import sync_playwright

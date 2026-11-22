@@ -23,7 +23,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from build import INDEXNOW_KEY, ROOT, SITE_URL  # noqa: E402
+from settings import INDEXNOW_KEY, ROOT, SITE_URL  # noqa: E402
 
 ENDPOINT = "https://api.indexnow.org/indexnow"
 KEY_URL = f"{SITE_URL}/{INDEXNOW_KEY}.txt"

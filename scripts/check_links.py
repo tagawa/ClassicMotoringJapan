@@ -25,7 +25,9 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from build import LINK_RE, ROOT, VIDEO_WATCH_URL, load_and_validate  # noqa: E402
+from formatting import LINK_RE  # noqa: E402
+from settings import ROOT, VIDEO_WATCH_URL  # noqa: E402
+from validate import load_and_validate  # noqa: E402
 
 USER_AGENT = "ClassicMotoringJapan-linkcheck (+https://classicmotoringjapan.com/)"
 # The watch page answers 200 even for a removed video; oEmbed does not.

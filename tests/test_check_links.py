@@ -7,9 +7,9 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from test_build import ROOT, instance_yaml, write_event, write_instance  # noqa: E402
+from helpers import ROOT, instance_yaml, write_event, write_instance  # noqa: E402
 
-import check_links  # noqa: E402  (scripts/ is on the path via test_build)
+import check_links  # noqa: E402  (scripts/ is on the path via helpers)
 
 OEMBED = check_links.OEMBED_URL + "gDq-2nEG3Y8"
 

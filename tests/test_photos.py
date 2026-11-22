@@ -13,8 +13,11 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 import build  # noqa: E402
-from test_build import (HeadParser, instance_yaml, make_fixture, write_event,  # noqa: E402
-                        write_instance, CARS)
+import photos  # noqa: E402
+import settings  # noqa: E402
+import validate  # noqa: E402
+from helpers import (HeadParser, instance_yaml, make_fixture, write_event,  # noqa: E402
+                     write_instance, CARS)
 
 OWN_PHOTO = "photo:\n  alt_en: A red coupe on the start line\n  year: 2025\n"
 CC_PHOTO = ("photo:\n  alt_en: Two roadsters parked by a fountain\n  year: 2024\n"
@@ -61,11 +64,11 @@ def write_photo(data: Path, slug: str, size=(1600, 900), meta=()) -> None:
 
 
 def share_path(out: Path, url: str) -> Path:
-    return out / url.removeprefix(f"{build.SITE_URL}/").split("?")[0]
+    return out / url.removeprefix(f"{settings.SITE_URL}/").split("?")[0]
 
 
 def errors_for(data: Path, out: Path) -> str:
-    with unittest.TestCase().assertRaises(build.BuildError) as caught:
+    with unittest.TestCase().assertRaises(validate.BuildError) as caught:
         build.build(data, out)
     return "\n".join(caught.exception.errors)
 
@@ -126,16 +129,16 @@ class PhotoValidationTests(unittest.TestCase):
         # tools/pending.py lists nothing for upload while this is not empty (spec 4.10).
         write_photo(self.data, "clean")
         write_photo(self.data, "dirty", meta=("xmp",))
-        self.assertEqual(build.photos_with_metadata(self.data),
+        self.assertEqual(photos.photos_with_metadata(self.data),
                          ["photos/dirty.jpg carries XMP: run it through tools/photo.py"])
-        self.assertEqual(build.photos_with_metadata(self.tmp / "empty"), [])
+        self.assertEqual(photos.photos_with_metadata(self.tmp / "empty"), [])
 
     def test_the_metadata_check_names_each_kind_and_passes_a_clean_file(self):
         p = self.tmp / "x.jpg"
         save_jpeg(p, meta=("exif", "xmp", "iptc", "comment"))
-        self.assertEqual(build.photo_metadata(p), ["EXIF", "XMP", "IPTC", "comment"])
+        self.assertEqual(photos.photo_metadata(p), ["EXIF", "XMP", "IPTC", "comment"])
         save_jpeg(p, icc=b"not checked")
-        self.assertEqual(build.photo_metadata(p), [])
+        self.assertEqual(photos.photo_metadata(p), [])
 
 
 class PhotoOutputTests(unittest.TestCase):
@@ -160,7 +163,7 @@ class PhotoOutputTests(unittest.TestCase):
 
     def test_each_photo_is_written_at_both_widths_in_two_to_one(self):
         for slug in ("own", "commons"):
-            for w in build.PHOTO_WIDTHS:
+            for w in photos.PHOTO_WIDTHS:
                 with Image.open(self.out / f"static/photos/{slug}-{w}.jpg") as img:
                     self.assertEqual(img.size, (w, w // 2))
 
@@ -206,15 +209,15 @@ class PhotoOutputTests(unittest.TestCase):
 
     def test_an_own_photo_is_the_share_image(self):
         meta = HeadParser(self.page("events/own/index.html")).meta
-        self.assertTrue(meta["og:image"].startswith(f"{build.SITE_URL}/static/photos/own-share.jpg?v="))
+        self.assertTrue(meta["og:image"].startswith(f"{settings.SITE_URL}/static/photos/own-share.jpg?v="))
         with Image.open(self.out / "static/photos/own-share.jpg") as img:
-            self.assertEqual(img.size, build.SHARE_SIZE)
+            self.assertEqual(img.size, settings.SHARE_SIZE)
         self.assertEqual(meta["og:image:alt"], "A red coupe on the start line")
 
     def test_someone_elses_photo_is_never_the_share_image(self):
         # A link preview has no room for the credit the licence asks for.
         meta = HeadParser(self.page("events/commons/index.html")).meta
-        self.assertTrue(meta["og:image"].startswith(f"{build.SITE_URL}/static/cards/events/commons.png?v="))
+        self.assertTrue(meta["og:image"].startswith(f"{settings.SITE_URL}/static/cards/events/commons.png?v="))
         self.assertFalse((self.out / "static/photos/commons-share.jpg").exists())
 
 
@@ -236,12 +239,12 @@ class ShareCardTests(unittest.TestCase):
         for rel, html in self.pages.items():
             meta = HeadParser(html).meta
             url = meta.get("og:image", "")
-            self.assertTrue(url.startswith(f"{build.SITE_URL}/static/"), rel)
+            self.assertTrue(url.startswith(f"{settings.SITE_URL}/static/"), rel)
             path = share_path(self.out, url)
             with Image.open(path) as img:
-                self.assertEqual(img.size, build.SHARE_SIZE, rel)
+                self.assertEqual(img.size, settings.SHARE_SIZE, rel)
                 self.assertEqual((meta["og:image:width"], meta["og:image:height"]),
-                                 tuple(str(n) for n in build.SHARE_SIZE), rel)
+                                 tuple(str(n) for n in settings.SHARE_SIZE), rel)
             self.assertTrue(meta["og:image:alt"].strip(), rel)
             self.assertEqual(meta["twitter:card"], "summary_large_image", rel)
 

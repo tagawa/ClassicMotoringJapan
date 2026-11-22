@@ -9,9 +9,11 @@ from pathlib import Path
 import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from test_build import ROOT, build, make_fixture  # noqa: E402
+from helpers import ROOT, make_fixture  # noqa: E402
+import build  # noqa: E402
+import settings  # noqa: E402
 
-import indexnow  # noqa: E402  (scripts/ is on the path via test_build)
+import indexnow  # noqa: E402  (scripts/ is on the path via helpers)
 
 
 class KeyFileTests(unittest.TestCase):
@@ -28,15 +30,15 @@ class KeyFileTests(unittest.TestCase):
 
     def test_key_file_sits_at_the_root_and_holds_only_the_key(self):
         # At the root, because a key file in a folder only covers URLs under that folder.
-        self.assertEqual((self.out / f"{build.INDEXNOW_KEY}.txt").read_text(encoding="utf-8"),
-                         build.INDEXNOW_KEY)
+        self.assertEqual((self.out / f"{settings.INDEXNOW_KEY}.txt").read_text(encoding="utf-8"),
+                         settings.INDEXNOW_KEY)
 
     def test_key_meets_the_protocol(self):
-        self.assertRegex(build.INDEXNOW_KEY, r"^[0-9a-f]{8,128}$")
+        self.assertRegex(settings.INDEXNOW_KEY, r"^[0-9a-f]{8,128}$")
 
     def test_every_sitemap_url_maps_to_a_built_file(self):
         urls = indexnow.sitemap_urls(self.out)
-        self.assertIn(f"{build.SITE_URL}/", urls)
+        self.assertIn(f"{settings.SITE_URL}/", urls)
         for url in urls:
             self.assertTrue(indexnow.local_path(self.out, url).is_file(), url)
 
@@ -49,7 +51,7 @@ class ChangedUrlsTests(unittest.TestCase):
         make_fixture(cls.tmp / "data")
         build.build(cls.tmp / "data", cls.out)
         cls.urls = indexnow.sitemap_urls(cls.out)
-        cls.home = f"{build.SITE_URL}/"
+        cls.home = f"{settings.SITE_URL}/"
 
     @classmethod
     def tearDownClass(cls):
@@ -63,7 +65,7 @@ class ChangedUrlsTests(unittest.TestCase):
             if url in overrides:
                 return overrides[url]
             if url == indexnow.KEY_URL:
-                return build.INDEXNOW_KEY.encode("utf-8")
+                return settings.INDEXNOW_KEY.encode("utf-8")
             return indexnow.local_path(self.out, url).read_bytes()
         return fetch
 
@@ -86,11 +88,11 @@ class ChangedUrlsTests(unittest.TestCase):
 
 class SubmitTests(unittest.TestCase):
     def test_payload_names_this_host_and_its_key(self):
-        body = indexnow.payload([f"{build.SITE_URL}/"])
+        body = indexnow.payload([f"{settings.SITE_URL}/"])
         self.assertEqual(body["host"], "classicmotoringjapan.com")
-        self.assertEqual(body["key"], build.INDEXNOW_KEY)
-        self.assertEqual(body["keyLocation"], f"{build.SITE_URL}/{build.INDEXNOW_KEY}.txt")
-        self.assertEqual(body["urlList"], [f"{build.SITE_URL}/"])
+        self.assertEqual(body["key"], settings.INDEXNOW_KEY)
+        self.assertEqual(body["keyLocation"], f"{settings.SITE_URL}/{settings.INDEXNOW_KEY}.txt")
+        self.assertEqual(body["urlList"], [f"{settings.SITE_URL}/"])
 
     def test_outcomes(self):
         cases = {200: "ok", 202: "ok", 400: "fail", 403: "fail", 422: "fail",
