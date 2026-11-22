@@ -1061,20 +1061,41 @@ class BritishSpellingTests(unittest.TestCase):
             self.assertNotRegex(text, r"(?i)organiz", path.name)
 
 
+# Hand-written folders. tools/, video/ and .claude/ are local only, so on Actions they are
+# absent and skipped; data/ is checked by the build itself.
+EM_DASH_FOLDERS = ("scripts", "tests", "templates", "static", ".github", "tools", "video", ".claude")
+
+
+def em_dash_files(root):
+    return [path for folder in EM_DASH_FOLDERS for path in (root / folder).rglob("*")
+            if path.suffix in (".py", ".html", ".css", ".js", ".yml", ".md")
+            and not {".venv", "__pycache__"} & set(path.parts)]
+
+
+def em_dash_lines(root):
+    return [f"{path.relative_to(root)}:{number}"
+            for path in em_dash_files(root)
+            for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1)
+            if chr(0x2014) in line]
+
+
 class LiteralEmDashTests(unittest.TestCase):
-    """No em dash character in the code or templates: a template's reaches visitors, and
+    """No em dash character in the code, templates or skills: a template's reaches visitors, and
     in code one reads as a hyphen. Code that needs the character writes it as an escape."""
 
     def test_none_in_code_templates_or_styles(self):
-        dash = chr(0x2014)
-        files = [p for folder in ("scripts", "tests", "templates", "static")
-                 for p in (ROOT / folder).rglob("*")
-                 if p.suffix in (".py", ".html", ".css", ".js", ".yml")]
-        self.assertTrue(files, "no files found, so this test would prove nothing")
-        for path in files:
-            with self.subTest(path=path.relative_to(ROOT)):
-                self.assertNotIn(dash, path.read_text(encoding="utf-8"),
-                                 "write \\u2014 in code, or a comma, colon or semicolon in text")
+        self.assertTrue(em_dash_files(ROOT), "no files found, so this test would prove nothing")
+        self.assertEqual(em_dash_lines(ROOT), [],
+                         "write \\u2014 in code, or a comma, colon or semicolon in text")
+
+    def test_the_sweep_finds_a_planted_dash(self):
+        # Proves the sweep can report a positive, so a pass above is not a sweep matching nothing.
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for rel in ("tools/x.py", ".claude/skills/y/SKILL.md", "tools/.venv/z.py"):
+                (root / rel).parent.mkdir(parents=True, exist_ok=True)
+                (root / rel).write_text(f"one\ntwo {chr(0x2014)} three\n", encoding="utf-8")
+            self.assertEqual(sorted(em_dash_lines(root)), [".claude/skills/y/SKILL.md:2", "tools/x.py:2"])
 
 
 # Values the stylesheet may use. The spec's token table explains them; this is the copy
