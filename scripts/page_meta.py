@@ -12,12 +12,14 @@ from settings import SITE_NAME, SITE_URL
 
 # Structured data
 
-def build_jsonld(r: dict) -> Markup:
+def build_jsonld(r: dict) -> Markup | None:
+    """None while the dates are unconfirmed: EventScheduled would claim what the page says is not so."""
     ev, ed = r["ev"], r["ed"]
+    if ed["status"] == "tentative":
+        return None
     address = {"@type": "PostalAddress", "addressRegion": r["prefecture"], "addressCountry": "JP"}
-    street = ed.get("street_address") or ev.get("street_address")
-    if street:
-        address["streetAddress"] = street
+    if r["street_address"]:
+        address["streetAddress"] = r["street_address"]
     place = {"@type": "Place", "name": r["venue"], "address": address}
     if r["pin"]:
         place["geo"] = {"@type": "GeoCoordinates",
@@ -39,11 +41,10 @@ def build_jsonld(r: dict) -> Markup:
         data["isAccessibleForFree"] = ev["spectator_fee_jpy"] == 0
         # No offer url: Google means a ticket page by it, and the data has none.
         data["offers"] = {"@type": "Offer", "price": ev["spectator_fee_jpy"], "priceCurrency": "JPY"}
-    if ev.get("summary_en"):
+    # Markup may claim only what its page shows, and only the event page shows the summary.
+    # No organizer: the field describes the organiser for visitors rather than naming it.
+    if ev.get("summary_en") and not r["has_page"]:
         data["description"] = prose_text(ev["summary_en"]).strip()
-    if ev.get("organizer"):
-        # No url: official_url is often a tourism listing or a blog post, not the organiser's site.
-        data["organizer"] = {"@type": "Organization", "name": ev["organizer"]}
     return jsonld_markup(data)
 
 

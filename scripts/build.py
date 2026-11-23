@@ -123,7 +123,7 @@ def build(data_dir: Path, out_dir: Path,
             title=f"{ev['name_en']}: Visitor Guide", description=event_description(ev),
             ev=ev, rows=ev_rows, verified=verified, pin=venue_pin(ev),
             photo=photo_info(ev), og_image=og[slug],
-            jsonld=[r["jsonld"] for r in ev_rows if not r["has_page"]]))
+            jsonld=[r["jsonld"] for r in ev_rows if not r["has_page"] and r["jsonld"]]))
         sitemap.append((f"{SITE_URL}/events/{slug}/", verified))
         for r in ev_rows:
             if not r["has_page"]:
@@ -134,7 +134,7 @@ def build(data_dir: Path, out_dir: Path,
                 title=f"{r['full_name']}: {r['parts_phrase']}",
                 description=edition_description(r),
                 ev=ev, r=r, ed=ed, photo=photo_info(ev), og_image=og[r["path"]], make_pages=make_pages,
-                jsonld=[r["jsonld"], build_breadcrumbs(r)]))
+                jsonld=[block for block in (r["jsonld"], build_breadcrumbs(r)) if block]))
             sitemap.append((r["abs_url"], ed["last_verified"]))
 
     write("about/index.html", env.get_template("about.html").render(

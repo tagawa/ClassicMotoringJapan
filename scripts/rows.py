@@ -82,6 +82,8 @@ def make_rows(events: dict, editions: list, makes: dict | None = None) -> list[d
             "venue": ed.get("venue_en") or ev["venue_en"],
             "prefecture": ed.get("prefecture") or ev["prefecture"],
             "pin": venue_pin(ev, ed),
+            # Like the pin, an address belongs to its venue: an edition elsewhere does not inherit it.
+            "street_address": ed.get("street_address") or (None if ed.get("venue_en") else ev.get("street_address")),
             "dot": None,
             "has_route": bool(present["route"]),
             "cutoff_year": ed.get("cutoff_year") or ev.get("cutoff_year"),

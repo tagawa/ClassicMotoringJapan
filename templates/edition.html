@@ -41,7 +41,7 @@
   <dt>When</dt>
   <dd>{{ r.when_full }}{% if r.ics_path %}<span class="calendar-links" data-hide-after="{{ ed.end.isoformat() }}"><br>{{ calendar_links(r, root) }}</span>{% endif %}</dd>
   <dt>Where</dt>
-  <dd>{{ r.venue }}, {{ r.prefecture }}{{ map_link(r.pin) }}</dd>
+  <dd>{{ r.venue }}, {{ r.prefecture }}{% if r.street_address %}<br>{{ r.street_address | mark_ja }}{% endif %}{{ map_link(r.pin) }}</dd>
 {% if ev.spectator_fee_jpy is none %}
   <dt class="fee-unannounced">Cost</dt>
   <dd class="fee-unannounced">{{ ev.spectator_fee_jpy | fee }}</dd>
