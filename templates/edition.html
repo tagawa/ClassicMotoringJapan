@@ -34,7 +34,7 @@
 {% if ed.status == "tentative" %}
 <p class="note"><a href="{{ ed.source_url }}">{{ ed.source_url | domain }}</a> does not confirm these dates yet.</p>
 {% elif ed.status == "cancelled" %}
-<p class="note cancelled">This edition is cancelled.</p>
+<p class="note cancelled">This event is cancelled.</p>
 {% endif %}
 
 <dl class="facts">
@@ -53,15 +53,15 @@
   <dd>{{ ed.last_verified.isoformat() }}, against <a href="{{ ed.source_url }}">{{ ed.source_url | domain }}</a></dd>
 </dl>
 {% if r.previous or r.next %}
-<nav class="edition-steps" aria-label="Other editions">
+<nav class="edition-steps" aria-label="Other events">
 {% if r.previous %}
-  <span class="step"><a href="{{ root }}{{ r.previous.path }}"><span aria-hidden="true">← </span>Previous edition: {{ r.previous.label }}</a>{% if r.previous.ed.status == "cancelled" %} (cancelled){% endif %}</span>
+  <span class="step"><a href="{{ root }}{{ r.previous.path }}"><span aria-hidden="true">← </span>Previous event: {{ r.previous.label }}</a>{% if r.previous.ed.status == "cancelled" %} (cancelled){% endif %}</span>
 {% endif %}
 {% if r.previous and r.next %}
   <span class="bar" aria-hidden="true">|</span>
 {% endif %}
 {% if r.next %}
-  <span class="step"><a href="{{ root }}{{ r.next.path }}">Next edition: {{ r.next.label }}<span aria-hidden="true"> →</span></a>{% if r.next.ed.status == "tentative" %} (dates not confirmed){% elif r.next.ed.status == "cancelled" %} (cancelled){% endif %}</span>
+  <span class="step"><a href="{{ root }}{{ r.next.path }}">Next event: {{ r.next.label }}<span aria-hidden="true"> →</span></a>{% if r.next.ed.status == "tentative" %} (dates not confirmed){% elif r.next.ed.status == "cancelled" %} (cancelled){% endif %}</span>
 {% endif %}
 </nav>
 {% endif %}
@@ -69,7 +69,7 @@
 <p><a href="{{ root }}events/{{ ev.slug }}/">{{ r.event_notes }}</a></p>
 {% endif %}
 {% if r.previous_videos %}
-<p><a href="{{ root }}{{ r.previous_videos.path }}#videos">{{ video_icon() }}Videos of the {{ r.previous_videos.label }} edition</a></p>
+<p><a href="{{ root }}{{ r.previous_videos.path }}#videos">{{ video_icon() }}Videos of the {{ r.previous_videos.label }} event</a></p>
 {% endif %}
 
 {% if r.jumps %}
@@ -232,7 +232,7 @@
 {% endfor %}
 {# Not a section: it shows what the event is like, not what this edition has. #}
 {% if r.previous_videos and not r.videos %}
-<h2>From the {{ r.previous_videos.label }} edition</h2>
+<h2>From the {{ r.previous_videos.label }} event</h2>
 {{ video_figure(r.previous_videos.videos[0]) }}
 {% endif %}
 {% endblock %}

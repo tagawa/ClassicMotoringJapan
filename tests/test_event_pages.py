@@ -166,7 +166,7 @@ class VideoTests(unittest.TestCase):
 
     def test_a_later_edition_links_to_the_latest_earlier_videos(self):
         link = re.search(r'<a href="../../../events/meet/2025/#videos">(.*?)</a>', self.page(2026)).group(1)
-        self.assertTrue(link.endswith("</svg>Videos of the 2025 edition"), link)
+        self.assertTrue(link.endswith("</svg>Videos of the 2025 event"), link)
 
     def test_the_videos_link_is_drawn_with_a_play_glyph_like_the_map_pin(self):
         link = re.search(r'<a href="[^"]*#videos">(.*?)</a>', self.page(2026)).group(1)
@@ -177,7 +177,7 @@ class VideoTests(unittest.TestCase):
         self.assertNotIn("#", svg, "a baked-in colour would ignore dark mode")
 
     def test_an_edition_with_videos_links_to_the_one_before(self):
-        self.assertIn("Videos of the 2024 edition", self.page(2025))
+        self.assertIn("Videos of the 2024 event", self.page(2025))
         self.assertNotIn("Videos of the", self.page(2024))
 
     def test_an_edition_without_videos_embeds_the_first_earlier_one(self):
@@ -186,7 +186,7 @@ class VideoTests(unittest.TestCase):
 
     def test_the_borrowed_video_comes_last_under_a_heading_naming_its_edition(self):
         html = self.page(2026)
-        heading = html.index(">From the 2025 edition</h2>")
+        heading = html.index(">From the 2025 event</h2>")
         self.assertGreater(heading, html.index('<h2 id="route">Route</h2>'))
         self.assertGreater(html.index("<iframe"), heading)
 
@@ -222,8 +222,8 @@ class VideoTests(unittest.TestCase):
             "meet", 2026, "2026-10-18", "2026-10-19", extra=ROUTE))
         (self.data / "events/meet/2026.yml").unlink()
         html = self.page("2026-autumn")
-        self.assertIn("Videos of the Spring 2026 edition", html)
-        self.assertIn(">From the Spring 2026 edition</h2>", html)
+        self.assertIn("Videos of the Spring 2026 event", html)
+        self.assertIn(">From the Spring 2026 event</h2>", html)
 
     def test_the_event_page_names_videos_among_the_edition_contents(self):
         build.build(self.data, self.tmp / "site")
@@ -276,36 +276,36 @@ class PastEditionTests(unittest.TestCase):
 
     def test_an_edition_without_videos_keeps_the_route_first(self):
         self.assertEqual(re.findall(r"<h2[^>]*>(.*?)</h2>", self.page(2027)),
-                         ["Route", "Entry list", "From the 2026 edition"])
+                         ["Route", "Entry list", "From the 2026 event"])
 
     def test_the_title_names_the_sections_in_page_order(self):
         self.assertIn("<title>Test Event 2026: Videos, entry list and route</title>", self.page(2026))
 
     def nav(self, stem) -> str:
-        found = re.search(r'<nav class="edition-steps" aria-label="Other editions">(.*?)</nav>', self.page(stem), re.S)
+        found = re.search(r'<nav class="edition-steps" aria-label="Other events">(.*?)</nav>', self.page(stem), re.S)
         return re.sub(r"\s+", " ", found.group(1)).strip() if found else ""
 
     def test_an_edition_links_forward_to_the_next_one_by_its_label(self):
-        self.assertIn('<a href="../../../events/meet/2027/">Next edition: 2027'
+        self.assertIn('<a href="../../../events/meet/2027/">Next event: 2027'
                       '<span aria-hidden="true"> →</span></a>', self.nav(2026))
 
     def test_an_edition_links_back_to_the_previous_one_by_its_label(self):
         self.assertIn('<a href="../../../events/meet/2026/"><span aria-hidden="true">← </span>'
-                      'Previous edition: 2026</a>', self.nav(2027))
+                      'Previous event: 2026</a>', self.nav(2027))
 
     def test_both_links_share_one_line_back_first_with_a_bar_screen_readers_skip(self):
         write_instance(self.data, "meet", 2028, instance_yaml("meet", 2028, "2028-10-15", "2028-10-15"))
         nav = self.nav(2027)
-        self.assertLess(nav.index("Previous edition"), nav.index("Next edition"))
+        self.assertLess(nav.index("Previous event"), nav.index("Next event"))
         self.assertIn('<span class="bar" aria-hidden="true">|</span>', nav)
 
     def test_the_latest_edition_has_no_forward_link_and_no_bar(self):
         nav = self.nav(2027)
-        self.assertNotIn("Next edition", nav)
+        self.assertNotIn("Next event", nav)
         self.assertNotIn('class="bar"', nav)
 
     def test_the_earliest_edition_has_no_back_link(self):
-        self.assertNotIn("Previous edition", self.nav(2026))
+        self.assertNotIn("Previous event", self.nav(2026))
 
     def test_a_lone_edition_has_no_nav_at_all(self):
         shutil.rmtree(self.data / "events" / "meet")
@@ -317,8 +317,8 @@ class PastEditionTests(unittest.TestCase):
         write_instance(self.data, "meet", 2025, instance_yaml("meet", 2025, "2025-10-19", "2025-10-19"))
         write_instance(self.data, "meet", 2027, instance_yaml("meet", 2027, "2027-10-17", "2027-10-17"))
         nav = self.nav(2026)
-        self.assertIn('<a href="../../../events/meet/"><span aria-hidden="true">← </span>Previous edition: 2025</a>', nav)
-        self.assertIn('<a href="../../../events/meet/">Next edition: 2027', nav)
+        self.assertIn('<a href="../../../events/meet/"><span aria-hidden="true">← </span>Previous event: 2025</a>', nav)
+        self.assertIn('<a href="../../../events/meet/">Next event: 2027', nav)
 
     def test_the_links_carry_their_edition_status(self):
         write_instance(self.data, "meet", 2027, instance_yaml("meet", 2027, "2027-10-17", "2027-10-17",
@@ -329,7 +329,7 @@ class PastEditionTests(unittest.TestCase):
         self.assertIn("</a> (cancelled)", self.nav(2026))
         write_instance(self.data, "meet", 2025, instance_yaml("meet", 2025, "2025-10-19", "2025-10-19",
                                                               status="cancelled"))
-        self.assertIn("Previous edition: 2025</a> (cancelled)", self.nav(2026))
+        self.assertIn("Previous event: 2025</a> (cancelled)", self.nav(2026))
 
     def test_each_link_is_kept_whole_and_a_phone_stacks_them_without_the_bar(self):
         css = (ROOT / "static" / "style.css").read_text(encoding="utf-8")

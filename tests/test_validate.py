@@ -245,6 +245,25 @@ class HouseStyleTests(unittest.TestCase):
     def test_the_message_points_proper_names_at_the_exception_list(self):
         self.assertIn("AMERICAN_SPELLING_NAMES", self.refusal(name_en="Fuji Center Meeting"))
 
+    def test_edition_is_refused_with_event_as_the_way_out(self):
+        # Enthusiasts say "event" (owner, 2026-11-23; spec section 7).
+        for text in ("The 2026 edition is the fifth.", "Both Editions left Okayama."):
+            with self.subTest(text=text):
+                message = self.refusal(**self.summary(text))
+                self.assertIn("summary_en", message)
+                self.assertIn("'event'", message)
+
+    def test_edition_in_a_short_text_field_is_refused(self):
+        self.assertIn("name_en", self.refusal(name_en="Meeting, Autumn Edition"))
+
+    def test_a_car_model_may_carry_edition(self):
+        # A model is the maker's name for it ("Limited Edition"), not the site's wording.
+        write_event(self.data, "meet")
+        write_instance(self.data, "meet", 2026, instance_yaml(
+            "meet", 2026, "2026-10-18", "2026-10-18",
+            extra="list_as_of: 2026-10-01\ncars:\n  - make: Mazda\n    model: Roadster Limited Edition\n"))
+        build.build(self.data, self.tmp / "site")
+
 
 class ProseLinkTests(unittest.TestCase):
     """Prose may carry [text](https://...) links: anchors on the page, plain text elsewhere."""

@@ -183,14 +183,14 @@ class PhotoOutputTests(unittest.TestCase):
 
     def test_an_own_photo_names_its_edition_and_no_one(self):
         cap = re.search(r"(?s)<figcaption>(.*?)</figcaption>", self.page("events/own/index.html")).group(1)
-        self.assertEqual(" ".join(cap.split()), "Photo: 2025 edition")
+        self.assertEqual(" ".join(cap.split()), "Photo: 2025 event")
 
     def test_someone_elses_photo_carries_credit_source_licence_and_the_change(self):
         cap = re.search(r"(?s)<figcaption>(.*?)</figcaption>", self.page("events/commons/index.html")).group(1)
         self.assertIn('<a href="https://commons.wikimedia.org/wiki/File:Test.jpg">Test Author</a>', cap)
         self.assertIn('<a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>', cap)
         self.assertIn("edited", cap)
-        self.assertIn("2024 edition", cap)
+        self.assertIn("2024 event", cap)
 
     def test_the_same_photo_gives_the_same_bytes(self):
         again = self.tmp / "again"

@@ -13,7 +13,7 @@
 <p>{{ page.totals }}.</p>
 <div class="table-wrap" tabindex="0" role="region" aria-label="Entry lists">
   <table>
-    <thead><tr><th scope="col">Edition</th><th scope="col">Date</th><th scope="col">Count</th></tr></thead>
+    <thead><tr><th scope="col">Event</th><th scope="col">Date</th><th scope="col">Count</th></tr></thead>
     <tbody>
 {% for x in page.lists %}
       <tr><td><a href="{{ root }}{{ x.row.path }}">{{ x.row.full_name }}</a></td><td>{{ x.when }}</td><td>{{ x.text }}{% if x.row.list_provisional %}, provisional list{% endif %}</td></tr>

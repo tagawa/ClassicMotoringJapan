@@ -10,23 +10,17 @@ PAGE_MIN_EDITIONS = 3
 # The organiser's list did not name the make, so there is nothing for a reader to follow.
 NO_LINE = {"Unknown"}
 INDEX_DESCRIPTION = ("Every car make on the published entry lists of classic car events in Japan, "
-                     "with how many cars and editions each appears at.")
+                     "with how many cars and events each appears at.")
 
 
 def _n(count: int, word: str) -> str:
     return f"{count} {word}{'' if count == 1 else 's'}"
 
 
-def _is_entry_list(r: dict) -> bool:
-    # A show's announced line-up names models, and two models are not two cars (charts.makes_chart).
-    return all("entry_no" in car for car in r["cars"])
-
-
-def _counts_text(cars: int, car_editions: int, models: int, model_editions: int) -> str:
-    """"5 cars at 2 editions, and 1 model on display at 1 edition": models never join cars."""
-    parts = ([f"{_n(cars, 'car')} at {_n(car_editions, 'edition')}"] if cars else []) + (
-        [f"{_n(models, 'model')} on display at {_n(model_editions, 'edition')}"] if models else [])
-    return ", and ".join(parts)
+# A show's announced model counts as one car here: a visitor finding two where one was
+# announced won't mind (owner, 2026-11-23). The edition pages still tell the two apart.
+def _counts_text(cars: int, editions: int) -> str:
+    return f"{_n(cars, 'car')} at {_n(editions, 'event')}"
 
 
 def _event_line(latest: dict, rows: list[dict]) -> dict:
@@ -36,11 +30,7 @@ def _event_line(latest: dict, rows: list[dict]) -> dict:
     so an upcoming edition with its own list keeps its date) and the browser picks the next.
     """
     r, n = latest["row"], latest["count"]
-    if latest["entry"]:
-        text = f"{n} on the provisional entry list" if r["list_provisional"] else f"{n} at the {r['label']} edition"
-    else:
-        text = f"{_n(n, 'model')} on display" + (", provisional" if r["list_provisional"]
-                                                  else f" at the {r['label']} edition")
+    text = f"{n} on the provisional entry list" if r["list_provisional"] else f"{n} at the {r['label']} event"
     dates = [{"start": d["ed"]["start"], "end": d["ed"]["end"],
               "text": fmt_span(d["ed"]["start"], d["ed"]["end"], year=True)
                       + (" (dates not confirmed)" if d["ed"]["status"] == "tentative" else "")}
@@ -83,22 +73,17 @@ def group_pages(rows: list[dict], groups: dict[str, list[str]]) -> list[dict]:
         for r in rows:
             n = sum(1 for car in r["cars"] or [] if owner.get(car["make"], car["make"]) == name)
             if n:
-                entry = _is_entry_list(r)
-                lists.append({"row": r, "count": n, "entry": entry,
-                              "when": fmt_span(r["ed"]["start"], r["ed"]["end"], year=True),
-                              "text": _n(n, "car") if entry else f"{_n(n, 'model')} on display"})
+                lists.append({"row": r, "count": n, "when": fmt_span(r["ed"]["start"], r["ed"]["end"], year=True),
+                              "text": _n(n, "car")})
         lists.reverse()
         latest_by_event: dict[str, dict] = {}
         for x in lists:  # newest first, so the first seen per event is its latest
             latest_by_event.setdefault(x["row"]["slug"], x)
         events = sorted((_event_line(x, rows) for x in latest_by_event.values()),
                         key=lambda line: line["ev"]["name_en"].casefold())
-        entries = [x for x in lists if x["entry"]]
-        shows = [x for x in lists if not x["entry"]]
         pages.append({"name": name, "slug": slug, "title": title, "members": members, "path": f"cars/{slug}/",
                       "verified": verified[name], "lists": lists, "events": events,
-                      "totals": _counts_text(sum(x["count"] for x in entries), len(entries),
-                                             sum(x["count"] for x in shows), len(shows)),
+                      "totals": _counts_text(sum(x["count"] for x in lists), len(lists)),
                       "description": f"Classic car events in Japan where {title} cars have run, from published "
                                      f"entry lists, with each event's next date."})
     return sorted(pages, key=lambda page: page["slug"])
@@ -108,14 +93,12 @@ def make_index(rows: list[dict], makes: dict, groups: dict[str, list[str]], page
     """One line per make on any list, A to Z, pointing to its group's page where one exists."""
     owner = _group_of(groups)
     page_of = {page["name"]: page for page in pages}
-    tally: dict[str, list] = {}  # make: [cars, their editions, models, their editions]
+    tally: dict[str, list] = {}  # make: [cars, editions]
     for r in rows:
-        entry = r["cars"] and _is_entry_list(r)
         for make in {car["make"] for car in r["cars"] or []}:
-            counts = tally.setdefault(make, [0, 0, 0, 0])
-            at = 0 if entry else 2
-            counts[at] += sum(1 for car in r["cars"] if car["make"] == make)
-            counts[at + 1] += 1
+            counts = tally.setdefault(make, [0, 0])
+            counts[0] += sum(1 for car in r["cars"] if car["make"] == make)
+            counts[1] += 1
     lines = []
     for make in sorted(set(tally) - NO_LINE, key=str.casefold):
         name = owner.get(make, make)

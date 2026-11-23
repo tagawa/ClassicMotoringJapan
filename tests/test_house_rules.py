@@ -6,8 +6,11 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from markupsafe import escape
+
 from helpers import CARS, instance_yaml, make_fixture, ROOT, ROUTE, temp_dir, write_event, write_instance
 import build  # noqa: E402
+import validate  # noqa: E402
 
 
 class BritishSpellingTests(unittest.TestCase):
@@ -19,6 +22,50 @@ class BritishSpellingTests(unittest.TestCase):
             text = re.sub(r"\{\{.*?\}\}|\{%.*?%\}", "", path.read_text(encoding="utf-8"))
             self.assertNotRegex(text, r"(?i)organiz", path.name)
 
+
+class EventNotEditionTests(unittest.TestCase):
+    """Visitors read "event", never "edition" (owner, 2026-11-23; spec section 7)."""
+
+    @classmethod
+    def setUpClass(cls):
+        tmp = temp_dir(cls)
+        cls.sites = {}
+        # The real data reaches the step links, videos, photo captions and /cars/; the fixture,
+        # a cancelled edition, which the real data may lack.
+        fixture = tmp / "data"
+        make_fixture(fixture)
+        for name, data in (("real", ROOT / "data"), ("fixture", fixture)):
+            build.build(data, tmp / name)
+            # A car model is the maker's name ("Limited Edition"), not the site's wording.
+            models = {car["model"] for item in validate.load_and_validate(data)[1]
+                      for car in item["data"].get("cars") or []}
+            cls.sites[name] = (tmp / name, models)
+
+    @staticmethod
+    def visible(html: str, models: set) -> str:
+        html = re.sub(r"<(script|style)\b.*?</\1>", " ", html, flags=re.S)
+        # Whole cells only: Mitsubishi's model "i" would otherwise delete every letter i.
+        for model in models:
+            html = html.replace(f"<td>{escape(model)}</td>", "<td></td>")
+        labels = re.findall(r'\b(?:aria-label|title|alt|content)="([^"]*)"', html)
+        return " ".join([re.sub(r"<[^>]+>", " ", html)] + labels)
+
+    def test_no_page_says_edition(self):
+        for name, (site, models) in self.sites.items():
+            pages = sorted(site.rglob("*.html"))
+            self.assertGreater(len(pages), 5, name)
+            found = [f"{name}: {page.relative_to(site)}: {match.group(0)!r}"
+                     for page in pages
+                     for match in re.finditer(r"[^.<>\n]{0,40}\beditions?\b[^.<>\n]{0,20}",
+                                              self.visible(page.read_text(encoding="utf-8"), models), re.I)]
+            self.assertEqual(found[:10], [], f"{len(found)} in all")
+
+    def test_the_check_can_fire(self):
+        self.assertRegex(self.visible('<nav aria-label="Other editions"><p>Next edition</p></nav>', set()),
+                         r"(?i)\beditions?\b")
+        self.assertNotRegex(self.visible("<td>Roadster Limited Edition</td>", {"Roadster Limited Edition", "i"}),
+                            r"(?i)\bedition\b")
+        self.assertRegex(self.visible("<p>Next edition</p><td>i</td>", {"i"}), r"Next edition")
 
 # Hand-written folders. tools/, video/ and .claude/ are local only, so on Actions they are
 # absent and skipped; data/ is checked by the build itself.

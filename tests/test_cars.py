@@ -148,7 +148,7 @@ class GroupPageTests(CarsSiteCase):
 
 
 class CountsTests(CarsSiteCase):
-    """A display list names models, not cars, so its count is kept apart (spec section 5)."""
+    """A display list's models count as cars, one each, on /cars/ (spec section 5)."""
     LISTS = (("rally-a", 2025, ["Lotus", "Lotus", "Nissan", "Nissan", "Nissan"]),
              ("show-b", 2026, [("Lotus", "Elan"), ("Lotus", "Europa"), ("Lotus", "Seven"), ("Ford", "Model A"),
                                ("Ford", "Model T"), ("Ford", "Anglia"), ("Datsun", "Fairlady")]),
@@ -156,30 +156,31 @@ class CountsTests(CarsSiteCase):
              ("rally-c", 2026, ["Nissan", "Datsun"],
               {"day": "2026-06-14", "as_of": "2026-05-01", "verified": "2026-05-01"}))
 
-    def test_index_models_never_added_into_cars(self):
+    def test_index_counts_models_as_cars(self):
+        # 2 cars at rally-a and 3 models at show-b.
         line = text_of(self.index_line("Lotus"))
-        # Both Lotus cars are at rally-a; show-b is a display edition, never one of the cars'.
-        self.assertIn("Lotus : 2 cars at 1 edition, and 3 models on display at 1 edition.", line)
-        self.assertNotIn("5 cars", line)
+        self.assertIn("Lotus : 5 cars at 2 events.", line)
+        self.assertNotIn("model", line)
 
     def test_index_display_only_make(self):
-        self.assertIn("Ford : 3 models on display at 1 edition.", text_of(self.index_line("Ford")))
+        self.assertIn("Ford : 3 cars at 1 event.", text_of(self.index_line("Ford")))
 
     def test_index_flag_from_makes_yml(self):
         self.assertIn('xlink:href="#flag-gb"', self.index_line("Lotus"))
         self.assertNotIn('class="flag"', self.index_line("Ford"))
         self.assertEqual(self.page("cars/index.html").count('<g id="flag-gb">'), 1)
 
-    def test_group_totals_models_never_added(self):
+    def test_group_totals_count_models_as_cars(self):
         # Also proves the display list counts towards the 3-edition bar: the page exists.
-        self.assertIn("5 cars at 2 editions, and 1 model on display at 1 edition",
-                      text_of(self.page("cars/nissan/index.html")))
+        text = text_of(self.page("cars/nissan/index.html"))
+        self.assertIn("6 cars at 3 events.", text)
+        self.assertNotIn("model", text)
 
     def test_two_members_at_one_edition_count_once(self):
-        # rally-c has both Nissan and Datsun: counted twice, the totals would say 3 editions.
+        # rally-c has both Nissan and Datsun: counted twice, the totals would say 4 editions.
         text = text_of(self.page("cars/nissan/index.html"))
-        self.assertIn("5 cars at 2 editions", text)
-        self.assertNotIn("at 3 editions", text)
+        self.assertIn("6 cars at 3 events", text)
+        self.assertNotIn("at 4 events", text)
 
     def entry_rows(self) -> dict:
         html = self.page("cars/nissan/index.html")
@@ -197,7 +198,7 @@ class CountsTests(CarsSiteCase):
         rows = self.entry_rows()
         self.assertEqual(list(rows), ["Rally C", "Show B", "Rally A"])
         self.assertIn("3 cars", rows["Rally A"])
-        self.assertIn("1 model on display", rows["Show B"])
+        self.assertIn("1 car", rows["Show B"])
 
     def test_display_table_make_links_too(self):
         self.assertIn('<a href="../../../cars/nissan/">Datsun</a></td>', self.page("events/show-b/2026/index.html"))
@@ -295,11 +296,12 @@ class EventsSectionTests(unittest.TestCase):
                                             "show-event", "tentative-next"])
 
     def test_count_from_latest_list_including_group(self):
-        self.assertIn("1 at the 2025 edition", text_of(self.lines["older-list"]))
+        self.assertIn("1 at the 2025 event", text_of(self.lines["older-list"]))
         self.assertIn('href="../../events/older-list/2025/"', self.lines["older-list"])
 
     def test_display_count_text(self):
-        self.assertIn("3 models on display at the Spring 2026 edition", text_of(self.lines["show-event"]))
+        self.assertIn("3 at the Spring 2026 event", text_of(self.lines["show-event"]))
+        self.assertNotIn("model", text_of(self.lines["show-event"]))
 
     def test_dates_carry_their_first_and_last_day(self):
         self.assertEqual(self.dates("cancelled-later")[0][:2], ("2026-05-10", "2026-05-10"))

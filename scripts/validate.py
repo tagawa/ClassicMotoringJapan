@@ -69,6 +69,8 @@ AMERICAN_SPELLINGS = {
 AMERICAN_RE = re.compile(r"\b(" + "|".join(AMERICAN_SPELLINGS) + r")\b", re.IGNORECASE)
 # Proper names spelt the American way, which the spelling check skips.
 AMERICAN_SPELLING_NAMES = ("Hiruzen Kogen Center",)
+# Visitors read "event" for one running of an event; enthusiasts don't say edition (owner, 2026-11-23).
+EDITION_RE = re.compile(r"\beditions?\b", re.IGNORECASE)
 
 EVENT_REQUIRED = {
     "slug": "str", "name_en": "str", "official_url": "url",
@@ -301,6 +303,10 @@ def _check_fields(obj, required: dict, optional: dict, where: str, errors: list[
             for value in values:
                 if isinstance(value, str):
                     _check_house_style(value, f"{where}: {key}", errors)
+                    # A car's make and model are the maker's names ("Limited Edition"), not ours.
+                    if key not in ("make", "model") and EDITION_RE.search(value):
+                        errors.append(f"{where}: {key}: write 'event', not 'edition'; an ordinal takes "
+                                      f"the event's own noun ('the 20th rally')")
     return True
 
 
