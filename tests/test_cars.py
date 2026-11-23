@@ -1,5 +1,6 @@
 """The cars section: /cars/ and one page per make group (spec 4.11 and section 5)."""
 
+import json
 import re
 import tempfile
 import unittest
@@ -94,6 +95,40 @@ class GroupPageTests(CarsSiteCase):
         html = self.page("cars/nissan/index.html")
         self.assertIn("<title>Nissan and Datsun at classic car events in Japan</title>", html)
         self.assertRegex(html, r"<h1>Nissan and Datsun</h1>")
+
+    def test_trail_home_cars_title(self):
+        nav = re.search(r'(?s)<nav class="breadcrumbs" aria-label="Breadcrumb">(.*?)</nav>',
+                        self.page("cars/nissan/index.html")).group(1)
+        items = re.findall(r"<li>(.*?)</li>", nav, re.S)
+        self.assertEqual(len(items), 3)
+        self.assertIn('<a href="../../">Home</a>', items[0])
+        self.assertIn('<a href="../../cars/">Cars</a>', items[1])
+        self.assertIn('<span aria-current="page">Nissan and Datsun</span>', items[2])
+        self.assertNotIn("<a ", items[2])
+
+    def test_trail_comes_before_the_heading(self):
+        html = self.page("cars/nissan/index.html")
+        self.assertLess(html.index('class="breadcrumbs"'), html.index("<h1>"))
+
+    def test_breadcrumb_jsonld_matches_the_trail(self):
+        html = self.page("cars/nissan/index.html")
+        blocks = [json.loads(b) for b in re.findall(r'(?s)<script type="application/ld\+json">(.*?)</script>', html)]
+        crumbs = [b for b in blocks if b.get("@type") == "BreadcrumbList"]
+        self.assertEqual(len(crumbs), 1)
+        self.assertEqual(crumbs[0]["itemListElement"], [
+            {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://classicmotoringjapan.com/"},
+            {"@type": "ListItem", "position": 2, "name": "Cars", "item": "https://classicmotoringjapan.com/cars/"},
+            {"@type": "ListItem", "position": 3, "name": "Nissan and Datsun"}])
+
+    def test_cars_index_has_no_trail(self):
+        html = self.page("cars/index.html")
+        self.assertNotIn('class="breadcrumbs"', html)
+        self.assertNotIn("BreadcrumbList", html)
+
+    def test_lede_gives_cars_and_entry_lists(self):
+        # 2 Nissan at meet-a, 3 Datsun at meet-b, 1 Nissan Diesel at meet-c.
+        self.assertRegex(self.page("cars/nissan/index.html"),
+                         r"<h1>Nissan and Datsun</h1>\s*<p>6 cars on 3 entry lists\.</p>")
 
     def test_single_car_member_left_out_of_title(self):
         html = self.page("cars/nissan/index.html")
@@ -248,18 +283,19 @@ class CountsTests(CarsSiteCase):
     def test_group_totals_count_models_as_cars(self):
         # Also proves the display list counts towards the 3-edition bar: the page exists.
         text = text_of(self.page("cars/nissan/index.html"))
-        self.assertIn("6 cars at 3 events.", text)
+        self.assertIn("6 cars on 3 entry lists.", text)
         self.assertNotIn("model", text)
 
     def test_two_members_at_one_edition_count_once(self):
         # rally-c has both Nissan and Datsun: counted twice, the totals would say 4 editions.
         text = text_of(self.page("cars/nissan/index.html"))
-        self.assertIn("6 cars at 3 events", text)
-        self.assertNotIn("at 4 events", text)
+        self.assertIn("6 cars on 3 entry lists", text)
+        self.assertNotIn("on 4 entry lists", text)
 
     def entry_rows(self) -> dict:
         html = self.page("cars/nissan/index.html")
-        rows = re.findall(r"<tr>.*?</tr>", html.split('id="entry-lists"', 1)[1], re.S)
+        folded = re.search(r'(?s)<details class="all-cars">\s*<summary>(.*?)</summary>(.*?)</details>', html)
+        rows = re.findall(r"<tr>.*?</tr>", folded.group(2), re.S)
         return {re.search(r">(Rally A|Show B|Rally C) ", row).group(1): text_of(row) for row in rows[1:]}
 
     def test_entry_lists_table_marks_provisional(self):
@@ -268,6 +304,12 @@ class CountsTests(CarsSiteCase):
         self.assertIn("provisional", rows["Rally C"])
         self.assertNotIn("provisional", rows["Rally A"])
         self.assertNotIn("provisional", rows["Show B"])
+
+    def test_entry_lists_folded_under_a_count(self):
+        html = self.page("cars/nissan/index.html")
+        self.assertRegex(html, r'<details class="all-cars">\s*<summary>All 3 entry lists</summary>')
+        self.assertNotIn('id="entry-lists"', html)
+        self.assertEqual(html.count('<details class="all-cars">'), 1)
 
     def test_entry_lists_newest_first_with_counts(self):
         rows = self.entry_rows()
@@ -336,20 +378,39 @@ class EventsSectionTests(unittest.TestCase):
                 write_edition(data, slug, stem, day, status=status, cars=cars, as_of=as_of, verified=verified)
         build.build(data, cls.tmp / "site")
         cls.html = (cls.tmp / "site/cars/nissan/index.html").read_text(encoding="utf-8")
-        section = cls.html.split('id="events"', 1)[1].split("</ul>", 1)[0]
-        cls.lines = {re.search(r'events/([a-z-]+)/"', item).group(1): item
-                     for item in re.findall(r'<li class="event-line">.*?</li>', section, re.S)}
+        section = cls.html.split('<h2 id="next-dates">', 1)[1].split("</table>", 1)[0]
+        cls.head = re.search(r"(?s)<thead>(.*?)</thead>", section).group(1)
+        cls.lines = {re.search(r'events/([a-z-]+)/"', row).group(1): row
+                     for row in re.findall(r"<tr>.*?</tr>", section.split("<tbody>", 1)[1], re.S)}
 
 
     def dates(self, slug: str) -> list[tuple]:
         return re.findall(r'<span class="next-date" data-start="([\d-]+)" data-ends="([\d-]+)">([^<]*)</span>',
                           self.lines[slug])
 
+    def cells(self, slug: str) -> list[str]:
+        return [text_of(cell).strip() for cell in re.findall(r"<td>(.*?)</td>", self.lines[slug], re.S)]
+
     def test_heading_names_the_group(self):
-        self.assertRegex(self.html, r'<h2 id="events">Events where Nissan and Datsun cars have run</h2>')
+        self.assertRegex(self.html, r'<h2 id="next-dates">Events where Nissan and Datsun cars have run</h2>')
+
+    def test_first_table_columns(self):
+        self.assertEqual(re.findall(r'<th scope="col">(.*?)</th>', self.head), ["Event", "Next date", "Cars, latest list"])
+
+    def test_second_table_hidden_and_empty_without_script(self):
+        self.assertIn('<h2 id="no-date" hidden>No date announced yet</h2>', self.html)
+        rest = self.html.split('<h2 id="no-date" hidden>', 1)[1].split("</table>", 1)[0]
+        self.assertRegex(rest, r'^No date announced yet</h2>\s*<div class="table-wrap"[^>]* id="undated-events" hidden>')
+        self.assertEqual(re.findall(r'<th scope="col">(.*?)</th>', rest), ["Event", "Cars, latest list"])
+        self.assertNotIn("<td", rest)
+
+    def test_one_table_holds_every_event_and_date(self):
+        self.assertEqual(len(self.lines), 6)
+        # own-date 1, cancelled-later 2, tentative-next 3, older-list 2 (from its 2025 list on), show-event 1.
+        self.assertEqual(self.html.count('class="next-date"'), 9)
 
     def test_upcoming_list_shows_its_own_date(self):
-        self.assertIn("3 on the provisional entry list", text_of(self.lines["own-date"]))
+        self.assertEqual(self.cells("own-date")[2], "3 in 2027, provisional")
         self.assertEqual([d[1] for d in self.dates("own-date")], ["2027-05-09"])
 
     def test_cancelled_later_edition_is_skipped(self):
@@ -373,11 +434,12 @@ class EventsSectionTests(unittest.TestCase):
                                             "show-event", "tentative-next"])
 
     def test_count_from_latest_list_including_group(self):
-        self.assertIn("1 at the 2025 event", text_of(self.lines["older-list"]))
+        self.assertEqual(self.cells("older-list")[2], "1 in 2025")
         self.assertIn('href="../../events/older-list/2025/"', self.lines["older-list"])
 
     def test_display_count_text(self):
-        self.assertIn("3 at the Spring 2026 event", text_of(self.lines["show-event"]))
+        self.assertEqual(self.cells("show-event")[2], "3 in Spring 2026")
+        self.assertEqual(self.cells("cancelled-later")[2], "1 in 2026")
         self.assertNotIn("model", text_of(self.lines["show-event"]))
 
     def test_dates_carry_their_first_and_last_day(self):

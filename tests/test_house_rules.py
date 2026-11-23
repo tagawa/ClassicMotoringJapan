@@ -236,7 +236,9 @@ class ScrollableTableTests(unittest.TestCase):
         self.assertGreater(len(boxes), 3)
         for name, box in boxes:
             with self.subTest(page=name, box=box):
-                self.assertRegex(box, r'^<div class="table-wrap" tabindex="0" role="region" aria-label="[^"]+">$')
+                # A script may need the box by id, and may keep it hidden until it has rows (make pages).
+                self.assertRegex(box, r'^<div class="table-wrap" tabindex="0" role="region" aria-label="[^"]+"'
+                                      r'( id="[a-z-]+")?( hidden)?>$')
 
     def test_each_box_is_named_after_what_it_holds(self):
         self.assertIn('<div class="table-wrap" tabindex="0" role="region" aria-label="Dates">',

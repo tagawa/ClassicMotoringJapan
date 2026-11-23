@@ -134,7 +134,9 @@ def build(data_dir: Path, out_dir: Path,
                 title=f"{r['full_name']}: {r['parts_phrase']}",
                 description=edition_description(r),
                 ev=ev, r=r, ed=ed, photo=photo_info(ev), og_image=og[r["path"]], make_pages=make_pages,
-                jsonld=[block for block in (r["jsonld"], build_breadcrumbs(r)) if block]))
+                jsonld=[block for block in (r["jsonld"], build_breadcrumbs([
+                    ("Home", f"{SITE_URL}/"), (ev["name_en"], f"{SITE_URL}/events/{slug}/"), (r["label"], None)]))
+                        if block]))
             sitemap.append((r["abs_url"], ed["last_verified"]))
 
     write("about/index.html", env.get_template("about.html").render(
@@ -155,7 +157,8 @@ def build(data_dir: Path, out_dir: Path,
         write(f"{page['path']}index.html", env.get_template("car_group.html").render(
             **common, root="../../", canonical=f"{SITE_URL}/{page['path']}",
             title=f"{page['title']} at classic car events in Japan", description=page["description"],
-            og_image=og["site"], page=page, latest=page["verified"], jsonld=[]))
+            og_image=og["site"], page=page, latest=page["verified"], jsonld=[build_breadcrumbs([
+                ("Home", f"{SITE_URL}/"), ("Cars", f"{SITE_URL}/cars/"), (page["title"], None)])]))
         sitemap.append((f"{SITE_URL}/{page['path']}", page["verified"]))
 
     # Pages serves this for a missing path at any depth, so links must be root-absolute.

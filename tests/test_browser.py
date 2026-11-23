@@ -281,7 +281,7 @@ class YearStripTest(unittest.TestCase):
 
 @unittest.skipIf(sync_playwright is None, "playwright not installed")
 class NextDateTest(unittest.TestCase):
-    """A make page shows each event's next date by Japan's date, soonest first (spec section 5)."""
+    """A make page splits its events by whether a date is still to come in Japan (spec section 5)."""
 
     @classmethod
     def setUpClass(cls):
@@ -314,51 +314,69 @@ class NextDateTest(unittest.TestCase):
         cls.browser.close()
         cls.pw.stop()
 
-    def lines_at(self, utc_instant: str) -> list[tuple]:
-        """(event, visible dates, placeholder visible) per line, in the order shown."""
+    def tables_at(self, utc_instant: str) -> dict:
+        """Each heading's text and visibility, and each table's rows as (event, visible dates, cell count)."""
         ctx = self.browser.new_context(timezone_id="Europe/London")
         page = ctx.new_page()
         page.clock.set_fixed_time(utc_instant)
         page.goto(self.url)
-        lines = [(li.locator("a").first.inner_text(), li.locator(".next-date:visible").all_inner_texts(),
-                  li.locator(".no-next").is_visible())
-                 for li in page.locator("li.event-line").all()]
+        found = {}
+        for key, box in (("next-dates", "dated-events"), ("no-date", "undated-events")):
+            heading, wrap = page.locator(f"#{key}"), page.locator(f"#{box}")
+            rows = [(tr.locator("a").first.inner_text(), tr.locator(".next-date:visible").all_inner_texts(),
+                     tr.locator("td").count())
+                    for tr in wrap.locator("tbody tr").all()]
+            found[key] = (heading.inner_text() if heading.is_visible() else None, wrap.is_visible(), rows)
         ctx.close()
-        return lines
+        return found
 
-    def line(self, lines, name):
-        return next(item for item in lines if item[0] == name)
+    def row(self, rows, name):
+        return next(item for item in rows if item[0] == name)
+
+    def test_first_table_holds_dated_events_soonest_first(self):
+        heading, shown, rows = self.tables_at("2026-12-01T03:00:00Z")["next-dates"]
+        self.assertEqual((heading, shown), ("Next dates", True))
+        self.assertEqual([item[0] for item in rows], ["Charlie", "Foxtrot", "Bravo", "Echo"])
 
     def test_shows_first_date_not_ended(self):
-        lines = self.lines_at("2026-12-01T03:00:00Z")
-        self.assertEqual(self.line(lines, "Bravo")[1:], (["Sat 8 May 2027"], False))
-        self.assertEqual(self.line(lines, "Echo")[1:], (["Sat 1 Apr 2028"], False))
+        rows = self.tables_at("2026-12-01T03:00:00Z")["next-dates"][2]
+        self.assertEqual(self.row(rows, "Bravo")[1:], (["Sat 8 May 2027"], 3))
+        self.assertEqual(self.row(rows, "Echo")[1:], (["Sat 1 Apr 2028"], 3))
 
-    def test_no_edition_left_says_not_announced(self):
-        lines = self.lines_at("2026-12-01T03:00:00Z")
-        self.assertEqual(self.line(lines, "Alpha")[1:], ([], True))
-        self.assertEqual(self.line(lines, "Delta")[1:], ([], True))
-
-    def test_sorts_soonest_first_then_a_to_z(self):
-        self.assertEqual([item[0] for item in self.lines_at("2026-12-01T03:00:00Z")],
-                         ["Charlie", "Foxtrot", "Bravo", "Echo", "Alpha", "Delta"])
+    def test_undated_events_move_to_second_table_a_to_z(self):
+        heading, shown, rows = self.tables_at("2026-12-01T03:00:00Z")["no-date"]
+        self.assertEqual((heading, shown), ("No date announced yet", True))
+        # Their Next date cell is gone, matching the second table's two columns.
+        self.assertEqual(rows, [("Alpha", [], 2), ("Delta", [], 2)])
 
     def test_same_next_date_keeps_a_to_z(self):
         # Passes without the script too, since the build's order is A to Z: a guard on the final order.
-        names = [item[0] for item in self.lines_at("2026-12-01T03:00:00Z")]
+        names = [item[0] for item in self.tables_at("2026-12-01T03:00:00Z")["next-dates"][2]]
         self.assertLess(names.index("Charlie"), names.index("Foxtrot"))
 
     def test_still_shown_on_last_day_in_japan(self):
         # 23:30 on 14 March in Japan: Charlie's second day is still running.
-        lines = self.lines_at("2027-03-14T14:30:00Z")
-        self.assertEqual(self.line(lines, "Charlie")[1:], (["Sat 13 to Sun 14 Mar 2027"], False))
+        rows = self.tables_at("2027-03-14T14:30:00Z")["next-dates"][2]
+        self.assertEqual(self.row(rows, "Charlie")[1:], (["Sat 13 to Sun 14 Mar 2027"], 3))
 
     def test_date_drops_once_ended_in_japan(self):
         # 00:30 on 15 March in Japan.
-        lines = self.lines_at("2027-03-14T15:30:00Z")
-        self.assertEqual(self.line(lines, "Charlie")[1:], ([], True))
-        self.assertEqual([item[0] for item in lines], ["Bravo", "Echo", "Alpha", "Charlie", "Delta", "Foxtrot"])
+        tables = self.tables_at("2027-03-14T15:30:00Z")
+        self.assertEqual([item[0] for item in tables["next-dates"][2]], ["Bravo", "Echo"])
+        self.assertEqual([item[0] for item in tables["no-date"][2]], ["Alpha", "Charlie", "Delta", "Foxtrot"])
 
+    def test_every_event_dated_leaves_second_table_hidden(self):
+        # 1 March 2026: every event's 2026 date is still to come.
+        tables = self.tables_at("2026-03-01T03:00:00Z")
+        self.assertEqual(len(tables["next-dates"][2]), 6)
+        self.assertEqual(tables["no-date"][:2], (None, False))
+
+    def test_no_event_dated_hides_first_table(self):
+        # After Echo's 2028 date, nothing is left to come.
+        tables = self.tables_at("2028-05-01T03:00:00Z")
+        self.assertEqual(tables["next-dates"][:2], (None, False))
+        self.assertEqual(tables["no-date"][:2], ("No date announced yet", True))
+        self.assertEqual(len(tables["no-date"][2]), 6)
 
 
 @unittest.skipIf(sync_playwright is None, "playwright not installed")

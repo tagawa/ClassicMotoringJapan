@@ -19,8 +19,9 @@ def _n(count: int, word: str) -> str:
 
 # A show's announced model counts as one car here: a visitor finding two where one was
 # announced won't mind (owner, 2026-11-23). The edition pages still tell the two apart.
-def _counts_text(cars: int, editions: int) -> str:
-    return f"{_n(cars, 'car')} at {_n(editions, 'event')}"
+# Entry lists, not events: the page lists fewer events than lists, and "at 22 events" read against them.
+def _counts_text(cars: int, lists: int) -> str:
+    return f"{_n(cars, 'car')} on {_n(lists, 'entry list')}"
 
 
 def _event_line(latest: dict, rows: list[dict]) -> dict:
@@ -30,7 +31,7 @@ def _event_line(latest: dict, rows: list[dict]) -> dict:
     so an upcoming edition with its own list keeps its date) and the browser picks the next.
     """
     r, n = latest["row"], latest["count"]
-    text = f"{n} on the provisional entry list" if r["list_provisional"] else f"{n} at the {r['label']} event"
+    text = f"{n} in {r['label']}" + (", provisional" if r["list_provisional"] else "")
     dates = [{"start": d["ed"]["start"], "end": d["ed"]["end"],
               "text": fmt_span(d["ed"]["start"], d["ed"]["end"], year=True)
                       + (" (dates not confirmed)" if d["ed"]["status"] == "tentative" else "")}
@@ -85,6 +86,8 @@ def group_pages(rows: list[dict], groups: dict[str, list[str]]) -> list[dict]:
                       "path": f"cars/{slug}/",
                       "verified": verified[name], "lists": lists, "events": events,
                       "totals": _counts_text(sum(x["count"] for x in lists), len(lists)),
+                      # As the edition page folds its cars: "1 car" alone, "All 3 cars" otherwise.
+                      "lists_summary": f"All {len(lists)} entry lists" if len(lists) > 1 else "1 entry list",
                       "description": f"Classic car events in Japan where {title} cars have run, from published "
                                      f"entry lists, with each event's next date."})
     return sorted(pages, key=lambda page: page["slug"])

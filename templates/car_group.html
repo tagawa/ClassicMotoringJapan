@@ -1,16 +1,38 @@
 {% extends "base.html" %}
 {% block main %}
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="{{ root }}">Home</a></li>
+    <li><span class="sep" aria-hidden="true">›</span><a href="{{ root }}cars/">Cars</a></li>
+    <li><span class="sep" aria-hidden="true">›</span><span aria-current="page">{{ page.title }}</span></li>
+  </ol>
+</nav>
 <h1>{{ page.title }}</h1>
-
-<h2 id="events">Events where {{ page.title }} cars have run</h2>
-<ul class="event-lines">
-{% for line in page.events %}
-  <li class="event-line"><a href="{{ root }}events/{{ line.slug }}/">{{ line.ev.name_en }}</a>: <a href="{{ root }}{{ line.row.path }}">{{ line.text }}</a>. <span class="next-dates">{% for d in line.dates %}{% if not loop.first %}<span class="date-sep">; </span>{% endif %}<span class="next-date" data-start="{{ d.start.isoformat() }}" data-ends="{{ d.end.isoformat() }}">{{ d.text }}</span>{% endfor %}</span><span class="no-next"{% if line.dates %} hidden{% endif %}>Next date not announced</span></li>
-{% endfor %}
-</ul>
-
-<h2 id="entry-lists">Entry lists</h2>
 <p>{{ page.totals }}.</p>
+
+{# One table, every date: the script keeps each event's next date and moves the rest to the second table. #}
+<h2 id="next-dates">Events where {{ page.title }} cars have run</h2>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Next dates" id="dated-events">
+  <table>
+    <thead><tr><th scope="col">Event</th><th scope="col">Next date</th><th scope="col">Cars, latest list</th></tr></thead>
+    <tbody>
+{% for line in page.events %}
+      <tr><td><a href="{{ root }}events/{{ line.slug }}/">{{ line.ev.name_en }}</a></td><td>{% for d in line.dates %}{% if not loop.first %}<span class="date-sep">; </span>{% endif %}<span class="next-date" data-start="{{ d.start.isoformat() }}" data-ends="{{ d.end.isoformat() }}">{{ d.text }}</span>{% endfor %}<span class="no-next"{% if line.dates %} hidden{% endif %}>Next date not announced</span></td><td><a href="{{ root }}{{ line.row.path }}">{{ line.text }}</a></td></tr>
+{% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<h2 id="no-date" hidden>No date announced yet</h2>
+<div class="table-wrap" tabindex="0" role="region" aria-label="No date announced yet" id="undated-events" hidden>
+  <table>
+    <thead><tr><th scope="col">Event</th><th scope="col">Cars, latest list</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<details class="all-cars">
+<summary>{{ page.lists_summary }}</summary>
 <div class="table-wrap" tabindex="0" role="region" aria-label="Entry lists">
   <table>
     <thead><tr><th scope="col">Event</th><th scope="col">Date</th><th scope="col">Count</th></tr></thead>
@@ -21,40 +43,53 @@
     </tbody>
   </table>
 </div>
+</details>
 
 <p>Counts come only from events whose organisers publish entry lists.</p>
 {% endblock %}
 
 {% block scripts %}
-{# The build never reads the clock: it renders every date from each counted edition on,
-   and this keeps the first whose last day has not ended in Japan, then sorts soonest first. #}
+{# The build never reads the clock: it renders every date from each counted edition on. This keeps
+   the first whose last day has not ended in Japan, sorts those rows soonest first, and moves rows
+   with no date left to the second table, A to Z as built. #}
 <script>
   (function () {
-    var list = document.querySelector("ul.event-lines");
-    if (!list) return;
+    var heading = document.getElementById("next-dates"), restHeading = document.getElementById("no-date");
+    var dated = document.getElementById("dated-events"), undated = document.getElementById("undated-events");
+    if (!heading || !restHeading || !dated || !undated) return;
+    var body = dated.getElementsByTagName("tbody")[0], restBody = undated.getElementsByTagName("tbody")[0];
     var todayInJapan = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
-    var items = list.getElementsByTagName("li"), lines = [], i, j;
-    for (i = 0; i < items.length; i++) {
-      var li = items[i], dates = li.querySelectorAll(".next-date"), seps = li.querySelectorAll(".date-sep"), next = null;
+    var rows = body.getElementsByTagName("tr"), lines = [], rest = [], i, j;
+    for (i = 0; i < rows.length; i++) {
+      var tr = rows[i], dates = tr.querySelectorAll(".next-date"), seps = tr.querySelectorAll(".date-sep"), next = null;
       for (j = 0; j < dates.length; j++) {
         if (next || dates[j].getAttribute("data-ends") < todayInJapan) dates[j].setAttribute("hidden", "");
         else next = dates[j];
       }
       for (j = 0; j < seps.length; j++) seps[j].setAttribute("hidden", "");
-      if (next) li.querySelector(".no-next").setAttribute("hidden", "");
-      else li.querySelector(".no-next").removeAttribute("hidden");
-      lines.push({ li: li, start: next ? next.getAttribute("data-start") : null, at: i });
+      if (next) lines.push({ tr: tr, start: next.getAttribute("data-start"), at: i });
+      else rest.push(tr);
     }
     lines.sort(function (a, b) {
-      if (a.start !== b.start) {
-        if (a.start === null) return 1;
-        if (b.start === null) return -1;
-        return a.start < b.start ? -1 : 1;
-      }
+      if (a.start !== b.start) return a.start < b.start ? -1 : 1;
       // Ties keep the build's A to Z order; old engines' sort is not stable.
       return a.at - b.at;
     });
-    for (i = 0; i < lines.length; i++) list.appendChild(lines[i].li);
+    for (i = 0; i < lines.length; i++) body.appendChild(lines[i].tr);
+    for (i = 0; i < rest.length; i++) {
+      // The second table has no Next date column.
+      rest[i].removeChild(rest[i].getElementsByTagName("td")[1]);
+      restBody.appendChild(rest[i]);
+    }
+    heading.textContent = "Next dates";
+    if (!lines.length) {
+      heading.setAttribute("hidden", "");
+      dated.setAttribute("hidden", "");
+    }
+    if (rest.length) {
+      restHeading.removeAttribute("hidden");
+      undated.removeAttribute("hidden");
+    }
   })();
 </script>
 {% endblock %}

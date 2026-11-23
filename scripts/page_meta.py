@@ -59,11 +59,8 @@ def build_website_jsonld() -> Markup:
                           "name": SITE_NAME, "url": f"{SITE_URL}/"})
 
 
-def build_breadcrumbs(r: dict) -> Markup:
-    """The edition page's trail. The last entry is the page itself, so it carries no link."""
-    items = [("Home", f"{SITE_URL}/"),
-             (r["ev"]["name_en"], f"{SITE_URL}/events/{r['slug']}/"),
-             (r["label"], None)]
+def build_breadcrumbs(items: list[tuple[str, str | None]]) -> Markup:
+    """A page's trail as (name, absolute URL) pairs. The last is the page itself, so its URL is None."""
     return jsonld_markup({
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
