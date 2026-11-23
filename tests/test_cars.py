@@ -147,6 +147,48 @@ class GroupPageTests(CarsSiteCase):
         self.assertLess(llms.index("## Events"), llms.index("## Cars"))
 
 
+class MakeStripLinkTests(CarsSiteCase):
+    # meet-b's make strip: Nissan (has a page), Datsun (grouped under Nissan), Lotus (no page),
+    # then a closing line for Ford.
+    LISTS = (("meet-a", 2025, ["Nissan", "Nissan"]),
+             ("meet-b", 2026, ["Nissan", "Nissan", "Datsun", "Datsun", "Lotus", "Lotus", "Ford"]),
+             ("meet-c", 2026, ["Nissan"]))
+
+    def strip(self, kind: str) -> str:
+        html = self.page("events/meet-b/2026/index.html")
+        return re.search(rf'<ol class="chart {kind}">(.*?)</ol>', html, re.S).group(1)
+
+    def label(self, make: str) -> str:
+        found = [span for span in re.findall(r'<span class="chart-when">(.*?)</span>', self.strip("makes"), re.S)
+                 if re.sub(r"<[^>]+>", "", span) == make]
+        self.assertEqual(len(found), 1, f"{make}: expected one strip row")
+        return found[0]
+
+    def assert_links_as_the_table_does(self, make: str) -> None:
+        html = self.page("events/meet-b/2026/index.html")
+        table_link = re.search(rf'<a href="([^"]+)">{make}</a></td>', html).group(1)
+        self.assertEqual(self.label(make), f'<a href="{table_link}">{make}</a>')
+        self.assertEqual(table_link, "../../../cars/nissan/")
+
+    def test_make_with_page_links_as_the_table_does(self):
+        self.assert_links_as_the_table_does("Nissan")
+
+    def test_grouped_member_links_to_its_group_page(self):
+        self.assert_links_as_the_table_does("Datsun")
+
+    def test_make_without_page_is_plain_text(self):
+        self.assertNotIn("<a", self.label("Lotus"))
+
+    def test_closing_line_is_not_a_link(self):
+        rest = re.search(r'<li class="chart-rest">(.*?)</li>', self.strip("makes"), re.S).group(1)
+        self.assertIn("with one car", rest)
+        self.assertNotIn("<a", rest)
+
+    def test_decade_strip_has_no_links(self):
+        self.assertIn("1970s", self.strip("decades"))
+        self.assertNotIn("<a", self.strip("decades"))
+
+
 class CountsTests(CarsSiteCase):
     """A display list's models count as cars, one each, on /cars/ (spec section 5)."""
     LISTS = (("rally-a", 2025, ["Lotus", "Lotus", "Nissan", "Nissan", "Nissan"]),

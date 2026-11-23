@@ -162,7 +162,7 @@
 <ol class="chart {{ kind }}">
 {% for row in strip.rows %}
   <li>
-    <span class="chart-when">{{ row.label }}</span>
+    <span class="chart-when">{% if kind == "makes" and row.label in make_pages %}<a href="{{ root }}{{ make_pages[row.label] }}">{{ row.label }}</a>{% else %}{{ row.label }}{% endif %}</span>
     <span class="chart-track" aria-hidden="true">
 {% if row.count %}
       <i style="left: 0%; width: {{ row.width }}%"></i>
