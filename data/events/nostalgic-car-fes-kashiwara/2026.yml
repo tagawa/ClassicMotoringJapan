@@ -6,5 +6,9 @@ end: 2026-11-22
 start_time: "10:00"
 end_time: "15:00"
 source_url: https://kashiwara-sci.org/nostalgiccarfes2026%e3%80%80%e9%96%8b%e5%82%ac%ef%bc%81/
-last_verified: 2026-11-22
+last_verified: 2026-11-23
 sequence: 0
+videos:
+  # Video by mi ke.
+  - youtube_id: L2B2srMk-b0
+    label_en: The cars on show by the Yamato River

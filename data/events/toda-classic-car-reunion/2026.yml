@@ -7,5 +7,9 @@ start_time: "10:00"
 end_time: "15:00"
 # The 5th running, and the first at Boat Race Toda.
 source_url: https://toda-classiccar.com/
-last_verified: 2026-10-30
+last_verified: 2026-11-23
 sequence: 0
+videos:
+  # Video by 軽タちゃんねる.
+  - youtube_id: IaLUvuk9Nwc
+    label_en: The cars on show at Boat Race Toda

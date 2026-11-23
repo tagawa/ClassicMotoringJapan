@@ -8,12 +8,19 @@ end_time: "13:00"
 # The 47th festival. The site's timetable has the cars leaving the city hall at
 # 11:50, the lead car at the Tama Goryo junction at 12:20 and the last at 13:00.
 source_url: https://classiccar802.moo.jp/
-last_verified: 2026-11-22
+last_verified: 2026-11-23
 sequence: 0
 route_en: >
   From the city hall car park to Oiwake junction, then westbound on Koshu-kaido
   to the junction at the entrance to the Musashi Imperial Graveyard (武蔵野陵入口),
   where the parade disperses.
+videos:
+  # Video by 旅行記.
+  - youtube_id: 10EeFOYoC_o
+    label_en: The parade on Koshu-kaido
+  # Video by lucentcity.
+  - youtube_id: Osxuj5J9n6A
+    label_en: The classic cars leaving the city hall car park
 # Group 2 (classic cars) of the running order posted on 18 November
 # (images/2026classiccar_tirashi_ura.png). Group 1, guests' cars with no age limit,
 # and group 3, police and fire vehicles, are left out. Numbers 43 and 58 are vacant.
