@@ -81,7 +81,8 @@ def group_pages(rows: list[dict], groups: dict[str, list[str]]) -> list[dict]:
             latest_by_event.setdefault(x["row"]["slug"], x)
         events = sorted((_event_line(x, rows) for x in latest_by_event.values()),
                         key=lambda line: line["ev"]["name_en"].casefold())
-        pages.append({"name": name, "slug": slug, "title": title, "members": members, "path": f"cars/{slug}/",
+        pages.append({"name": name, "slug": slug, "title": title, "members": members, "named": named,
+                      "path": f"cars/{slug}/",
                       "verified": verified[name], "lists": lists, "events": events,
                       "totals": _counts_text(sum(x["count"] for x in lists), len(lists)),
                       "description": f"Classic car events in Japan where {title} cars have run, from published "
@@ -90,7 +91,7 @@ def group_pages(rows: list[dict], groups: dict[str, list[str]]) -> list[dict]:
 
 
 def make_index(rows: list[dict], makes: dict, groups: dict[str, list[str]], pages: list[dict]) -> list[dict]:
-    """One line per make on any list, A to Z, pointing to its group's page where one exists."""
+    """One row per make on any list, A to Z, pointing to its group's page where one exists."""
     owner = _group_of(groups)
     page_of = {page["name"]: page for page in pages}
     tally: dict[str, list] = {}  # make: [cars, editions]
@@ -101,13 +102,13 @@ def make_index(rows: list[dict], makes: dict, groups: dict[str, list[str]], page
             counts[1] += 1
     lines = []
     for make in sorted(set(tally) - NO_LINE, key=str.casefold):
-        name = owner.get(make, make)
-        page = page_of.get(name)
-        text = _counts_text(*tally[make])
-        # A visitor scans for the make they follow, so each member says which page holds it,
-        # unless that page is titled by this make alone.
-        lines.append({"make": make, "page": page, "see": bool(page) and page["title"] != make,
-                      "country": makes.get(make), "text": text})
+        page = page_of.get(owner.get(make, make))
+        cars, events = tally[make]
+        # A visitor scans for the make they follow, so a member whose page is titled by
+        # another make first says which page holds it.
+        note = page["title"] if page and page["named"][0] != make else None
+        lines.append({"make": make, "page": page, "page_note": note,
+                      "country": makes.get(make), "cars": cars, "events": events})
     return lines
 
 

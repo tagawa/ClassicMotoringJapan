@@ -57,12 +57,24 @@ class CarsSiteCase(unittest.TestCase):
     def page(self, rel: str) -> str:
         return (self.out / rel).read_text(encoding="utf-8")
 
+    def index_rows(self) -> list[str]:
+        """The /cars/ table's body rows, as markup."""
+        body = self.page("cars/index.html").split("<tbody>", 1)[1].split("</tbody>", 1)[0]
+        return re.findall(r"<tr>.*?</tr>", body, re.S)
+
     def index_line(self, make: str) -> str:
-        """The /cars/ list item for one make, as markup."""
-        items = re.findall(r"<li[^>]*>.*?</li>", self.page("cars/index.html"), re.S)
-        found = [item for item in items if re.search(rf">{re.escape(make)}<", item)]
-        self.assertEqual(len(found), 1, f"{make}: expected one line, found {len(found)}")
+        """The /cars/ table row for one make, as markup."""
+        found = [row for row in self.index_rows() if re.search(rf">{re.escape(make)}<", row)]
+        self.assertEqual(len(found), 1, f"{make}: expected one row, found {len(found)}")
         return found[0]
+
+    @staticmethod
+    def cells(row: str) -> list[str]:
+        return re.findall(r"<td[^>]*>(.*?)</td>", row, re.S)
+
+    def page_note(self, make: str):
+        found = re.search(r'<span class="make-page">(.*?)</span>', self.index_line(make))
+        return found and found.group(1)
 
 
 class GroupPageTests(CarsSiteCase):
@@ -91,16 +103,35 @@ class GroupPageTests(CarsSiteCase):
         self.assertIn('href="nissan/"', self.index_line("Nissan Diesel"))
 
     def test_grouped_member_line_points_to_page(self):
-        line = self.index_line("Datsun")
-        self.assertIn('href="nissan/"', line)
-        self.assertIn("See Nissan and Datsun", text_of(line))
+        self.assertIn('href="nissan/"', self.index_line("Datsun"))
+        self.assertEqual(self.page_note("Datsun"), "On the Nissan and Datsun page")
 
-    def test_make_alone_in_its_group_has_no_see(self):
-        self.assertNotIn("See", text_of(self.index_line("Lotus")))
+    def test_single_car_member_still_names_the_page(self):
+        self.assertEqual(self.page_note("Nissan Diesel"), "On the Nissan and Datsun page")
+
+    def test_no_second_line_for_first_named_member_or_make_without_page(self):
+        self.assertIsNone(self.page_note("Nissan"))
+        self.assertIsNone(self.page_note("Lotus"))
 
     def test_index_is_a_to_z(self):
-        makes = re.findall(r'<span class="make-name">(?:<a [^>]*>)?([^<]+)<', self.page("cars/index.html"))
+        makes = [re.sub(r"<[^>]+>", "", re.sub(r"<svg.*?</svg>|<span.*?</span>", "", self.cells(row)[0]))
+                 for row in self.index_rows()]
         self.assertEqual(makes, ["Datsun", "Lotus", "Nissan", "Nissan Diesel"])
+
+    def test_index_is_a_table_with_no_list_or_sentences(self):
+        html = self.page("cars/index.html")
+        self.assertIn('<div class="table-wrap" tabindex="0" role="region" aria-label="Cars by make">', html)
+        self.assertNotIn("<ul", html.split("<main", 1)[1])
+        body = text_of(html.split("<tbody>", 1)[1])
+        self.assertNotIn("See", body)
+        self.assertNotIn("cars at", body)
+
+    def test_counts_are_numbers_only(self):
+        # Nissan: 2 cars at meet-a; Datsun: 3 at meet-b; Lotus: 1 each at meet-a and meet-c.
+        self.assertEqual(self.cells(self.index_line("Nissan"))[1:], ["2", "1"])
+        self.assertEqual(self.cells(self.index_line("Datsun"))[1:], ["3", "1"])
+        self.assertEqual(self.cells(self.index_line("Lotus"))[1:], ["2", "2"])
+        self.assertIn('<td class="num">2</td>', self.index_line("Lotus"))
 
     def test_cars_pages_are_byte_identical(self):
         out2 = self.tmp / "site2"
@@ -200,16 +231,18 @@ class CountsTests(CarsSiteCase):
 
     def test_index_counts_models_as_cars(self):
         # 2 cars at rally-a and 3 models at show-b.
-        line = text_of(self.index_line("Lotus"))
-        self.assertIn("Lotus : 5 cars at 2 events.", line)
-        self.assertNotIn("model", line)
+        row = self.index_line("Lotus")
+        self.assertEqual(self.cells(row)[1:], ["5", "2"])
+        self.assertNotIn("model", text_of(row))
 
     def test_index_display_only_make(self):
-        self.assertIn("Ford : 3 cars at 1 event.", text_of(self.index_line("Ford")))
+        self.assertEqual(self.cells(self.index_line("Ford"))[1:], ["3", "1"])
 
     def test_index_flag_from_makes_yml(self):
+        self.assertIn('<td class="flagged">', self.index_line("Lotus"))
         self.assertIn('xlink:href="#flag-gb"', self.index_line("Lotus"))
-        self.assertNotIn('class="flag"', self.index_line("Ford"))
+        self.assertIn('<td class="unflagged">', self.index_line("Ford"))
+        self.assertNotIn("<svg", self.index_line("Ford"))
         self.assertEqual(self.page("cars/index.html").count('<g id="flag-gb">'), 1)
 
     def test_group_totals_count_models_as_cars(self):
@@ -249,10 +282,12 @@ class CountsTests(CarsSiteCase):
         self.assertIn('href="../../events/rally-a/2025/"', self.page("cars/nissan/index.html"))
 
     def test_caveat_on_both_pages_as_plain_text(self):
-        for rel in ("cars/index.html", "cars/nissan/index.html"):
-            with self.subTest(page=rel):
-                html = self.page(rel)
-                self.assertIn("<p>Counts come only from events whose organisers publish entry lists.</p>", html)
+        caveat = "Counts come only from events whose organisers publish entry lists.</p>"
+        self.assertIn("<p>" + caveat, self.page("cars/nissan/index.html"))
+        # On /cars/ it sits under the heading, ahead of the table it qualifies.
+        index = self.page("cars/index.html")
+        self.assertRegex(index, r"<h1>Cars by make</h1>\s*<p class=\"index-note\">" + re.escape(caveat))
+        self.assertLess(index.index(caveat), index.index("<table"))
 
 
 def write_edition(data: Path, slug: str, stem, day: str, status="confirmed", cars=None,
@@ -378,9 +413,21 @@ class TitleIsTheMakeTests(CarsSiteCase):
     LISTS = (("meet-a", 2025, ["Austin-Healey", "Healey"]), ("meet-b", 2026, ["Austin-Healey"]),
              ("meet-c", 2026, ["Austin-Healey"]))
 
-    def test_no_see_where_the_page_is_titled_by_the_make(self):
-        self.assertNotIn("See", text_of(self.index_line("Austin-Healey")))
-        self.assertIn("See Austin-Healey.", text_of(self.index_line("Healey")))
+    def test_no_second_line_where_the_page_is_titled_by_the_make(self):
+        self.assertIsNone(self.page_note("Austin-Healey"))
+        self.assertEqual(self.page_note("Healey"), "On the Austin-Healey page")
+
+
+class LoneMakePageTests(CarsSiteCase):
+    """A make in no group, with a page of its own."""
+    LISTS = (("meet-a", 2025, ["Lotus"]), ("meet-b", 2026, ["Lotus"]), ("meet-c", 2026, ["Lotus", "Unknown"]))
+
+    def test_make_alone_has_link_and_no_second_line(self):
+        self.assertIn('href="lotus/"', self.index_line("Lotus"))
+        self.assertIsNone(self.page_note("Lotus"))
+
+    def test_one_row_per_make_and_none_for_unknown(self):
+        self.assertEqual(len(self.index_rows()), 1)
 
 
 class CollidingSlugsTests(unittest.TestCase):

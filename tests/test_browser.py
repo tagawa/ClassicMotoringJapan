@@ -360,5 +360,36 @@ class NextDateTest(unittest.TestCase):
         self.assertEqual([item[0] for item in lines], ["Bravo", "Echo", "Alpha", "Charlie", "Delta", "Foxtrot"])
 
 
+
+@unittest.skipIf(sync_playwright is None, "playwright not installed")
+class CarsIndexWidthTest(unittest.TestCase):
+    """The /cars/ table fits a 320px phone without sideways scrolling."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = temp_dir(cls)
+        # The real data, since its longest make names are what could overflow.
+        build.build(Path(__file__).resolve().parent.parent / "data", cls.tmp / "site")
+        try:
+            cls.pw = sync_playwright().start()
+            cls.browser = cls.pw.chromium.launch()
+        except Exception as e:
+            raise unittest.SkipTest(f"chromium unavailable: {e}")
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.browser.close()
+        cls.pw.stop()
+
+    def test_table_box_does_not_scroll_at_320px(self):
+        page = self.browser.new_page(viewport={"width": 320, "height": 800})
+        page.goto((self.tmp / "site" / "cars" / "index.html").as_uri())
+        box = page.locator(".table-wrap").first
+        rows = page.locator(".table-wrap tbody tr").count()
+        scroll, client = box.evaluate("el => [el.scrollWidth, el.clientWidth]")
+        page.close()
+        self.assertGreater(rows, 50, "expected the real list of makes")
+        self.assertLessEqual(scroll, client)
+
 if __name__ == "__main__":
     unittest.main()

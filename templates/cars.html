@@ -2,15 +2,22 @@
 {% from "icons.html" import flag, flag_defs %}
 {% block main %}
 <h1>Cars by make</h1>
+<p class="index-note">Counts come only from events whose organisers publish entry lists.</p>
 {% if flags %}
 {{ flag_defs(flags) }}
 {% endif %}
-<ul class="make-index">
+<div class="table-wrap" tabindex="0" role="region" aria-label="Cars by make">
+  <table class="make-table">
+    <thead>
+      <tr><th>Make</th><th class="num">Cars</th><th class="num">Events</th></tr>
+    </thead>
+    <tbody>
 {% for line in lines %}
-  <li class="make-line">{% if line.country %}{{ flag(line.country) }}{% endif %}<span class="make-name">{% if line.page %}<a href="{{ line.page.slug }}/">{{ line.make }}</a>{% else %}{{ line.make }}{% endif %}</span>: {{ line.text }}.{% if line.see %} See {{ line.page.title }}.{% endif %}</li>
+      <tr><td class="{{ "flagged" if line.country else "unflagged" }}">{% if line.country %}{{ flag(line.country) }}{% endif %}{% if line.page %}<a href="{{ line.page.slug }}/">{{ line.make }}</a>{% else %}{{ line.make }}{% endif %}{% if line.page_note %}<span class="make-page">On the {{ line.page_note }} page</span>{% endif %}</td><td class="num">{{ line.cars }}</td><td class="num">{{ line.events }}</td></tr>
 {% endfor %}
-</ul>
-<p>Counts come only from events whose organisers publish entry lists.</p>
+    </tbody>
+  </table>
+</div>
 {% endblock %}
 
 {% block footer %}
