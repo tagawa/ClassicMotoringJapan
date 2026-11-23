@@ -158,7 +158,8 @@ class CountsTests(CarsSiteCase):
 
     def test_index_models_never_added_into_cars(self):
         line = text_of(self.index_line("Lotus"))
-        self.assertIn("Lotus : 2 cars at 2 editions, 3 models on display.", line)
+        # Both Lotus cars are at rally-a; show-b is a display edition, never one of the cars'.
+        self.assertIn("Lotus : 2 cars at 1 edition, and 3 models on display at 1 edition.", line)
         self.assertNotIn("5 cars", line)
 
     def test_index_display_only_make(self):

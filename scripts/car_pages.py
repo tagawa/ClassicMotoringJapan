@@ -108,22 +108,19 @@ def make_index(rows: list[dict], makes: dict, groups: dict[str, list[str]], page
     """One line per make on any list, A to Z, pointing to its group's page where one exists."""
     owner = _group_of(groups)
     page_of = {page["name"]: page for page in pages}
-    tally: dict[str, list] = {}  # make: [cars, models, editions]
+    tally: dict[str, list] = {}  # make: [cars, their editions, models, their editions]
     for r in rows:
         entry = r["cars"] and _is_entry_list(r)
         for make in {car["make"] for car in r["cars"] or []}:
-            counts = tally.setdefault(make, [0, 0, 0])
-            n = sum(1 for car in r["cars"] if car["make"] == make)
-            counts[0 if entry else 1] += n
-            counts[2] += 1
+            counts = tally.setdefault(make, [0, 0, 0, 0])
+            at = 0 if entry else 2
+            counts[at] += sum(1 for car in r["cars"] if car["make"] == make)
+            counts[at + 1] += 1
     lines = []
     for make in sorted(set(tally) - NO_LINE, key=str.casefold):
         name = owner.get(make, make)
         page = page_of.get(name)
-        cars, models, editions = tally[make]
-        text = (f"{_n(cars, 'car')} at {_n(editions, 'edition')}"
-                + (f", {_n(models, 'model')} on display" if models else "")
-                if cars else f"{_n(models, 'model')} on display at {_n(editions, 'edition')}")
+        text = _counts_text(*tally[make])
         # A visitor scans for the make they follow, so each member says which page holds it,
         # unless that page is titled by this make alone.
         lines.append({"make": make, "page": page, "see": bool(page) and page["title"] != make,
