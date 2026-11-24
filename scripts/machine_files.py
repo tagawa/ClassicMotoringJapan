@@ -32,7 +32,7 @@ def build_api(rows: list[dict]) -> str:
             "all_day": not r["is_timed"],
             "venue": r["venue"],
             "prefecture": r["prefecture"],
-            "street_address": ed.get("street_address") or ev.get("street_address"),
+            "street_address": r["street_address"],
             "lat": pin["lat"] if pin else None,
             "lon": pin["lon"] if pin else None,
             "spectator_fee_jpy": ev["spectator_fee_jpy"],

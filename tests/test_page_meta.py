@@ -3,6 +3,7 @@
 These are offline proxies for Google's Rich Results Test, so a manual pass with it should be a formality.
 """
 
+import json
 import re
 import unittest
 from html import unescape
@@ -230,6 +231,7 @@ class StructuredDataTruthTests(unittest.TestCase):
         build.build(data, tmp / "site")
         cls.pages = {p.relative_to(tmp / "site").as_posix(): p.read_text(encoding="utf-8")
                      for p in (tmp / "site").rglob("*.html")}
+        cls.api = {e["id"]: e for e in json.loads((tmp / "site/api/events.json").read_text(encoding="utf-8"))["events"]}
 
     def events(self, page: str) -> dict:
         return {b["name"]: b for b in jsonld_blocks(self.pages[page]) if b["@type"] == "Event"}
@@ -253,6 +255,13 @@ class StructuredDataTruthTests(unittest.TestCase):
         page = "events/meet/2027/index.html"
         self.assertNotIn("streetAddress", self.events(page)["Test Event 2027"]["location"]["address"])
         self.assertNotIn("1-1 Test", self.visible(self.pages[page]))
+
+    def test_the_json_feed_follows_the_pages_on_which_address_an_edition_has(self):
+        # build_api once rebuilt the address itself and lent the event's to an edition
+        # elsewhere (json-feed-and-agent-files review, 2026-11-24).
+        self.assertEqual(self.api["meet-2026"]["street_address"], self.ADDRESS)
+        self.assertNotIn("street_address", self.api["meet-2027"])
+        self.assertEqual(self.api["meet-2028"]["street_address"], self.FAR_ADDRESS)
 
     def test_an_edition_at_its_own_venue_gives_its_own_address(self):
         page = "events/meet/2028/index.html"
