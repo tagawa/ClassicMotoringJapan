@@ -301,16 +301,22 @@ summary { cursor: pointer; font-weight: 600; }
 .chart-today-label span { position: absolute; top: 0; white-space: nowrap; }
 
 /* Event pages' Dates table: below 620px SHCC's rows ran past 2 lines (measured 2026-11-24,
-   real build, 30px steps from 320px), so each event stacks: name, dates, status, link. */
+   real build, 30px steps from 320px), so each event stacks: name with its status at the
+   right, then dates and link. A browser without grid ignores display: grid and keeps
+   display: block, which stacks the status under the dates instead. The status margin
+   stands in for a column gap, which Safari 10.1 to 11 knew only as grid-gap. */
 @media (max-width: 619px) {
   .dates-table { display: block; }
   .dates-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
   .dates-table tbody { display: block; border-bottom: 1px solid #E0E0E0; }
-  .dates-table tr { display: block; padding: 8px 0; border-top: 1px solid #E0E0E0; }
+  .dates-table tr { display: block; display: grid; grid-template-columns: 1fr auto; padding: 8px 0; border-top: 1px solid #E0E0E0; }
   .dates-table td { display: block; padding: 0; border: 0; max-width: none; }
-  .dates-table .edition { font-weight: 600; }
+  .dates-table .edition { grid-column: 1; grid-row: 1; font-weight: 600; }
+  .dates-table .status { grid-column: 2; grid-row: 1; margin-left: 16px; }
+  .dates-table .dates { grid-column: 1 / 3; grid-row: 2; }
+  .dates-table .details { grid-column: 1 / 3; grid-row: 3; }
   .dates-table .details:empty, .dates-table .spacer { display: none; }
-  .dates-table tr.calendar-links { padding-top: 0; border-top: 0; }
+  .dates-table tr.calendar-links { display: block; padding-top: 0; border-top: 0; }
 }
 
 @media (max-width: 480px) {

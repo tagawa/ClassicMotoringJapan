@@ -433,8 +433,9 @@ OVERFLOW = """() => {
 class DatesTableLayoutTest(unittest.TestCase):
     """Below 620px the event page's Dates table stacks each event; wider, it stays a table."""
 
-    # SHCC's table, stacked at 390px. The sandbox measured 1,322px with a stand-in font.
-    HEIGHT_LIMIT = 1400
+    # SHCC's table, stacked at 390px with the status on the name's line. The sandbox measured
+    # 887px with a stand-in font.
+    HEIGHT_LIMIT = 950
 
     @classmethod
     def setUpClass(cls):
@@ -478,6 +479,19 @@ class DatesTableLayoutTest(unittest.TestCase):
     def test_the_stacked_table_is_under_its_height_limit(self):
         height = self.open(390).evaluate("() => document.querySelector('.dates-table').getBoundingClientRect().height")
         self.assertLessEqual(height, self.HEIGHT_LIMIT)
+
+    def test_each_status_sits_on_its_event_name_line_on_a_phone(self):
+        tops = self.open(390).evaluate("""() => {
+          var rows = document.querySelectorAll('.dates-table tbody tr:not(.calendar-links)'), tops = [];
+          for (var i = 0; i < rows.length; i++) {
+            tops.push([rows[i].querySelector('.edition').getBoundingClientRect().top,
+                       rows[i].querySelector('.status').getBoundingClientRect().top]);
+          }
+          return tops;
+        }""")
+        self.assertGreater(len(tops), 5)
+        for name, status in tops:
+            self.assertLessEqual(abs(name - status), 4)
 
     def test_it_stays_a_table_on_a_wide_screen(self):
         shown = self.open(1280).evaluate(

@@ -179,6 +179,45 @@ def duplicate_selectors(css: str) -> list[str]:
     return found
 
 
+GRID_ALLOWED = (".events", ".facts", ".dates-table")
+
+
+def grid_violations(css: str) -> list[str]:
+    """Grid only where it degrades to readable stacked blocks (spec 6.5).
+
+    .events and .facts stack on their own without grid. The Dates table's rows are table rows,
+    so each of its grid rules must declare display: block first, for a browser to fall back on.
+    """
+    css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+    found = []
+    for head, body in re.findall(r"([^{}]+)\{([^{}]*)\}", css):
+        grid = re.search(r"display:\s*(?:inline-)?grid", body)
+        if not grid:
+            continue
+        for selector in (" ".join(sel.split()) for sel in head.split(",")):
+            if not selector.split(" ")[0].startswith(GRID_ALLOWED):
+                found.append(f"{selector}: grid outside .events, .facts and .dates-table")
+            elif selector.startswith(".dates-table") and "display: block" not in body[:grid.start()]:
+                found.append(f"{selector}: no display: block before display: grid")
+    return found
+
+
+class GridFallbackTests(unittest.TestCase):
+    def test_grid_is_used_only_where_it_falls_back(self):
+        css = (ROOT / "static/style.css").read_text(encoding="utf-8")
+        self.assertEqual(grid_violations(css), [])
+
+    def test_the_check_fires_on_a_stray_grid_and_a_missing_fallback(self):
+        css = (".cards { display: grid; }\n"
+               "@media (max-width: 619px) {\n  .dates-table tr { display: grid; display: block; }\n"
+               "  .dates-table td { display: block; display: grid; }\n}\n"
+               ".events > li { display: grid; }")
+        self.assertEqual(grid_violations(css), [
+            ".cards: grid outside .events, .facts and .dates-table",
+            ".dates-table tr: no display: block before display: grid",
+        ])
+
+
 class StylesheetTokenTests(unittest.TestCase):
     """Every colour, size and space in the stylesheet comes from the documented set."""
 
