@@ -11,6 +11,8 @@ summary_en: >
   14th.
 prefecture: Yamagata
 venue_en: Showa Enmusubi-dori, Mahoroba-dori and Chosha-dori shopping streets, Takahata
+# The Japanese street names are printed on the organiser's 2026 poster (event_classiccar2026/2026.pdf).
+venue_ja: 昭和縁結び通り商店街・まほろば通り商店街・庁舎通り商店街（高畠町）
 # Neither GSI nor OpenStreetMap knows the streets by name. The pin is the event
 # headquarters (本部) on the organiser's 2026 venue map, a Google My Maps embed on
 # event_classiccar2026/event-gaiyo.html; GSI puts the point in 大字高畠.

@@ -4,6 +4,8 @@ status: confirmed
 start: 2026-10-04
 end: 2026-10-04
 venue_en: Wood Forum Hida, Takayama
+# The Japanese name is from the same tourism page as the address below.
+venue_ja: ウッドフォーラム飛騨（高山市）
 prefecture: Gifu
 # The address is from Gifu Prefecture's tourism site (kankou-gifu.jp/spot/detail_9180.html).
 # No lat/lon: GSI resolves it only as far as Kiyomicho-Mikkamachi and OSM has no entry.
