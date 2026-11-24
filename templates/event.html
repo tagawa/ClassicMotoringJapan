@@ -68,7 +68,7 @@
 {% endif %}
 {# Not "Official site": official_url is often a tourism listing, a blog post or a venue's page. #}
   <dt>{{ t.source }}</dt>
-  <dd><a href="{{ ev.official_url }}">{{ ev.official_url | domain }}</a>{{ t.source_language }}</dd>
+  <dd><a href="{{ ev.official_url }}" data-fathom="Source opened">{{ ev.official_url | domain }}</a>{{ t.source_language }}</dd>
   <dt>{{ t.last_verified }}</dt>
   <dd>{{ verified | ymd }}</dd>
 </dl>

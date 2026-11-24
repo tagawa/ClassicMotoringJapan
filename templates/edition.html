@@ -50,7 +50,7 @@
   <dd>{{ ev.spectator_fee_jpy | fee }}</dd>
 {% endif %}
   <dt>{{ t.last_verified }}</dt>
-  <dd>{{ ed.last_verified | ymd }}{{ t.against_open }}<a href="{{ ed.source_url }}">{{ ed.source_url | domain }}</a>{{ t.against_close }}</dd>
+  <dd>{{ ed.last_verified | ymd }}{{ t.against_open }}<a href="{{ ed.source_url }}" data-fathom="Source opened">{{ ed.source_url | domain }}</a>{{ t.against_close }}</dd>
 </dl>
 {% if r.previous or r.next %}
 <nav class="edition-steps" aria-label="{{ t.other_events }}">
@@ -187,7 +187,7 @@
 {{ flag_defs(r.flags) }}
 {% endif %}
 {% if summarised %}
-<details class="all-cars">
+<details class="all-cars" data-fathom="Entry list opened">
 <summary>{{ t.all_cars(r.cars | length) }}</summary>
 {% endif %}
 <div class="table-wrap" tabindex="0" role="region" aria-label="{{ r.cars_label }}">
@@ -239,6 +239,24 @@
 {% endblock %}
 
 {% block scripts %}
+{% if r.videos or r.previous_videos %}
+<script>
+  (function () {
+    // A click inside an embed never reaches this page, but the window loses focus to
+    // the player's iframe. Switching straight between players does not blur the window
+    // again, so the count is page loads where a player was started, once per player.
+    window.addEventListener("blur", function () {
+      setTimeout(function () {
+        var frame = document.activeElement;
+        if (!frame || frame.tagName !== "IFRAME" || frame.hasAttribute("data-counted")) return;
+        if (!frame.parentNode || frame.parentNode.className !== "video-frame") return;
+        if (window.fathom) window.fathom.trackEvent("Video played");
+        frame.setAttribute("data-counted", "");
+      }, 0);
+    });
+  })();
+</script>
+{% endif %}
 {% if r.ics_path or (ed.course and ed.course.map_url) %}
 {{ drop_passed() }}
 {% endif %}

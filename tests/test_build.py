@@ -695,42 +695,101 @@ class SiteCopyTests(unittest.TestCase):
         self.assertNotIn("typo", self.html("404.html"))
 
 
+FILM_VIDEOS = (
+    "videos:\n"
+    "  - youtube_id: t3UUnZ7g5P0\n"
+    "    label_en: Day 1\n"
+)
+
+
 class FathomEventTests(unittest.TestCase):
     """Fathom counts only what the page reports, and an event's name can never be changed:
     a renamed one starts a new count. So the names are pinned here, and each sits on the
     element whose use it counts."""
 
-    NAMES = {"Calendar file downloaded", "Google Calendar form opened",
-             "Calendar feed subscribe clicked", "Google Calendar feed help opened"}
+    # The opening tag each name sits on. A name sent from a script instead maps to None.
+    ELEMENTS = {
+        "Calendar file downloaded": r'<a href="[^"]+\.ics"',
+        "Google Calendar form opened": r'<a href="https://calendar\.google\.com/',
+        "Calendar feed subscribe clicked": r'<a href="webcal://',
+        "Google Calendar feed help opened": r"<details data-fathom=",
+        "Entry list opened": r'<details class="all-cars"',
+        "Source opened": r'<a href="https://example\.com/',
+        "Video played": None,
+        "404 page shown": None,
+    }
+    NAMES = set(ELEMENTS)
 
     @classmethod
     def setUpClass(cls):
         cls.tmp = temp_dir(cls)
-        make_fixture(cls.tmp / "data")
+        data = cls.tmp / "data"
+        make_fixture(data)
+        # make_fixture has no videos, and no tentative edition with a page of its own.
+        write_event(data, "film-meet", name_en="Film Meet")
+        write_instance(data, "film-meet", 2025,
+                       instance_yaml("film-meet", 2025, "2025-10-18", "2025-10-18", extra=FILM_VIDEOS))
+        write_instance(data, "film-meet", 2027,
+                       instance_yaml("film-meet", 2027, "2027-10-17", "2027-10-17", status="tentative",
+                                     extra=CARS))
         out = cls.tmp / "site"
-        build.build(cls.tmp / "data", out)
+        build.build(data, out)
         cls.pages = {str(p.relative_to(out)): p.read_text(encoding="utf-8") for p in out.rglob("*.html")}
-
 
     def counted(self, html: str) -> list[tuple[str, str]]:
         """Each counted element's opening tag, with the event it reports."""
         return [(tag, name) for tag, name in re.findall(r'(<(?:a|details)\b[^>]*data-fathom="([^"]+)"[^>]*>)', html)]
 
+    def sent(self, html: str) -> set[str]:
+        """Names a page's own script sends by name rather than reading them from an element."""
+        return {name for _, name in re.findall(r'trackEvent\((["\'])([^"\']+)\1\)', html)}
+
     def test_no_name_but_the_pinned_ones_is_reported(self):
         found = {name for html in self.pages.values() for _, name in self.counted(html)}
+        found |= {name for html in self.pages.values() for name in self.sent(html)}
         self.assertEqual(found, self.NAMES)
 
     def test_each_name_is_on_the_element_it_counts(self):
+        for rel, html in self.pages.items():
+            for tag, name in self.counted(html):
+                self.assertIsNotNone(self.ELEMENTS[name], f"{rel}: {name} is sent by a script, not an element")
+                self.assertRegex(tag, self.ELEMENTS[name], f"{rel}: {name}")
         html = self.pages["events/autumn-rally/2026/index.html"]
-        expected = {
-            "Calendar file downloaded": r'<a href="[^"]+\.ics"',
-            "Google Calendar form opened": r'<a href="https://calendar\.google\.com/',
-            "Calendar feed subscribe clicked": r'<a href="webcal://',
-            "Google Calendar feed help opened": r"<details\b",
-        }
-        for tag, name in self.counted(html):
-            self.assertRegex(tag, expected[name], name)
-        self.assertEqual({name for _, name in self.counted(html)}, self.NAMES)
+        self.assertEqual({name for _, name in self.counted(html)},
+                         {name for name, tag in self.ELEMENTS.items() if tag})
+
+    def test_new_events_sit_on_english_and_japanese_pages_alike(self):
+        for home in ("", "ja/"):
+            edition = self.counted(self.pages[f"{home}events/autumn-rally/2026/index.html"])
+            self.assertEqual([tag for tag, name in edition if name == "Entry list opened"],
+                             ['<details class="all-cars" data-fathom="Entry list opened">'], home)
+            self.assertIn("Video played", self.sent(self.pages[f"{home}events/film-meet/2025/index.html"]), home)
+
+    def test_source_opened_is_on_the_two_source_links_alone(self):
+        for home in ("", "ja/"):
+            event = self.counted(self.pages[f"{home}events/autumn-rally/index.html"])
+            self.assertEqual([tag for tag, name in event if name == "Source opened"],
+                             ['<a href="https://example.com/autumn-rally/" data-fathom="Source opened">'], home)
+            edition = self.counted(self.pages[f"{home}events/autumn-rally/2026/index.html"])
+            self.assertEqual([tag for tag, name in edition if name == "Source opened"],
+                             ['<a href="https://example.com/autumn-rally/2026/" data-fathom="Source opened">'], home)
+            # A tentative edition's note links the same source, and is not the "Last verified" row.
+            tentative = self.pages[f"{home}events/film-meet/2027/index.html"]
+            self.assertEqual(tentative.count('href="https://example.com/film-meet/2027/"'), 2, home)
+            self.assertEqual([name for _, name in self.counted(tentative)].count("Source opened"), 1, home)
+            self.assertRegex(tentative, r'<dd>[^<]*<a href="https://example\.com/film-meet/2027/" '
+                                        r'data-fathom="Source opened">')
+
+    def test_the_make_pages_fold_is_not_counted(self):
+        # The fixture has no make group page, so read the template itself.
+        fold = re.search(r"<details[^>]*>", (ROOT / "templates/car_group.html").read_text(encoding="utf-8"))
+        self.assertEqual(fold.group(0), '<details class="all-cars">')
+
+    def test_video_played_is_sent_only_from_pages_with_an_embed(self):
+        for rel, html in self.pages.items():
+            self.assertEqual("Video played" in self.sent(html), 'class="video-frame"' in html, rel)
+        self.assertIn('if (window.fathom) window.fathom.trackEvent("Video played")',
+                      self.pages["events/film-meet/2025/index.html"])
 
     def test_the_footer_counts_on_every_page(self):
         for rel, html in self.pages.items():

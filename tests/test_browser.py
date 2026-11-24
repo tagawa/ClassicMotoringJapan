@@ -559,5 +559,71 @@ class GreyWhenGoneTest(unittest.TestCase):
                 fill = page.evaluate("() => getComputedStyle(document.querySelector('#upcoming-list .venue-map circle')).fill")
                 self.assertEqual(fill, self.BRAND[scheme])
 
+
+@unittest.skipIf(sync_playwright is None, "playwright not installed")
+class VideoPlayedTest(unittest.TestCase):
+    """A click inside an embed never reaches the page, so the edition page counts the
+    window losing focus to an embed's iframe: once per player per page load."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = temp_dir(cls)
+        data = cls.tmp / "data"
+        write_event(data, "meet")
+        videos = ("videos:\n  - youtube_id: t3UUnZ7g5P0\n    label_en: Day 1\n"
+                  "  - youtube_id: fIJCC_4IcE0\n    label_en: Day 2\n")
+        write_instance(data, "meet", 2025, instance_yaml("meet", 2025, "2025-10-18", "2025-10-18", extra=videos))
+        build.build(data, cls.tmp / "site")
+        cls.page = (cls.tmp / "site" / "events" / "meet" / "2025" / "index.html").as_uri()
+        try:
+            cls.pw = sync_playwright().start()
+            cls.browser = cls.pw.chromium.launch()
+        except Exception as e:
+            raise unittest.SkipTest(f"chromium unavailable: {e}")
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.browser.close()
+        cls.pw.stop()
+
+    def setUp(self):
+        ctx = self.browser.new_context()
+        self.addCleanup(ctx.close)
+        # No network: a blank player stands in for YouTube, and Fathom's own script never
+        # loads, so the stub below is what the page reports to.
+        ctx.route("**/*youtube-nocookie.com/**", lambda route: route.fulfill(body="<html><body></body></html>",
+                                                                          content_type="text/html"))
+        ctx.route("**/cdn.usefathom.com/**", lambda route: route.abort())
+        ctx.add_init_script("window.sent = []; window.fathom = { trackEvent: function (n) { window.sent.push(n); } };")
+        self.p = ctx.new_page()
+        self.p.goto(self.page)
+
+    def focus_player(self, index: int) -> list:
+        self.p.locator(".video-frame iframe").nth(index).focus()
+        self.p.wait_for_timeout(50)
+        return self.p.evaluate("window.sent")
+
+    def back_to_page(self):
+        self.p.locator("h1").click()
+        self.p.wait_for_timeout(50)
+
+    def test_focusing_a_player_sends_video_played_once(self):
+        self.assertEqual(self.focus_player(0), ["Video played"])
+
+    def test_focusing_the_same_player_again_sends_nothing_more(self):
+        self.focus_player(0)
+        self.back_to_page()
+        self.assertEqual(self.focus_player(0), ["Video played"])
+
+    def test_each_player_counts_once(self):
+        self.focus_player(0)
+        self.back_to_page()
+        self.assertEqual(self.focus_player(1), ["Video played", "Video played"])
+
+    def test_nothing_is_sent_without_a_player_taking_focus(self):
+        self.back_to_page()
+        self.assertEqual(self.p.evaluate("window.sent"), [])
+
+
 if __name__ == "__main__":
     unittest.main()

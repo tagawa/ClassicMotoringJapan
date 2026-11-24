@@ -336,7 +336,7 @@ class JapanesePagesTests(unittest.TestCase):
         self.assertIn('<span class="chip">戦前</span><span class="chip">1960年代</span>', html)
         self.assertIn("<dd>テストクラブ</dd>", html)
         self.assertNotIn("Shiodome", html)
-        self.assertIn('<dt>情報元</dt>\n  <dd><a href="https://example.com/tour/"><span lang="en">example.com</span></a></dd>', html)
+        self.assertIn('<dt>情報元</dt>\n  <dd><a href="https://example.com/tour/" data-fathom="Source opened"><span lang="en">example.com</span></a></dd>', html)
         self.assertIn("<dd>2026年9月20日</dd>", html)
         self.assertIn(json.dumps("開催済み"), html)
         self.assertIn('<a class="language" href="../../../events/tour/" lang="en" hreflang="en">English</a>', html)

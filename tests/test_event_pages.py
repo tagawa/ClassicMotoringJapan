@@ -33,7 +33,7 @@ class VerifiedPlacementTests(unittest.TestCase):
         # Named by its domain: a source is often a listing, a blog or a video, not the organiser.
         self.assertRegex(self.facts(self.edition),
                          r'<dt>Last verified</dt>\s*<dd>2026-09-20, against '
-                         r'<a href="https://example.com/autumn-rally/2026/">example.com</a></dd>')
+                         r'<a href="https://example.com/autumn-rally/2026/" data-fathom="Source opened">example.com</a></dd>')
 
     def test_on_an_edition_page_it_comes_before_the_entry_list_and_route(self):
         self.assertLess(self.edition.index("Last verified"), self.edition.index("<h2"))
@@ -41,7 +41,7 @@ class VerifiedPlacementTests(unittest.TestCase):
     def test_an_event_page_gives_the_date_beside_the_source(self):
         # The date is the latest check of the event or any edition, so it names no one source.
         self.assertRegex(self.facts(self.event),
-                         r'<dt>Source</dt>\s*<dd><a href="https://example.com/autumn-rally/">example.com</a> '
+                         r'<dt>Source</dt>\s*<dd><a href="https://example.com/autumn-rally/" data-fathom="Source opened">example.com</a> '
                          r'\(Japanese\)</dd>\s*<dt>Last verified</dt>\s*<dd>2026-09-20</dd>')
 
     def test_no_page_calls_a_source_the_organisers(self):
@@ -72,7 +72,7 @@ class VerifiedPlacementTests(unittest.TestCase):
 
     def test_the_domain_drops_www(self):
         _, edition = self.page(url="https://www.listing.example.org/events/123")
-        self.assertIn('against <a href="https://www.listing.example.org/events/123">listing.example.org</a>', edition)
+        self.assertIn('against <a href="https://www.listing.example.org/events/123" data-fathom="Source opened">listing.example.org</a>', edition)
 
     def test_a_tentative_edition_names_its_source_by_domain(self):
         _, edition = self.page(url="https://listing.example.org/1", status="tentative")
@@ -400,7 +400,7 @@ class EntryListHeadingTests(unittest.TestCase):
 
     def test_the_table_folds_away_under_the_strips_that_summarise_it(self):
         html = self.page(cars_yaml([1929, 1955, 1955]))
-        folded = re.search(r'(?s)<details class="all-cars">\s*<summary>All 3 cars</summary>.*?</details>', html)
+        folded = re.search(r'(?s)<details class="all-cars" data-fathom="Entry list opened">\s*<summary>All 3 cars</summary>.*?</details>', html)
         self.assertIsNotNone(folded)
         self.assertIn("<table>", folded.group(0))
 
@@ -410,7 +410,7 @@ class EntryListHeadingTests(unittest.TestCase):
     def test_a_numbered_list_without_years_has_no_decade_heading(self):
         html = self.page('list_as_of: 2026-09-15\ncars:\n  - entry_no: "01"\n    make: Test\n    model: Car\n')
         self.assertEqual(self.subheadings(html), ["By make"])
-        self.assertIn('<details class="all-cars">', html)
+        self.assertIn('<details class="all-cars" data-fathom="Entry list opened">', html)
 
     def test_a_line_up_with_no_strips_shows_its_table_open(self):
         # Nothing above it says what is in it, so folding it would hide the whole list.
