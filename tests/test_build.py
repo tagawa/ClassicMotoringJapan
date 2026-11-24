@@ -16,6 +16,7 @@ import yaml
 from helpers import (CARS, instance_yaml, jsonld_blocks, make_fixture, ROOT, temp_dir, unfold, write_event,
                      write_instance)
 import build  # noqa: E402
+import rows  # noqa: E402
 import settings  # noqa: E402
 import validate  # noqa: E402
 
@@ -556,6 +557,55 @@ class BuildOutputTests(unittest.TestCase):
             rel = url.removeprefix(settings.SITE_URL + "/")
             rel = rel + "index.html" if rel == "" or rel.endswith("/") else rel
             self.assertTrue((self.out / rel).is_file(), url)
+
+
+class FeedMatchesPagesTests(unittest.TestCase):
+    """api/events.json states what the edition's page states, value for value.
+
+    build_api once worked out the address itself and lent an event's to an edition at
+    another venue, while the page showed none (json-feed-and-agent-files review, 2026-11-24).
+    """
+
+    # Feed key -> how the page's row gives the same fact.
+    SHARED = {
+        "name": lambda r: r["full_name"], "url": lambda r: r["abs_url"],
+        "venue": lambda r: r["venue"], "prefecture": lambda r: r["prefecture"],
+        "street_address": lambda r: r["street_address"], "cutoff_year": lambda r: r["cutoff_year"],
+        "lat": lambda r: r["pin"] and r["pin"]["lat"], "lon": lambda r: r["pin"] and r["pin"]["lon"],
+        "all_day": lambda r: not r["is_timed"],
+    }
+
+    @classmethod
+    def setUpClass(cls):
+        tmp = temp_dir(cls)
+        data = tmp / "data"
+        write_event(data, "meet", extra="street_address: 1-1 Test, Shizuoka (静岡県テスト市1-1)\n"
+                                         "lat: 34.9756\nlon: 138.3828\ncutoff_year: 1975\n")
+        write_instance(data, "meet", 2026, instance_yaml("meet", 2026, "2026-11-03", "2026-11-03"))
+        # Its own venue and nothing else: inherits no address and no pin.
+        write_instance(data, "meet", 2027, instance_yaml("meet", 2027, "2027-11-03", "2027-11-03",
+                                                         extra="venue_en: Other Field\n"))
+        write_instance(data, "meet", 2028, instance_yaml("meet", 2028, "2028-11-03", "2028-11-03", extra=(
+            'start_time: "09:00"\nend_time: "15:00"\nvenue_en: Far Field\nprefecture: Aichi\n'
+            "street_address: 2-2 Far, Aichi (愛知県遠市2-2)\nlat: 35.1752\nlon: 137.0911\ncutoff_year: 1989\n")))
+        build.build(data, tmp / "site")
+        events, editions = validate.load_and_validate(data)
+        cls.rows = {f"{r['slug']}-{r['id']}": r for r in rows.make_rows(events, editions)}
+        cls.feed = {e["id"]: e for e in json.loads((tmp / "site/api/events.json").read_text(encoding="utf-8"))["events"]}
+
+    def test_the_fixture_gives_every_shared_field_two_different_values(self):
+        # Otherwise a feed that ignored the edition's own value would pass unnoticed. Name and
+        # URL are not inherited from the event, so they have no edition value to ignore.
+        for key, page_value in self.SHARED.items():
+            if key in ("name", "url"):
+                continue
+            self.assertGreater(len({repr(page_value(r)) for r in self.rows.values()}), 1, key)
+
+    def test_every_record_states_what_its_page_states(self):
+        self.assertEqual(set(self.feed), set(self.rows))
+        for ident, r in self.rows.items():
+            for key, page_value in self.SHARED.items():
+                self.assertEqual(self.feed[ident].get(key), page_value(r), f"{ident}: {key}")
 
 
 class NotFoundPageTests(unittest.TestCase):
