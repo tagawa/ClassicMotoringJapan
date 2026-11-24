@@ -486,5 +486,64 @@ class DatesTableLayoutTest(unittest.TestCase):
         self.assertGreater(len(shown), 10)
         self.assertEqual(set(shown), {"table-cell"})
 
+
+@unittest.skipIf(sync_playwright is None, "playwright not installed")
+class GreyWhenGoneTest(unittest.TestCase):
+    """Once an event has run, its Held dot and its home-page map dot turn the muted colour."""
+
+    BRAND = {"light": "rgb(140, 28, 36)", "dark": "rgb(208, 99, 106)"}
+    MUTED = {"light": "rgb(92, 92, 92)", "dark": "rgb(168, 168, 168)"}
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = temp_dir(cls)
+        data = cls.tmp / "data"
+        write_event(data, "meet", name_en="Meet", extra="lat: 34.9756\nlon: 138.3828\n")
+        write_instance(data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-19", "2026-10-19"))
+        build.build(data, cls.tmp / "site")
+        cls.site = cls.tmp / "site"
+        try:
+            cls.pw = sync_playwright().start()
+            cls.browser = cls.pw.chromium.launch()
+        except Exception as e:
+            raise unittest.SkipTest(f"chromium unavailable: {e}")
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.browser.close()
+        cls.pw.stop()
+
+    def open(self, path: str, utc_instant: str, scheme: str):
+        ctx = self.browser.new_context(timezone_id="Europe/London", color_scheme=scheme)
+        self.addCleanup(ctx.close)
+        page = ctx.new_page()
+        page.clock.set_fixed_time(utc_instant)
+        page.goto((self.site / path).as_uri())
+        return page
+
+    def status(self, utc_instant: str, scheme: str) -> tuple:
+        page = self.open("events/meet/index.html", utc_instant, scheme)
+        return page.evaluate("""() => {
+          var cell = document.querySelector('.dates-table .status');
+          return [cell.className, getComputedStyle(cell.querySelector('.dot')).backgroundColor];
+        }""")
+
+    def test_a_held_dot_is_muted_and_a_coming_one_brand_red(self):
+        for scheme in ("light", "dark"):
+            with self.subTest(scheme=scheme):
+                # 00:30 on 20 Oct in Japan: the day has ended.
+                self.assertEqual(self.status("2026-10-19T15:30:00Z", scheme), ["status held", self.MUTED[scheme]])
+                self.assertEqual(self.status("2026-10-19T14:00:00Z", scheme), ["status", self.BRAND[scheme]])
+
+    def test_a_past_map_dot_on_the_home_page_is_muted(self):
+        for scheme in ("light", "dark"):
+            with self.subTest(scheme=scheme):
+                page = self.open("index.html", "2026-10-19T15:30:00Z", scheme)
+                fill = page.evaluate("() => getComputedStyle(document.querySelector('#past-list .venue-map circle')).fill")
+                self.assertEqual(fill, self.MUTED[scheme])
+                page = self.open("index.html", "2026-10-19T14:00:00Z", scheme)
+                fill = page.evaluate("() => getComputedStyle(document.querySelector('#upcoming-list .venue-map circle')).fill")
+                self.assertEqual(fill, self.BRAND[scheme])
+
 if __name__ == "__main__":
     unittest.main()

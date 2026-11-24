@@ -684,6 +684,8 @@ class HeldEditionTests(unittest.TestCase):
         self.assertIn("new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10)", script)
         self.assertIn('getAttribute("data-last-day") < todayInJapan', script)
         self.assertIn('textContent = "Held"', script)
+        # The cell's class is what turns the dot grey.
+        self.assertIn('cells[i].parentNode.className += " held";', script)
 
 
 class DisplayListTests(unittest.TestCase):

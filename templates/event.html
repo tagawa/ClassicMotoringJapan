@@ -81,12 +81,15 @@
 {% if rows %}
 <script>
   (function () {
-    // A confirmed edition that has run is "Held". Past means its last day has ended in
-    // Japan, the same test the home page uses to move an entry to Past events.
+    // A confirmed edition that has run is "Held", with a muted dot. Past means its last day
+    // has ended in Japan, the same test the home page uses to move an entry to Past events.
     var todayInJapan = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
     var cells = document.querySelectorAll("[data-last-day]");
     for (var i = 0; i < cells.length; i++) {
-      if (cells[i].getAttribute("data-last-day") < todayInJapan) cells[i].textContent = {{ t.held | tojson }};
+      if (cells[i].getAttribute("data-last-day") < todayInJapan) {
+        cells[i].textContent = {{ t.held | tojson }};
+        cells[i].parentNode.className += " held";
+      }
     }
   })();
 </script>
