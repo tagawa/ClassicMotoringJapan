@@ -344,6 +344,14 @@ def _check_combined_prose(ev: dict, rel: str, errors: list[str]) -> None:
             )
 
 
+def _check_field_homes(ev: dict, rel: str, errors: list[str]) -> None:
+    """A reader looks for photography rules under Photography, not under Watching."""
+    notes = ev.get("spectator_notes_en")
+    if isinstance(notes, str) and re.search(r"photograph", notes, re.IGNORECASE):
+        errors.append(f"{rel}: spectator_notes_en mentions photography; put that fact in "
+                      f"photography_notes_en, which the page shows under Photography")
+
+
 def _check_description(ev: dict, rel: str, errors: list[str]) -> None:
     if not ev.get("summary_en"):
         return
@@ -473,6 +481,7 @@ def load_and_validate(data_dir: Path) -> tuple[dict, list]:
             errors.append(f"{rel}: slug {ev.get('slug')!r} must match the file name {path.stem!r}")
             continue
         _check_combined_prose(ev, rel, errors)
+        _check_field_homes(ev, rel, errors)
         _check_description(ev, rel, errors)
         _check_coords(ev, rel, errors)
         _check_prefecture(ev, rel, errors)

@@ -188,6 +188,31 @@ class EditorialProseTests(unittest.TestCase):
                 self.build_with_prose(text)
 
 
+class FieldHomeTests(unittest.TestCase):
+    """A fact goes in the field the page labels with it, so a reader finds it under that heading."""
+
+    # As kawajima, sano and yumesugito shipped: under "Watching", with "Photography" left empty.
+    SHIPPED = "Free to watch, and photography is allowed. The festival runs in rain."
+
+    def setUp(self):
+        self.tmp = temp_dir(self)
+        self.data = self.tmp / "data"
+
+    def build_with(self, extra: str):
+        write_event(self.data, "meet", extra=extra)
+        write_instance(self.data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-18"))
+        build.build(self.data, self.tmp / "site")
+
+    def test_photography_in_the_spectator_notes_is_refused(self):
+        with self.assertRaises(validate.ValidationError) as ctx:
+            self.build_with(f"spectator_notes_en: {json.dumps(self.SHIPPED)}\n")
+        self.assertIn("photography_notes_en", str(ctx.exception))
+
+    def test_the_same_facts_split_between_the_two_fields_are_accepted(self):
+        self.build_with('spectator_notes_en: "Free to watch. The festival runs in rain."\n'
+                        'photography_notes_en: "Allowed."\n')
+
+
 class HouseStyleTests(unittest.TestCase):
     """English text in the data uses no em dashes and British spelling (spec 4.7)."""
 

@@ -325,9 +325,9 @@ route:
         prefecture: Kyoto
         lat: 35.0093
         lon: 135.7882
-# From /2026/entrylist/, published 2026-03-27. Numbers 10, 20, 30, 40 and 50 are listed
+# From /2026/entrylist/, published 2026-03-27 by the site's news post of that day. Numbers 10, 20, 30, 40 and 50 are listed
 # as "xx", and 04 and 42 are not on it.
-list_as_of: 2026-11-08
+list_as_of: 2026-03-27
 cars:
   - entry_no: "01"
     year: 1949
