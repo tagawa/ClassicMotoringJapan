@@ -19,6 +19,7 @@ videos:
   # Video by SPACIOUS TV.
   - youtube_id: Fk3mRAOSS5g
     label_en: 70th meeting
+    label_ja: 第70回
 list_as_of: 2024-06-02
 cars:
   - entry_no: "A1"

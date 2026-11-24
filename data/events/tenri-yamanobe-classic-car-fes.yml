@@ -13,6 +13,7 @@ prefecture: Nara
 # 乗降場 is a boarding and alighting area. No source gives the reading of 北大路
 # here, so the Japanese name stays in the address line.
 venue_en: Tenrikyo boarding area, Toyodacho, Tenri
+venue_ja: 天理教北大路乗降場（天理市豊田町）
 street_address: 130-1 Toyodacho, Tenri, Nara (奈良県天理市豊田町130-1, 天理教北大路乗降場)
 lat: 34.6050
 lon: 135.8400

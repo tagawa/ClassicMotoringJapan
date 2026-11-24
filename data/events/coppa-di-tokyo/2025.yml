@@ -23,6 +23,7 @@ videos:
   # Video by Tokyo Vibes.
   - youtube_id: hKtor-vuD_Q
     label_en: The start at Shiodome
+    label_ja: 汐留でのスタート
 list_as_of: 2025-11-19
 cars:
   - entry_no: "0"

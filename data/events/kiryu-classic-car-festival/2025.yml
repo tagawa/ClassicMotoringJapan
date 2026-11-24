@@ -16,6 +16,8 @@ videos:
   # Video by nobo dake.
   - youtube_id: hAt1kn1q0Yk
     label_en: Cars on display and the opening ceremony
+    label_ja: 展示車両と開会式
   # Video by nobo dake.
   - youtube_id: u8aXCh_XQ2Y
     label_en: Rally start
+    label_ja: ラリーのスタート

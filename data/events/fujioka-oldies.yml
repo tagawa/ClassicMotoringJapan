@@ -10,6 +10,7 @@ summary_en: >
   held in 2024; more than 50 cars came in 2025.
 prefecture: Gunma
 venue_en: Chuo-dori shopping street, Fujioka
+venue_ja: 藤岡中央通り商店街
 # No street address: the venue is a stretch of road. The pin is the midpoint of the
 # two traffic signals as OpenStreetMap places them.
 lat: 36.2474

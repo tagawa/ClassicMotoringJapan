@@ -13,6 +13,7 @@ summary_en: >
   display.
 prefecture: Saitama
 venue_en: Kitamoto Sogo Koen (Kitamoto Park), baseball ground
+venue_ja: 北本総合公園 野球場
 street_address: 1-167 Furuichiba, Kitamoto, Saitama (埼玉県北本市古市場1-167)
 # GSI's pin for the address; OSM's reverse lookup names the baseball ground.
 lat: 36.0432

@@ -11,6 +11,7 @@ summary_en: >
   planned for 2027; no date is announced.
 prefecture: Kyoto
 venue_en: Kyoto Prefectural Office (start)
+venue_ja: 京都府庁（スタート）
 # GSI puts the district the guide names (藪之内町) at this point and OpenStreetMap has
 # the office's old main building there. No street_address: the guide gives a Kyoto
 # street-crossing address, and no source here gives the streets' readings.

@@ -22,6 +22,7 @@ videos:
   # Video by Y Sekiai.
   - youtube_id: GoBKxzAp7k8
     label_en: The Seven and Lotus classes
+    label_ja: セブンとロータスのクラス
 list_as_of: 2025-04-06
 cars:
   - entry_no: "A2"

@@ -11,6 +11,7 @@ videos:
   # The organiser's own channel, linked from its site.
   - youtube_id: wc6xXwLrBB4
     label_en: Day 1
+    label_ja: 1日目
 route_en: >
   The 17th running, about 1,100 km from Nagoya to Kyoto by way of Gifu,
   Fukui and Ishikawa. Windows shift with traffic on the day.

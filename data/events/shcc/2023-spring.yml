@@ -20,6 +20,7 @@ videos:
   # Video by Y Sekiai.
   - youtube_id: giuxXpwy_7U
     label_en: 68th meeting
+    label_ja: 第68回
 list_as_of: 2023-05-28
 cars:
   - entry_no: "A1"

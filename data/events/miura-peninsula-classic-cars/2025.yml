@@ -12,6 +12,8 @@ videos:
   # Video by conzaghi.
   - youtube_id: EN5D_DChxQ8
     label_en: Part 1
+    label_ja: 前編
   # Video by conzaghi.
   - youtube_id: kyxgckGvYVA
     label_en: Part 2
+    label_ja: 後編

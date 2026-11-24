@@ -234,6 +234,7 @@ videos:
   # The site's own film, made from the owner's footage.
   - youtube_id: nmMIb9Kqa8Y
     label_en: Time trial runs and the paddock at Oiso Long Beach
+    label_ja: 大磯ロングビーチでのタイムトライアルとパドック
 course:
   # Written by tools/course.py from course20261108.pdf. Rerun it rather than editing by hand.
   line:

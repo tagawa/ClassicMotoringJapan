@@ -14,7 +14,9 @@ videos:
   # Video by Jiji Nobo.
   - youtube_id: UNHgSsRq79o
     label_en: The 19th festival at Gunma University's Kiryu campus
+    label_ja: 群馬大学桐生キャンパスでの第19回
   # The channel, 稀に暇な医療事務えみちゃん, gives no Latin form of its name, so the credit is romanised.
   # Video by Mare ni Hima na Iryo Jimu Emi-chan.
   - youtube_id: alxATJkUKCo
     label_en: Cars arriving
+    label_ja: 到着する車両

@@ -16,6 +16,8 @@ videos:
   # Video by 車の世界NOW.
   - youtube_id: RgfubtP3BZg
     label_en: Report on the weekend
+    label_ja: 週末のレポート
   # Video by an entrant's own channel (togi hideki).
   - youtube_id: fS7VCcGel_Q
     label_en: A 1953 MG TD on the run
+    label_ja: 1953年式MG TDで参加

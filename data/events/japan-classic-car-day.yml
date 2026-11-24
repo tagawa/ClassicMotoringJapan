@@ -12,6 +12,7 @@ summary_en: >
   1956 or earlier as the theme.
 prefecture: Tokyo
 venue_en: Tokyo Prince Hotel, car park 2
+venue_ja: 東京プリンスホテル 第2駐車場
 street_address: 3-3-1 Shibakoen, Minato, Tokyo (東京都港区芝公園3-3-1)
 # GSI's pin for the hotel's address; OSM's reverse lookup names the hotel.
 lat: 35.6589

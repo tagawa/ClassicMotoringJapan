@@ -12,9 +12,12 @@ videos:
   # Video by LILY WORKS.
   - youtube_id: ltCAFqbpocU
     label_en: The entered cars
+    label_ja: エントリー車両
   # Video by SKYLINE E-HCR32.
   - youtube_id: UNkSe9ge8XU
     label_en: Every car entered
+    label_ja: エントリー全車両
   # Video by Kitaline.
   - youtube_id: PfAxMICTzjE
     label_en: The joint parade run
+    label_ja: 合同パレードラン

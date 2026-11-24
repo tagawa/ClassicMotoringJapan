@@ -14,6 +14,7 @@ videos:
   # Video by SSLC caRS.
   - youtube_id: W6Kb1rhRSfs
     label_en: The cars on show
+    label_ja: 展示車両
 # From /cars/. The site's last car announcement was 12 October. Numbers A23, A28, A48
 # and B20 are not on it. Entry F40 (D7) has no year there.
 list_as_of: 2026-10-12

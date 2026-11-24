@@ -20,9 +20,11 @@ videos:
   # Video by nakanaka_jp.
   - youtube_id: l5kudZ01Dkg
     label_en: Cars arriving at the start in Shiodome
+    label_ja: 汐留のスタートに到着する車両
   # Video by ボルビックチャンネル（ボルビック）
   - youtube_id: JcWXRzkxLzI
     label_en: Cars leaving the start line in Shiodome
+    label_ja: 汐留のスタートラインを出る車両
 # From the 2026 guide. On the edition, not the event: the 2025 entry list has
 # later cars and no source gives that year's limit.
 cutoff_year: 1976

@@ -12,6 +12,7 @@ summary_en: >
   1980s.
 prefecture: Gifu
 venue_en: Enakyo Visitor Centre, Ena
+venue_ja: 恵那峡ビジターセンター（恵那市）
 street_address: 2709-79 Oicho, Ena, Gifu (岐阜県恵那市大井町2709-79)
 # No lat/lon: neither GSI nor OSM resolves the visitor centre itself, only its
 # block and the bus stop nearby, so there is no pair to point a Map link at.

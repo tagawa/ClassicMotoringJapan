@@ -11,6 +11,7 @@ cutoff_year: 1996
 last_verified: 2026-11-17
 sequence: 0
 venue_en: Large Lawn, Aichi Expo Memorial Park (Morikoro Park), Nagakute
+venue_ja: 愛・地球博記念公園 大芝生広場（モリコロパーク、長久手市）
 route_en: >
   A departure ceremony at the museum at 08:30, then about 120 cars on a 12 km
   parade on public roads through Nagakute to the park, finishing by 10:45. The
@@ -20,6 +21,7 @@ videos:
   # Video by superSPORTS.
   - youtube_id: OzlQT-VLHjg
     label_en: The parade
+    label_ja: パレード
 # Entries are from the museum's list of 1 November (event page, 参加車両はこちら), country column included.
 # The four lead cars at its head (a 2000GT Roadster, Sports 800, N360 and Legacy wagon) were the
 # museum's and makers' own, unnumbered, and are left out. The list warns that some cars may not take part.

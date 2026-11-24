@@ -12,9 +12,11 @@ videos:
   # Video by nostalgiccar.
   - youtube_id: XCIVjQjCbv4
     label_en: Report from the event
+    label_ja: イベントレポート
   # Video by Maebashi Sunday Meeting.
   - youtube_id: WZZrZ0ZvODk
     label_en: Cars on display on 5 September
+    label_ja: 9月5日の展示車両
 # The Concours of Elegance entries, one post each on the organiser's site. Entries 14
 # and 32 were never posted. The wider display has no published list.
 list_as_of: 2026-09-01

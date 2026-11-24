@@ -550,12 +550,17 @@ cars:
 videos:
   - youtube_id: t3UUnZ7g5P0
     label_en: Day 1
+    label_ja: 1日目
   - youtube_id: fIJCC_4IcE0
     label_en: Day 2
+    label_ja: 2日目
   - youtube_id: FfR7q_MMjBE
     label_en: Day 3
+    label_ja: 3日目
   - youtube_id: pUne08Gamr4
     label_en: Day 4
+    label_ja: 4日目
   # Video by SPACIOUS TV.
   - youtube_id: 6vFIp9F24Ww
     label_en: Watching the start on Day 1
+    label_ja: 1日目のスタートを見る

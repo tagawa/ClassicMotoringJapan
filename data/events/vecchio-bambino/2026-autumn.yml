@@ -11,12 +11,15 @@ videos:
   # Video by TV Setouchi.
   - youtube_id: UGcV37v8wKE
     label_en: Both days of the rally
+    label_ja: ラリーの2日間
   # Video by Okatabi Channel.
   - youtube_id: h9QdtjnC08I
     label_en: The start at Okayama Gokoku Shrine
+    label_ja: 岡山縣護國神社でのスタート
   # Video by HB countryside.
   - youtube_id: vJERHS8x77U
     label_en: Day 2 at Hiruzen Kogen Center, in the rain
+    label_ja: 2日目、雨の蒜山高原センター
 route_en: >
   The 28th running. Cars gathered at the shrine from 07:00 and set off from
   08:30. Saturday's leg ran through Akaiwa, Bizen, Setouchi, Wake and Mimasaka to

@@ -12,6 +12,7 @@ videos:
   # From Old-timer, the magazine whose publisher runs the meet, so the organiser's own.
   - youtube_id: 6YE9ZM4Svrk
     label_en: The day, and the special exhibits' engines started
+    label_ja: 当日の様子と、特別展示車両のエンジン始動
 # The organiser lists these in two classes, retro and neo-classic. The table has no
 # class column, so they are grouped by marque here, which is what Make implies.
 list_as_of: 2026-10-06

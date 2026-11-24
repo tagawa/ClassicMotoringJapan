@@ -6,6 +6,7 @@ end: 2026-05-30
 start_time: "11:00"
 end_time: "15:00"
 venue_en: Taisho-mura Roman-tei front plaza, Akechi
+venue_ja: 大正村浪漫亭前広場（明智町）
 street_address: 456 Akechicho, Ena, Gifu (岐阜県恵那市明智町456)
 # The pin is OSM's 大正村広場, the plaza the organiser's venue map marks as area A.
 # GSI resolves the address only as far as Akechicho, so it confirms the district

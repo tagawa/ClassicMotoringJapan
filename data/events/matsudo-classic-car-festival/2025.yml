@@ -15,7 +15,9 @@ videos:
   # Video by Mii-chan Drive.
   - youtube_id: teGMAIeD5qQ
     label_en: Walk round, commentary in Japanese
+    label_ja: 会場を歩いて紹介（解説つき）
   # Starts at the station and walks to the car park, then round the show.
   # Video by NickyRockCh.
   - youtube_id: KtfBdsZtBmg
     label_en: From the station to the show, commentary in Japanese
+    label_ja: 駅から会場まで（解説つき）

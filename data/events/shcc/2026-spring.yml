@@ -20,11 +20,14 @@ videos:
   # Video by SPACIOUS TV.
   - youtube_id: f09y8R-rSNg
     label_en: 74th meeting
+    label_ja: 第74回
   # The club's own channel (湘南ヒストリックカークラブch), in two halves.
   - youtube_id: QUxwqPz3yZY
     label_en: 74th meeting, part 1
+    label_ja: 第74回 前編
   - youtube_id: KyhhTxKiQ0Y
     label_en: 74th meeting, part 2
+    label_ja: 第74回 後編
 list_as_of: 2026-04-26
 cars:
   - entry_no: "A2"

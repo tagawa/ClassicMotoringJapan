@@ -12,6 +12,7 @@ videos:
   # Video by Rare Machines Garage.
   - youtube_id: 6ArIC4NT1Gs
     label_en: The cars on show
+    label_ja: 展示車両
 list_as_of: 2026-09-21
 # The source names the models it will have on the floor, not the individual cars, so
 # there are no entry numbers and no years to give.
