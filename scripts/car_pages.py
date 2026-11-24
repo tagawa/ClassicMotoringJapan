@@ -32,7 +32,7 @@ def _event_line(latest: dict, rows: list[dict]) -> dict:
     """
     r, n = latest["row"], latest["count"]
     text = f"{n} in {r['label']}" + (", provisional" if r["list_provisional"] else "")
-    dates = [{"start": d["ed"]["start"], "end": d["ed"]["end"],
+    dates = [{"start": d["ed"]["start"], "end": d["ed"]["end"], "tentative": d["ed"]["status"] == "tentative",
               "text": fmt_span(d["ed"]["start"], d["ed"]["end"], year=True)
                       + (" (dates not confirmed)" if d["ed"]["status"] == "tentative" else "")}
              for d in rows if d["slug"] == r["slug"] and d["ed"]["start"] >= r["ed"]["start"]

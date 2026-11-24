@@ -1,51 +1,51 @@
 {% extends "base.html" %}
 {% block main %}
-<nav class="breadcrumbs" aria-label="Breadcrumb">
+<nav class="breadcrumbs" aria-label="{{ t.breadcrumb }}">
   <ol>
-    <li><a href="{{ root }}">Home</a></li>
-    <li><span class="sep" aria-hidden="true">›</span><a href="{{ root }}cars/">Cars</a></li>
+    <li><a href="{{ home }}">{{ t.crumb_home }}</a></li>
+    <li><span class="sep" aria-hidden="true">›</span><a href="{{ home }}cars/">{{ t.nav_cars }}</a></li>
     <li><span class="sep" aria-hidden="true">›</span><span aria-current="page">{{ page.title }}</span></li>
   </ol>
 </nav>
 <h1>{{ page.title }}</h1>
-<p>{{ page.totals }}.</p>
+<p>{{ page.totals }}{{ t.full_stop }}</p>
 
 {# One table, every date: the script keeps each event's next date and moves the rest to the second table. #}
-<h2 id="next-dates">Events where {{ page.title }} cars have run</h2>
-<div class="table-wrap" tabindex="0" role="region" aria-label="Next dates" id="dated-events">
+<h2 id="next-dates">{{ t.events_where(page.title) }}</h2>
+<div class="table-wrap" tabindex="0" role="region" aria-label="{{ t.next_dates }}" id="dated-events">
   <table>
-    <thead><tr><th scope="col">Event</th><th scope="col">Next date</th><th scope="col">Cars, latest list</th></tr></thead>
+    <thead><tr><th scope="col">{{ t.col_event_name }}</th><th scope="col">{{ t.col_next_date }}</th><th scope="col">{{ t.col_latest }}</th></tr></thead>
     <tbody>
 {% for line in page.events %}
-      <tr><td><a href="{{ root }}events/{{ line.slug }}/">{{ line.ev.name_en }}</a></td><td>{% for d in line.dates %}{% if not loop.first %}<span class="date-sep">; </span>{% endif %}<span class="next-date" data-start="{{ d.start.isoformat() }}" data-ends="{{ d.end.isoformat() }}">{{ d.text }}</span>{% endfor %}<span class="no-next"{% if line.dates %} hidden{% endif %}>Next date not announced</span></td><td><a href="{{ root }}{{ line.row.path }}">{{ line.text }}</a></td></tr>
+      <tr><td><a href="{{ home }}events/{{ line.slug }}/">{{ local(line.ev, "name") }}</a></td><td>{% for d in line.dates %}{% if not loop.first %}<span class="date-sep">; </span>{% endif %}<span class="next-date" data-start="{{ d.start.isoformat() }}" data-ends="{{ d.end.isoformat() }}">{{ d.text }}</span>{% endfor %}<span class="no-next"{% if line.dates %} hidden{% endif %}>{{ t.next_not_announced }}</span></td><td><a href="{{ home }}{{ line.row.path }}">{{ line.text }}</a></td></tr>
 {% endfor %}
     </tbody>
   </table>
 </div>
 
-<h2 id="no-date" hidden>No date announced yet</h2>
-<div class="table-wrap" tabindex="0" role="region" aria-label="No date announced yet" id="undated-events" hidden>
+<h2 id="no-date" hidden>{{ t.no_date }}</h2>
+<div class="table-wrap" tabindex="0" role="region" aria-label="{{ t.no_date }}" id="undated-events" hidden>
   <table>
-    <thead><tr><th scope="col">Event</th><th scope="col">Cars, latest list</th></tr></thead>
+    <thead><tr><th scope="col">{{ t.col_event_name }}</th><th scope="col">{{ t.col_latest }}</th></tr></thead>
     <tbody></tbody>
   </table>
 </div>
 
 <details class="all-cars">
 <summary>{{ page.lists_summary }}</summary>
-<div class="table-wrap" tabindex="0" role="region" aria-label="Entry lists">
+<div class="table-wrap" tabindex="0" role="region" aria-label="{{ t.entry_lists }}">
   <table>
-    <thead><tr><th scope="col">Event</th><th scope="col">Date</th><th scope="col">Count</th></tr></thead>
+    <thead><tr><th scope="col">{{ t.col_event_name }}</th><th scope="col">{{ t.col_date }}</th><th scope="col">{{ t.col_count }}</th></tr></thead>
     <tbody>
 {% for x in page.lists %}
-      <tr><td><a href="{{ root }}{{ x.row.path }}">{{ x.row.full_name }}</a></td><td>{{ x.when }}</td><td>{{ x.text }}{% if x.row.list_provisional %}, provisional list{% endif %}</td></tr>
+      <tr><td><a href="{{ home }}{{ x.row.path }}">{{ x.row.full_name | latin }}</a></td><td>{{ x.when }}</td><td>{{ x.text }}{% if x.row.list_provisional %}{{ t.provisional_list }}{% endif %}</td></tr>
 {% endfor %}
     </tbody>
   </table>
 </div>
 </details>
 
-<p>Counts come only from events whose organisers publish entry lists.</p>
+<p>{{ t.counts_note }}</p>
 {% endblock %}
 
 {% block scripts %}
@@ -81,7 +81,7 @@
       rest[i].removeChild(rest[i].getElementsByTagName("td")[1]);
       restBody.appendChild(rest[i]);
     }
-    heading.textContent = "Next dates";
+    heading.textContent = {{ t.next_dates | tojson }};
     if (!lines.length) {
       heading.setAttribute("hidden", "");
       dated.setAttribute("hidden", "");
@@ -96,6 +96,6 @@
 
 {% block footer %}
 {% if latest %}
-  <p>Most recent check: {{ latest.isoformat() }}</p>
+  <p>{{ t.most_recent_check }}{{ latest | ymd }}</p>
 {% endif %}
 {% endblock %}

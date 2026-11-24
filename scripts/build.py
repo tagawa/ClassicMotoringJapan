@@ -20,20 +20,22 @@ from pathlib import Path
 from xml.sax.saxutils import escape as xml_escape
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+from markupsafe import Markup
 
 from calendars import build_ics, ics_calendar
 from car_pages import INDEX_DESCRIPTION, group_pages, index_flags, make_index
 from cards import draw_card, plan_cards
 from charts import year_chart
-from formatting import (fmt_domain, fmt_fee, fmt_fee_ja, fmt_month_ja, fmt_span_ja, fmt_weekday, mark_ja,
-                        prose_html)
+from formatting import mark_ja, prose_html
+from languages import (CARS_DESCRIPTION_JA, FILTERS, LANGUAGE_NAMES, LANGUAGES, PREFIX, TEXT, countries, event_text,
+                       group_text, local, months_text, row_text, years_text)
 from machine_files import build_api, build_api_catalog, build_ard_catalog, build_llms_txt
 from maps import MAP_HEIGHT, MAP_WIDTH, japan_path, venue_pin
 from page_meta import build_breadcrumbs, build_website_jsonld, edition_description, event_description
 from photos import photo_info, write_photo
 from rows import make_rows, month_groups
 from settings import (ABOUT_DESCRIPTION, ARD_PATH, ARD_PREDECESSOR_PATH, CONTENT_SIGNAL, CONTENT_USAGE,
-                      COUNTRIES, FEED_FILE, INDEXNOW_KEY, ISSUES_URL, JA_LEDE, PREFECTURES_JA, ROOT,
+                      FEED_FILE, INDEXNOW_KEY, ISSUES_URL, JA_LEDE, PREFECTURES_JA, ROOT,
                       SHARE_SIZE, SITE_LEDE, SITE_NAME, SITE_URL, YOUTUBE_CHANNEL_URL)
 from validate import BuildError, load_and_validate, load_make_groups, load_makes
 
@@ -49,6 +51,25 @@ def reset_out_dir(out_dir: Path) -> None:
     out_dir.mkdir(parents=True)
 
 
+def local_rows(rows: list[dict], lang: str) -> list[dict]:
+    """The rows as a page in that language shows them, their links to each other kept."""
+    if lang == "en":
+        return rows
+    laid = {id(r): {**r, **row_text(r, lang)} for r in rows}
+    for r in laid.values():
+        for key in ("previous", "next", "previous_videos"):
+            if r[key] is not None:
+                r[key] = laid[id(r[key])]
+    return list(laid.values())
+
+
+def pair(path: str, lang: str, root: str) -> dict:
+    """A page's links to itself in every language: hreflang for search engines, the header for people."""
+    return {"alternates": [(code, f"{SITE_URL}/{PREFIX[code]}{path}") for code in LANGUAGES],
+            "others": [{"lang": code, "name": LANGUAGE_NAMES[code], "href": f"{root}{PREFIX[code]}{path}"}
+                       for code in LANGUAGES if code != lang]}
+
+
 def build(data_dir: Path, out_dir: Path,
           templates_dir: Path = ROOT / "templates", static_dir: Path = ROOT / "static") -> None:
     events, editions = load_and_validate(data_dir)
@@ -62,19 +83,22 @@ def build(data_dir: Path, out_dir: Path,
     if errors:
         raise BuildError(errors)
 
-    env = Environment(loader=FileSystemLoader(templates_dir),
-                      autoescape=select_autoescape(["html"]),
-                      trim_blocks=True, lstrip_blocks=True, keep_trailing_newline=True)
-    env.globals["countries"] = COUNTRIES
-    env.filters["fee"] = fmt_fee
-    env.filters["domain"] = fmt_domain
-    env.filters["prose"] = prose_html
-    env.filters["mark_ja"] = mark_ja
-    env.filters["weekday"] = fmt_weekday
-    env.filters["span_ja"] = fmt_span_ja
-    env.filters["month_ja"] = fmt_month_ja
-    env.filters["fee_ja"] = fmt_fee_ja
-    env.filters["pref_ja"] = PREFECTURES_JA.__getitem__
+    def make_env(lang: str) -> Environment:
+        # One environment per language: the same filter names, bound to that language's formatters.
+        env = Environment(loader=FileSystemLoader(templates_dir),
+                          autoescape=select_autoescape(["html"]),
+                          trim_blocks=True, lstrip_blocks=True, keep_trailing_newline=True)
+        env.globals.update(t=TEXT[lang], lang=lang, countries=countries(lang),
+                           # Marks Latin text on a page in another language (spec 6.6).
+                           mark_en=Markup("") if lang == "en" else Markup(' lang="en"'),
+                           local=lambda obj, base: local(lang, obj, base))
+        env.filters.update(FILTERS[lang])
+        env.filters["prose"] = prose_html
+        env.filters["mark_ja"] = mark_ja
+        return env
+
+    envs = {lang: make_env(lang) for lang in LANGUAGES}
+    env = envs["en"]
     host = SITE_URL.split("://", 1)[1]
     common = {"site_name": SITE_NAME, "site_url": SITE_URL, "site_lede": SITE_LEDE,
               "ard_path": ARD_PATH, "ard_predecessor_path": ARD_PREDECESSOR_PATH,
@@ -103,41 +127,59 @@ def build(data_dir: Path, out_dir: Path,
 
     all_verified = [e["last_verified"] for e in events.values()] + [x["data"]["last_verified"] for x in editions]
     latest = max(all_verified) if all_verified else None
-    write("index.html", env.get_template("home.html").render(
-        **common, root="", canonical=f"{SITE_URL}/", title=f"Classic car events in Japan | {SITE_NAME}", hreflang=True,
-        description=SITE_LEDE, og_image=og["site"], months=month_groups(rows), years=year_chart(rows), latest=latest, jsonld=[build_website_jsonld()],
-        japan=japan_path() if any(r["dot"] for r in rows) else None,
-        map_box=f"0 0 {MAP_WIDTH:g} {MAP_HEIGHT:g}", map_ratio=MAP_HEIGHT / MAP_WIDTH))
-
-    write("ja/index.html", env.get_template("ja.html").render(
-        **common, root="../", canonical=f"{SITE_URL}/ja/", lang="ja", hreflang=True,
-        title=f"日本のクラシックカーイベント | {SITE_NAME}", description=JA_LEDE, og_image=og["site"],
-        months=month_groups(rows), latest=latest, jsonld=[]))
+    japan = japan_path() if any(r["dot"] for r in rows) else None
+    for lang in LANGUAGES:
+        home = PREFIX[lang]
+        root = "../" * home.count("/")
+        write(f"{home}index.html", envs[lang].get_template("home.html").render(
+            **common, **pair("", lang, root), root=root, home="", canonical=f"{SITE_URL}/{home}",
+            title=f"{TEXT[lang]['home_title']} | {SITE_NAME}", description=SITE_LEDE if lang == "en" else JA_LEDE,
+            og_image=og["site"], months=months_text(month_groups(local_rows(rows, lang)), lang),
+            years=years_text(year_chart(rows), rows, lang), latest=latest,
+            # The WebSite block describes the whole site, once.
+            jsonld=[build_website_jsonld()] if lang == "en" else [],
+            japan=japan, map_box=f"0 0 {MAP_WIDTH:g} {MAP_HEIGHT:g}", map_ratio=MAP_HEIGHT / MAP_WIDTH))
 
     sitemap = [(f"{SITE_URL}/", latest), (f"{SITE_URL}/ja/", latest)]
-    for slug, ev in sorted(events.items()):
-        ev_rows = [r for r in rows if r["slug"] == slug]
-        verified = max([ev["last_verified"]] + [r["ed"]["last_verified"] for r in ev_rows])
-        write(f"events/{slug}/index.html", env.get_template("event.html").render(
-            **common, root="../../", canonical=f"{SITE_URL}/events/{slug}/",
-            title=f"{ev['name_en']}: Visitor Guide", description=event_description(ev),
-            ev=ev, rows=ev_rows, verified=verified, pin=venue_pin(ev),
-            photo=photo_info(ev), og_image=og[slug],
-            jsonld=[r["jsonld"] for r in ev_rows if not r["has_page"] and r["jsonld"]]))
-        sitemap.append((f"{SITE_URL}/events/{slug}/", verified))
-        for r in ev_rows:
+    for lang in LANGUAGES:
+        home = PREFIX[lang]
+        lang_rows = local_rows(rows, lang)
+        for slug, ev in sorted(events.items()):
+            ev_rows = [r for r in lang_rows if r["slug"] == slug]
+            verified = max([ev["last_verified"]] + [r["ed"]["last_verified"] for r in ev_rows])
+            path = f"events/{slug}/"
+            root = "../" * (path.count("/") + home.count("/"))
+            shown = {**ev, **event_text(ev, lang)}
+            write(f"{home}{path}index.html", envs[lang].get_template("event.html").render(
+                **common, **pair(path, lang, root), root=root, home="../" * path.count("/"),
+                canonical=f"{SITE_URL}/{home}{path}",
+                title=TEXT[lang]["event_title"](ev.get(f"name_{lang}") or ev["name_en"]),
+                description=event_description(ev) if lang == "en" else shown["description"],
+                ev=shown, rows=ev_rows, verified=verified, pin=venue_pin(ev),
+                photo=photo_info(ev), og_image=og[slug],
+                # The Event blocks stay on the English page: one event, described once.
+                jsonld=[r["jsonld"] for r in ev_rows if lang == "en" and not r["has_page"] and r["jsonld"]]))
+            sitemap.append((f"{SITE_URL}/{home}{path}", verified))
+    for lang in LANGUAGES:
+        for r in local_rows(rows, lang):
             if not r["has_page"]:
                 continue
-            ed = r["ed"]
-            write(f"{r['path']}index.html", env.get_template("edition.html").render(
-                **common, root="../../../", canonical=r["abs_url"],
-                title=f"{r['full_name']}: {r['parts_phrase']}",
-                description=edition_description(r),
+            ev, ed, slug = r["ev"], r["ed"], r["slug"]
+            home = PREFIX[lang]
+            root = "../" * (r["path"].count("/") + home.count("/"))
+            # The Event block stays on the English page: one event, described once.
+            event_block = r["jsonld"] if lang == "en" else None
+            crumbs = build_breadcrumbs([
+                (str(TEXT[lang]["crumb_home"]), f"{SITE_URL}/{home}"),
+                (ev.get(f"name_{lang}") or ev["name_en"], f"{SITE_URL}/{home}events/{slug}/"), (r["label"], None)])
+            write(f"{home}{r['path']}index.html", envs[lang].get_template("edition.html").render(
+                **common, **pair(r["path"], lang, root), root=root, home="../" * r["path"].count("/"),
+                canonical=f"{SITE_URL}/{home}{r['path']}",
+                title=f"{r['full_name']}{TEXT[lang]['title_sep']}{r['parts_phrase']}",
+                description=edition_description(r) if lang == "en" else r["description"],
                 ev=ev, r=r, ed=ed, photo=photo_info(ev), og_image=og[r["path"]], make_pages=make_pages,
-                jsonld=[block for block in (r["jsonld"], build_breadcrumbs([
-                    ("Home", f"{SITE_URL}/"), (ev["name_en"], f"{SITE_URL}/events/{slug}/"), (r["label"], None)]))
-                        if block]))
-            sitemap.append((r["abs_url"], ed["last_verified"]))
+                jsonld=[block for block in (event_block, crumbs) if block]))
+            sitemap.append((f"{SITE_URL}/{home}{r['path']}", ed["last_verified"]))
 
     write("about/index.html", env.get_template("about.html").render(
         **common, root="../", canonical=f"{SITE_URL}/about/", title=f"About | {SITE_NAME}",
@@ -146,20 +188,31 @@ def build(data_dir: Path, out_dir: Path,
     sitemap.append((f"{SITE_URL}/about/", None))
 
     cars_verified = max((r["ed"]["last_verified"] for r in rows if r["cars"]), default=None)
-    make_lines = make_index(rows, makes, groups, car_groups)
-    write("cars/index.html", env.get_template("cars.html").render(
-        **common, root="../", canonical=f"{SITE_URL}/cars/", title=f"Cars by make | {SITE_NAME}",
-        description=INDEX_DESCRIPTION, og_image=og["site"], lines=make_lines, flags=index_flags(make_lines),
-        latest=cars_verified, jsonld=[]))
-    sitemap.append((f"{SITE_URL}/cars/", cars_verified))
-    for page in car_groups:
-        # No brand suffix: the title names something on its own (spec 8).
-        write(f"{page['path']}index.html", env.get_template("car_group.html").render(
-            **common, root="../../", canonical=f"{SITE_URL}/{page['path']}",
-            title=f"{page['title']} at classic car events in Japan", description=page["description"],
-            og_image=og["site"], page=page, latest=page["verified"], jsonld=[build_breadcrumbs([
-                ("Home", f"{SITE_URL}/"), ("Cars", f"{SITE_URL}/cars/"), (page["title"], None)])]))
-        sitemap.append((f"{SITE_URL}/{page['path']}", page["verified"]))
+    for lang in LANGUAGES:
+        home = PREFIX[lang]
+        t = TEXT[lang]
+        # Built from the page language's rows, so each list links and names its edition in that language.
+        pages = [{**page, **group_text(page, lang)} for page in group_pages(local_rows(rows, lang), groups)]
+        make_lines = make_index(rows, makes, groups, pages)
+        root = "../" * (1 + home.count("/"))
+        write(f"{home}cars/index.html", envs[lang].get_template("cars.html").render(
+            **common, **pair("cars/", lang, root), root=root, home="../", canonical=f"{SITE_URL}/{home}cars/",
+            title=f"{t['cars_heading']} | {SITE_NAME}",
+            description=INDEX_DESCRIPTION if lang == "en" else CARS_DESCRIPTION_JA, og_image=og["site"],
+            lines=make_lines, flags=index_flags(make_lines), latest=cars_verified, jsonld=[]))
+        sitemap.append((f"{SITE_URL}/{home}cars/", cars_verified))
+        for page in pages:
+            root = "../" * (page["path"].count("/") + home.count("/"))
+            plain = page.get("plain_title", page["title"])
+            # No brand suffix: the title names something on its own (spec 8).
+            write(f"{home}{page['path']}index.html", envs[lang].get_template("car_group.html").render(
+                **common, **pair(page["path"], lang, root), root=root, home="../../",
+                canonical=f"{SITE_URL}/{home}{page['path']}",
+                title=page.get("page_title", f"{plain} at classic car events in Japan"), description=page["description"],
+                og_image=og["site"], page=page, latest=page["verified"], jsonld=[build_breadcrumbs([
+                    (str(t["crumb_home"]), f"{SITE_URL}/{home}"), (str(t["nav_cars"]), f"{SITE_URL}/{home}cars/"),
+                    (plain, None)])]))
+            sitemap.append((f"{SITE_URL}/{home}{page['path']}", page["verified"]))
 
     # Pages serves this for a missing path at any depth, so links must be root-absolute.
     write("404.html", env.get_template("404.html").render(

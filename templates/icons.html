@@ -7,7 +7,7 @@
 {%- endmacro %}
 
 {% macro map_link(pin) %}
-{%- if pin %}<br><a class="map" href="{{ pin.url }}">{{ pin_icon() }}Map</a>{% endif -%}
+{%- if pin %}<br><a class="map" href="{{ pin.url }}">{{ pin_icon() }}{{ t.map }}</a>{% endif -%}
 {% endmacro %}
 
 {# The home list's facts, one glyph each, on the same grid and stroke as the pin: a ticket
@@ -45,7 +45,7 @@
 {# One edition into the visitor's own calendar. The caller wraps it in a .calendar-links
    element carrying data-hide-after, so drop_passed() removes it once the last day has ended. #}
 {% macro calendar_links(r, root) %}
-{%- if r.ics_path %}<a href="{{ root }}{{ r.ics_path }}" data-fathom="Calendar file downloaded">{{ calendar_icon() }}Add to Apple Calendar or Outlook</a><br><a href="{{ r.google_url }}" data-fathom="Google Calendar form opened">{{ calendar_icon() }}Add to Google Calendar</a>{% endif -%}
+{%- if r.ics_path %}<a href="{{ root }}{{ r.ics_path }}" data-fathom="Calendar file downloaded">{{ calendar_icon() }}{{ t.add_apple }}</a><br><a href="{{ r.google_url }}" data-fathom="Google Calendar form opened">{{ calendar_icon() }}{{ t.add_google }}</a>{% endif -%}
 {% endmacro %}
 
 {# The build never reads the clock, so what has passed is decided here, on Japan's date. #}
@@ -65,8 +65,8 @@
 {% macro hero(photo, root) -%}
 {% if photo %}
 <figure class="hero">
-  <img src="{{ root }}{{ photo.src }}" srcset="{% for src, w in photo.srcset %}{{ root }}{{ src }} {{ w }}w{{ ", " if not loop.last }}{% endfor %}" sizes="(max-width: 720px) 100vw, 688px" width="{{ photo.width }}" height="{{ photo.height }}" alt="{{ photo.alt }}">
-  <figcaption>Photo: {{ photo.year }} event{% if not photo.own %}, by <a href="{{ photo.source_url }}">{{ photo.credit }}</a>, <a href="{{ photo.license_url }}">{{ photo.license }}</a>, edited{% endif %}</figcaption>
+  <img src="{{ root }}{{ photo.src }}" srcset="{% for src, w in photo.srcset %}{{ root }}{{ src }} {{ w }}w{{ ", " if not loop.last }}{% endfor %}" sizes="(max-width: 720px) 100vw, 688px" width="{{ photo.width }}" height="{{ photo.height }}" alt="{{ photo.alt }}"{{ mark_en }}>
+  <figcaption>{{ t.photo_caption(photo.year) }}{% if not photo.own %}{{ t.photo_by }}<a href="{{ photo.source_url }}"{{ mark_en }}>{{ photo.credit }}</a>{{ t.sep }}<a href="{{ photo.license_url }}"{{ mark_en }}>{{ photo.license }}</a>{{ t.photo_edited }}{% endif %}</figcaption>
 </figure>
 {% endif %}
 {%- endmacro %}
@@ -77,5 +77,5 @@
 {%- endmacro %}
 
 {% macro flag(code) -%}
-<svg class="flag" viewBox="0 0 30 20" width="24" height="16" role="img" aria-label="{{ countries[code][0] }}" focusable="false"><title>{{ countries[code][0] }}</title><use xlink:href="#flag-{{ code | lower }}"/></svg>
+<svg class="flag"{% if lang != "en" %} lang="{{ lang }}"{% endif %} viewBox="0 0 30 20" width="24" height="16" role="img" aria-label="{{ countries[code][0] }}" focusable="false"><title>{{ countries[code][0] }}</title><use xlink:href="#flag-{{ code | lower }}"/></svg>
 {%- endmacro %}

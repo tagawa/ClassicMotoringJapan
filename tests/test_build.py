@@ -175,7 +175,7 @@ class BuildOutputTests(unittest.TestCase):
     def test_every_map_link_is_drawn_with_a_pin_and_still_reads_as_text(self):
         for link in self.map_links():
             self.assertIn("<svg", link)
-            self.assertTrue(link.endswith(">Map</a>"), link)
+            self.assertTrue(link.endswith((">Map</a>", ">地図</a>")), link)
 
     def test_the_pin_is_decorative_and_never_reaches_a_screen_reader(self):
         for link in self.map_links():
@@ -362,7 +362,8 @@ class BuildOutputTests(unittest.TestCase):
         urls = re.findall(r"<loc>([^<]+)</loc>", self.out_text("sitemap.xml"))
         self.assertGreater(len(urls), 5)
         for url in urls:
-            if url != f"{settings.SITE_URL}/":
+            # llms.txt is in English: of the Japanese pages it lists the home page only (spec 6.6).
+            if url != f"{settings.SITE_URL}/" and not url.startswith(f"{settings.SITE_URL}/ja/") or url == f"{settings.SITE_URL}/ja/":
                 self.assertIn(f"({url})", llms)
 
     def test_robots_txt_allows_everything_and_points_at_the_sitemap(self):
@@ -408,7 +409,7 @@ class BuildOutputTests(unittest.TestCase):
         for page, html in self.pages.items():
             if page == "about/index.html":
                 continue
-            self.assertRegex(html, r"(Last verified</dt>\s*<dd>|Most recent check: )2026-09-20", page)
+            self.assertRegex(html, r"(Last verified</dt>\s*<dd>|Most recent check: )2026-09-20|最終確認(</dt>\s*<dd>|：)2026年9月20日", page)
 
     def test_internal_links_are_relative(self):
         for page, html in self.pages.items():
@@ -764,8 +765,10 @@ class SiteFooterLinkTests(unittest.TestCase):
             footer = html[html.index('<footer class="site-footer"'):]
             links = re.search(r'(?s)<p class="site-links">(.*?)</p>', footer)
             self.assertIsNotNone(links, rel)
-            self.assertEqual([text for _, text in re.findall(r'<a href="([^"]+)">([^<]+)</a>', links.group(1))],
-                             ["YouTube channel", "Report an error on GitHub", "About this site"], rel)
+            texts = [re.sub(r"<[^>]+>", "", text) for _, text in re.findall(r'<a href="([^"]+)">(.*?)</a>', links.group(1))]
+            expected = (["YouTubeチャンネル", "誤りをGitHubで報告", "このサイトについて（英語）"] if rel.startswith("ja/")
+                        else ["YouTube channel", "Report an error on GitHub", "About this site"])
+            self.assertEqual(texts, expected, rel)
             self.assertIn(f'<a href="{settings.YOUTUBE_CHANNEL_URL}">', links.group(1))
             self.assertIn(f'<a href="{settings.ISSUES_URL}">', links.group(1))
 

@@ -63,8 +63,7 @@ def _star(cx: float, cy: float, r: float) -> str:
 
 
 # The /ja/ page's lede and meta description, the same sentence, as on the home page.
-JA_LEDE = ("日本各地のクラシックカーイベントの日程です。"
-           "ルート、エントリーリスト、動画などの詳細は英語のページにあります。")
+JA_LEDE = "日本各地で開かれる、国産車・輸入車のクラシックカーイベントの日程、会場、入場料です。"
 
 # The /ja/ page's prefecture names, keyed by the romanised form the data uses (no macrons).
 # Validation rejects any other value, so a typo or a first event in a new prefecture

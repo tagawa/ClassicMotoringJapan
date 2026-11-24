@@ -1,10 +1,9 @@
 {% extends "base.html" %}
 {% from "icons.html" import pin_icon, ticket_icon, route_icon, car_icon %}
 {% set stop = '<span class="visually-hidden">. </span>' | safe %}
-{% block header_extra %}<a class="language" href="ja/" lang="ja" hreflang="ja">日本語</a>{% endblock %}
 {% block main %}
-<h1>Classic car events in Japan</h1>
-<p class="lede">{{ site_lede }}</p>
+<h1>{{ t.home_heading }}</h1>
+<p class="lede">{{ description }}</p>
 {% if japan %}
 <svg class="venue-map-defs" width="0" height="0" aria-hidden="true" focusable="false"><defs><path id="japan" d="{{ japan }}"/></defs></svg>
 {% endif %}
@@ -23,15 +22,15 @@
   </li>
 {% endfor %}
 </ol>
-<p class="chart-axis quarters"><span>Jan</span><span>Apr</span><span>Jul</span><span>Oct</span></p>
+<p class="chart-axis quarters">{% for month in (0, 3, 6, 9) %}<span>{{ t.quarter(month) }}</span>{% endfor %}</p>
 </div>
 {% endif %}
 
 <section id="upcoming" aria-labelledby="upcoming-h">
 {# Every edition, oldest first, until the script below moves the past ones out. Only then
    is "Upcoming" true, so the script sets it and a reader without JavaScript never sees it. #}
-  <h2 id="upcoming-h">Events</h2>
-  <p id="no-upcoming" hidden>No upcoming dates are confirmed yet. New dates appear here and in the calendar feed as organisers announce them.</p>
+  <h2 id="upcoming-h">{{ t.events }}</h2>
+  <p id="no-upcoming" hidden>{{ t.no_upcoming }}</p>
   <div id="upcoming-list">
 {% for month in months %}
     <div class="month" data-month="{{ month.key }}">
@@ -44,15 +43,15 @@
 {% for r in day.rows %}
             <li>
               <div>
-                <a href="{{ root }}{{ r.path }}">{{ r.display_name }}</a>
+                <a href="{{ home }}{{ r.path }}">{{ r.display_name }}</a>
 {% if r.ed.status == "tentative" %}
-                <span class="badge">Date not confirmed</span>
+                <span class="badge">{{ t.date_not_confirmed }}</span>
 {% elif r.ed.status == "cancelled" %}
-                <span class="badge cancelled">Cancelled</span>
+                <span class="badge cancelled">{{ t.cancelled }}</span>
 {% endif %}
 {# Each fact keeps its glyph on its own line when the row wraps. The full stops are hidden,
    since the glyphs part the facts on screen, but a screen reader still hears each one end. #}
-                <p class="meta">{% if r.ev.name_ja %}<span lang="ja">{{ r.ev.name_ja }}</span><br>{% endif %}<span class="fact-list"><span class="fact">{{ pin_icon() }}{{ r.prefecture }}{{ stop }}</span><span class="fact{% if r.ev.spectator_fee_jpy is none %} fee-unannounced{% endif %}">{{ ticket_icon() }}{{ r.ev.spectator_fee_jpy | fee }}{{ stop }}</span>{% if r.has_route %}<span class="fact">{{ route_icon() }}Driven route{{ stop }}</span>{% endif %}{% if r.cutoff_year %}<span class="fact">{{ car_icon() }}Cars to {{ r.cutoff_year }}{{ stop }}</span>{% endif %}</span></p>
+                <p class="meta">{% if r.ev.name_ja and lang == "en" %}<span lang="ja">{{ r.ev.name_ja }}</span><br>{% endif %}<span class="fact-list"><span class="fact">{{ pin_icon() }}{{ r.prefecture | pref }}{{ stop }}</span><span class="fact{% if r.ev.spectator_fee_jpy is none %} fee-unannounced{% endif %}">{{ ticket_icon() }}{{ r.ev.spectator_fee_jpy | fee }}{{ stop }}</span>{% if r.has_route %}<span class="fact">{{ route_icon() }}{{ t.driven_route }}{{ stop }}</span>{% endif %}{% if r.cutoff_year %}<span class="fact">{{ car_icon() }}{{ t.cars_to(r.cutoff_year) }}{{ stop }}</span>{% endif %}</span></p>
               </div>
 {% if r.dot %}
               <svg class="venue-map" viewBox="{{ map_box }}" width="96" height="{{ (96 * map_ratio) | round | int }}" aria-hidden="true" focusable="false"><use xlink:href="#japan" fill="#E0E0E0"/><circle cx="{{ r.dot[0] }}" cy="{{ r.dot[1] }}" r="6" stroke-width="1.5"{% if r.ed.status == "cancelled" %} class="off"{% endif %}/></svg>
@@ -71,9 +70,9 @@
 {# Folded: it grows all year, and the page is for what is still to come. The heading sits
    outside the fold, so the past months' h3s are not taken for part of Upcoming. #}
 <section id="past" aria-labelledby="past-h" hidden>
-  <h2 id="past-h">Past events</h2>
+  <h2 id="past-h">{{ t.past_events }}</h2>
   <details>
-    <summary id="past-show">Show past events</summary>
+    <summary id="past-show">{{ t.show_past }}</summary>
     <div id="past-list"></div>
   </details>
 </section>
@@ -82,7 +81,7 @@
 
 {% block footer %}
 {% if latest %}
-  <p>Most recent check: {{ latest.isoformat() }}</p>
+  <p>{{ t.most_recent_check }}{{ latest | ymd }}</p>
 {% endif %}
 {% endblock %}
 
@@ -116,10 +115,10 @@
     }
     if (moved) {
       var count = past.querySelectorAll("li li").length;
-      document.getElementById("past-show").textContent = "Show " + count + (count === 1 ? " event" : " events");
+      document.getElementById("past-show").textContent = {{ t.show_before | tojson }} + count + (count === 1 ? {{ t.show_one | tojson }} : {{ t.show_many | tojson }});
       document.getElementById("past").hidden = false;
     }
-    document.getElementById("upcoming-h").textContent = "Upcoming";
+    document.getElementById("upcoming-h").textContent = {{ t.upcoming | tojson }};
     if (!document.querySelector("#upcoming-list li[data-end]")) document.getElementById("no-upcoming").hidden = false;
 
     // This weekend is Saturday and Sunday of the current week in Japan, so on a Sunday it is
@@ -137,7 +136,7 @@
       if (first <= sunday && ahead[k].getAttribute("data-end") >= saturday) {
         var badge = document.createElement("span");
         badge.className = "badge weekend";
-        badge.textContent = "This weekend";
+        badge.textContent = {{ t.this_weekend | tojson }};
         ahead[k].querySelector(".day-when").appendChild(badge);
       }
     }
@@ -173,7 +172,7 @@
         line.className = "chart-today-label";
         line.setAttribute("aria-hidden", "true");
         var word = document.createElement("span");
-        word.textContent = "Today";
+        word.textContent = {{ t.today | tojson }};
         if (left > 50) word.style.right = (100 - left) + "%";
         else word.style.left = left + "%";
         line.appendChild(word);

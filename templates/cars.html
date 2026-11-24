@@ -1,19 +1,19 @@
 {% extends "base.html" %}
 {% from "icons.html" import flag, flag_defs %}
 {% block main %}
-<h1>Cars by make</h1>
-<p class="index-note">Counts come only from events whose organisers publish entry lists.</p>
+<h1>{{ t.cars_heading }}</h1>
+<p class="index-note">{{ t.counts_note }}</p>
 {% if flags %}
 {{ flag_defs(flags) }}
 {% endif %}
-<div class="table-wrap" tabindex="0" role="region" aria-label="Cars by make">
+<div class="table-wrap" tabindex="0" role="region" aria-label="{{ t.cars_heading }}">
   <table class="make-table">
     <thead>
-      <tr><th>Make</th><th class="num">Cars</th><th class="num">Events</th></tr>
+      <tr><th>{{ t.col_make }}</th><th class="num">{{ t.col_cars }}</th><th class="num">{{ t.col_events }}</th></tr>
     </thead>
     <tbody>
 {% for line in lines %}
-      <tr><td class="{{ "flagged" if line.country else "unflagged" }}">{% if line.country %}{{ flag(line.country) }}{% endif %}{% if line.page %}<a href="{{ line.page.slug }}/">{{ line.make }}</a>{% else %}{{ line.make }}{% endif %}{% if line.page_note %}<span class="make-page">On the {{ line.page_note }} page</span>{% endif %}</td><td class="num">{{ line.cars }}</td><td class="num">{{ line.events }}</td></tr>
+      <tr><td class="{{ "flagged" if line.country else "unflagged" }}"{{ mark_en }}>{% if line.country %}{{ flag(line.country) }}{% endif %}{% if line.page %}<a href="{{ line.page.slug }}/">{{ line.make }}</a>{% else %}{{ line.make }}{% endif %}{% if line.page_note %}<span class="make-page">{{ t.page_note(line.page_note) }}</span>{% endif %}</td><td class="num">{{ line.cars }}</td><td class="num">{{ line.events }}</td></tr>
 {% endfor %}
     </tbody>
   </table>
@@ -22,6 +22,6 @@
 
 {% block footer %}
 {% if latest %}
-  <p>Most recent check: {{ latest.isoformat() }}</p>
+  <p>{{ t.most_recent_check }}{{ latest | ymd }}</p>
 {% endif %}
 {% endblock %}

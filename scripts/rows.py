@@ -80,6 +80,8 @@ def make_rows(events: dict, editions: list, makes: dict | None = None) -> list[d
             "ics_path": f"events/{slug}/{ed_id}.ics" if ed["status"] == "confirmed" else None,
             "is_timed": is_timed,
             "venue": ed.get("venue_en") or ev["venue_en"],
+            # An edition at its own venue does not take the event's Japanese name for another place.
+            "venue_ja": ed.get("venue_ja") if ed.get("venue_en") else ev.get("venue_ja"),
             "prefecture": ed.get("prefecture") or ev["prefecture"],
             "pin": venue_pin(ev, ed),
             # Like the pin, an address belongs to its venue: an edition elsewhere does not inherit it.
@@ -101,7 +103,8 @@ def make_rows(events: dict, editions: list, makes: dict | None = None) -> list[d
             # The flags this page's list uses, each to be drawn once ahead of the table.
             "flags": [{"code": code, "name": COUNTRIES[code][0], "art": COUNTRIES[code][1]}
                       for code in sorted({car["country"] for car in cars or [] if "country" in car})],
-            "videos": [{"label": v["label_en"], "title": f"{display_name} {year}, {v['label_en']}",
+            "videos": [{"label": v["label_en"], "label_ja": v.get("label_ja"),
+                        "title": f"{display_name} {year}, {v['label_en']}",
                         "embed": VIDEO_EMBED_URL + v["youtube_id"], "watch": VIDEO_WATCH_URL + v["youtube_id"]}
                        for v in ed.get("videos") or []],
             "car_columns": columns, "cars_label": cars_label, "cars_caveat": cars_caveat,

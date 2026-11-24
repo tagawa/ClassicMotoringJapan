@@ -82,8 +82,8 @@ def build_llms_txt(rows: list[dict], events: dict, car_groups: list[dict] = ()) 
     lines += ["", "## Site", "",
               f"- [About]({SITE_URL}/about/): where the facts come from, how they are checked, "
               "and where to report an error.",
-              f"- [Japanese timetable]({SITE_URL}/ja/): every edition's dates, hours, prefecture "
-              "and admission, in Japanese.",
+              f"- [Japanese]({SITE_URL}/ja/): the site in Japanese, from the same data: dates, venues, "
+              "admission, routes and entry lists.",
               "", "## Data", "",
               f"- [Events as JSON]({SITE_URL}/api/events.json): every edition above, with venue, "
               "dates, admission, coordinates, entry list and route.",

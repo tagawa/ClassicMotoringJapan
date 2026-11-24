@@ -1,27 +1,27 @@
 {% extends "base.html" %}
 {% from "icons.html" import map_link, cancelled_cross, calendar_links, drop_passed, hero %}
 {% block main %}
-<h1>{{ ev.name_en }}</h1>
-{% if ev.name_ja %}<p class="ja" lang="ja">{{ ev.name_ja }}</p>{% endif %}
+<h1>{{ local(ev, "name") }}</h1>
+{% if ev.name_ja and lang == "en" %}<p class="ja" lang="ja">{{ ev.name_ja }}</p>{% endif %}
 {{ hero(photo, root) }}
 {% if ev.summary_en %}
 <p class="lede">{{ ev.summary_en | prose }}</p>
 {% endif %}
 
-<h2>Dates</h2>
+<h2>{{ t.dates }}</h2>
 {% if rows %}
 {% set show_details = rows | selectattr("has_page") | list %}
-<div class="table-wrap" tabindex="0" role="region" aria-label="Dates">
+<div class="table-wrap" tabindex="0" role="region" aria-label="{{ t.dates }}">
   <table>
-    <thead><tr><th scope="col">Event</th><th scope="col">Dates</th><th scope="col">Status</th>{% if show_details %}<th scope="col"><span class="visually-hidden">Details</span></th>{% endif %}</tr></thead>
+    <thead><tr><th scope="col">{{ t.col_event }}</th><th scope="col">{{ t.dates }}</th><th scope="col">{{ t.col_status }}</th>{% if show_details %}<th scope="col"><span class="visually-hidden">{{ t.details }}</span></th>{% endif %}</tr></thead>
     <tbody>
 {% for r in rows | reverse %}
       <tr>
         <td class="num">{{ r.label }}</td>
         <td>{{ r.when_full }}</td>
-        <td>{% if r.ed.status == "tentative" %}<span class="dot tentative" aria-hidden="true"></span>Not confirmed{% elif r.ed.status == "cancelled" %}{{ cancelled_cross() }}Cancelled{% else %}<span class="dot" aria-hidden="true"></span><span data-last-day="{{ r.ed.end.isoformat() }}">Confirmed</span>{% endif %}</td>
+        <td>{% if r.ed.status == "tentative" %}<span class="dot tentative" aria-hidden="true"></span>{{ t.not_confirmed }}{% elif r.ed.status == "cancelled" %}{{ cancelled_cross() }}{{ t.cancelled }}{% else %}<span class="dot" aria-hidden="true"></span><span data-last-day="{{ r.ed.end.isoformat() }}">{{ t.confirmed }}</span>{% endif %}</td>
 {% if show_details %}
-        <td>{% if r.has_page %}<a href="{{ root }}{{ r.path }}">{{ r.parts_phrase }}</a>{% endif %}</td>
+        <td>{% if r.has_page %}<a href="{{ home }}{{ r.path }}">{{ r.parts_phrase }}</a>{% endif %}</td>
 {% endif %}
       </tr>
 {# A row of their own, not the Dates cell: a phone leaves that column too narrow for them. #}
@@ -36,40 +36,40 @@
   </table>
 </div>
 {% else %}
-<p>No dates announced yet.</p>
+<p>{{ t.no_dates }}</p>
 {% endif %}
 
-<h2>Visiting</h2>
+<h2>{{ t.visiting }}</h2>
 <dl class="facts">
-  <dt>Where</dt>
-  <dd>{{ ev.venue_en }}, {{ ev.prefecture }}{% if ev.street_address %}<br>{{ ev.street_address | mark_ja }}{% endif %}{{ map_link(pin) }}</dd>
+  <dt>{{ t.where }}</dt>
+  <dd>{{ local(ev, "venue") }}{{ t.sep }}{{ ev.prefecture | pref }}{% if ev.street_address %}<br>{{ ev.street_address | address }}{% endif %}{{ map_link(pin) }}</dd>
 {% if ev.nearest_station or ev.access_notes_en %}
-  <dt>Getting there</dt>
-  <dd>{% if ev.nearest_station %}Nearest station: {{ ev.nearest_station | prose }}{% endif %}{% if ev.nearest_station and ev.access_notes_en %}<br>{% endif %}{{ (ev.access_notes_en or "") | prose }}</dd>
+  <dt>{{ t.getting_there }}</dt>
+  <dd>{% if ev.nearest_station %}{{ t.nearest_station }}{{ ev.nearest_station | prose }}{% endif %}{% if ev.nearest_station and ev.access_notes_en %}<br>{% endif %}{{ (ev.access_notes_en or "") | prose }}</dd>
 {% endif %}
-  <dt>Cost</dt>
+  <dt>{{ t.cost }}</dt>
   <dd>{{ ev.spectator_fee_jpy | fee }}</dd>
 {% if ev.spectator_notes_en %}
-  <dt>Watching</dt>
+  <dt>{{ t.watching }}</dt>
   <dd>{{ ev.spectator_notes_en | prose }}</dd>
 {% endif %}
 {% if ev.photography_notes_en %}
-  <dt>Photography</dt>
+  <dt>{{ t.photography }}</dt>
   <dd>{{ ev.photography_notes_en | prose }}</dd>
 {% endif %}
 {% if ev.typical_eras or ev.typical_scale %}
-  <dt>What you'll see</dt>
-  <dd>{% if ev.typical_scale %}{{ ev.typical_scale }}{% endif %}{% if ev.typical_scale and ev.typical_eras %}<br>{% endif %}{% for era in ev.typical_eras or [] %}<span class="chip">{{ era }}</span>{% endfor %}</dd>
+  <dt>{{ t.what_youll_see }}</dt>
+  <dd>{% if ev.typical_scale %}{{ ev.typical_scale }}{% endif %}{% if ev.typical_scale and ev.typical_eras %}<br>{% endif %}{% for era in ev.typical_eras or [] %}<span class="chip">{{ era | era }}</span>{% endfor %}</dd>
 {% endif %}
 {% if ev.organizer %}
-  <dt>Organiser</dt>
-  <dd>{{ ev.organizer | mark_ja }}</dd>
+  <dt>{{ t.organiser }}</dt>
+  <dd>{{ ev.organizer | organiser_name }}</dd>
 {% endif %}
 {# Not "Official site": official_url is often a tourism listing, a blog post or a venue's page. #}
-  <dt>Source</dt>
-  <dd><a href="{{ ev.official_url }}">{{ ev.official_url | domain }}</a> (Japanese)</dd>
-  <dt>Last verified</dt>
-  <dd>{{ verified.isoformat() }}</dd>
+  <dt>{{ t.source }}</dt>
+  <dd><a href="{{ ev.official_url }}">{{ ev.official_url | domain }}</a>{{ t.source_language }}</dd>
+  <dt>{{ t.last_verified }}</dt>
+  <dd>{{ verified | ymd }}</dd>
 </dl>
 {% endblock %}
 
@@ -85,7 +85,7 @@
     var todayInJapan = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
     var cells = document.querySelectorAll("[data-last-day]");
     for (var i = 0; i < cells.length; i++) {
-      if (cells[i].getAttribute("data-last-day") < todayInJapan) cells[i].textContent = "Held";
+      if (cells[i].getAttribute("data-last-day") < todayInJapan) cells[i].textContent = {{ t.held | tojson }};
     }
   })();
 </script>

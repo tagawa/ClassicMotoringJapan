@@ -16,65 +16,65 @@
 {% macro video_figure(video) -%}
 <figure class="video">
   <div class="video-frame"><iframe src="{{ video.embed }}" title="{{ video.title }}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
-  <figcaption><a href="{{ video.watch }}">{{ video.label }}</a></figcaption>
+  <figcaption><a href="{{ video.watch }}">{{ local(video, "label") }}</a></figcaption>
 </figure>
 {%- endmacro %}
 {% block main %}
-<nav class="breadcrumbs" aria-label="Breadcrumb">
+<nav class="breadcrumbs" aria-label="{{ t.breadcrumb }}">
   <ol>
-    <li><a href="{{ root }}">Home</a></li>
-    <li><span class="sep" aria-hidden="true">›</span><a href="{{ root }}events/{{ ev.slug }}/">{{ ev.name_en }}</a></li>
+    <li><a href="{{ home }}">{{ t.crumb_home }}</a></li>
+    <li><span class="sep" aria-hidden="true">›</span><a href="{{ home }}events/{{ ev.slug }}/">{{ local(ev, "name") }}</a></li>
     <li><span class="sep" aria-hidden="true">›</span><span aria-current="page">{{ r.label }}</span></li>
   </ol>
 </nav>
-<h1>{{ r.full_name }}</h1>
-{% if ev.name_ja %}<p class="ja" lang="ja">{{ ev.name_ja }}</p>{% endif %}
+<h1>{{ local(ev, "name") }} {{ r.label }}</h1>
+{% if ev.name_ja and lang == "en" %}<p class="ja" lang="ja">{{ ev.name_ja }}</p>{% endif %}
 {{ hero(photo, root) }}
 
 {% if ed.status == "tentative" %}
-<p class="note"><a href="{{ ed.source_url }}">{{ ed.source_url | domain }}</a> does not confirm these dates yet.</p>
+<p class="note"><a href="{{ ed.source_url }}">{{ ed.source_url | domain }}</a>{{ t.unconfirmed_after }}</p>
 {% elif ed.status == "cancelled" %}
-<p class="note cancelled">This event is cancelled.</p>
+<p class="note cancelled">{{ t.cancelled_note }}</p>
 {% endif %}
 
 <dl class="facts">
-  <dt>When</dt>
+  <dt>{{ t.when }}</dt>
   <dd>{{ r.when_full }}{% if r.ics_path %}<span class="calendar-links" data-hide-after="{{ ed.end.isoformat() }}"><br>{{ calendar_links(r, root) }}</span>{% endif %}</dd>
-  <dt>Where</dt>
-  <dd>{{ r.venue }}, {{ r.prefecture }}{% if r.street_address %}<br>{{ r.street_address | mark_ja }}{% endif %}{{ map_link(r.pin) }}</dd>
+  <dt>{{ t.where }}</dt>
+  <dd>{{ local(r, "venue") }}{{ t.sep }}{{ r.prefecture | pref }}{% if r.street_address %}<br>{{ r.street_address | address }}{% endif %}{{ map_link(r.pin) }}</dd>
 {% if ev.spectator_fee_jpy is none %}
-  <dt class="fee-unannounced">Cost</dt>
+  <dt class="fee-unannounced">{{ t.cost }}</dt>
   <dd class="fee-unannounced">{{ ev.spectator_fee_jpy | fee }}</dd>
 {% else %}
-  <dt>Cost</dt>
+  <dt>{{ t.cost }}</dt>
   <dd>{{ ev.spectator_fee_jpy | fee }}</dd>
 {% endif %}
-  <dt>Last verified</dt>
-  <dd>{{ ed.last_verified.isoformat() }}, against <a href="{{ ed.source_url }}">{{ ed.source_url | domain }}</a></dd>
+  <dt>{{ t.last_verified }}</dt>
+  <dd>{{ ed.last_verified | ymd }}{{ t.against_open }}<a href="{{ ed.source_url }}">{{ ed.source_url | domain }}</a>{{ t.against_close }}</dd>
 </dl>
 {% if r.previous or r.next %}
-<nav class="edition-steps" aria-label="Other events">
+<nav class="edition-steps" aria-label="{{ t.other_events }}">
 {% if r.previous %}
-  <span class="step"><a href="{{ root }}{{ r.previous.path }}"><span aria-hidden="true">← </span>Previous event: {{ r.previous.label }}</a>{% if r.previous.ed.status == "cancelled" %} (cancelled){% endif %}</span>
+  <span class="step"><a href="{{ home }}{{ r.previous.path }}"><span aria-hidden="true">← </span>{{ t.previous_event }}{{ r.previous.label }}</a>{% if r.previous.ed.status == "cancelled" %}{{ t.cancelled_suffix }}{% endif %}</span>
 {% endif %}
 {% if r.previous and r.next %}
   <span class="bar" aria-hidden="true">|</span>
 {% endif %}
 {% if r.next %}
-  <span class="step"><a href="{{ root }}{{ r.next.path }}">Next event: {{ r.next.label }}<span aria-hidden="true"> →</span></a>{% if r.next.ed.status == "tentative" %} (dates not confirmed){% elif r.next.ed.status == "cancelled" %} (cancelled){% endif %}</span>
+  <span class="step"><a href="{{ home }}{{ r.next.path }}">{{ t.next_event }}{{ r.next.label }}<span aria-hidden="true"> →</span></a>{% if r.next.ed.status == "tentative" %}{{ t.unconfirmed_suffix }}{% elif r.next.ed.status == "cancelled" %}{{ t.cancelled_suffix }}{% endif %}</span>
 {% endif %}
 </nav>
 {% endif %}
 {% if r.event_notes %}
-<p><a href="{{ root }}events/{{ ev.slug }}/">{{ r.event_notes }}</a></p>
+<p><a href="{{ home }}events/{{ ev.slug }}/">{{ r.event_notes }}</a></p>
 {% endif %}
 {% if r.previous_videos %}
-<p><a href="{{ root }}{{ r.previous_videos.path }}#videos">{{ video_icon() }}Videos of the {{ r.previous_videos.label }} event</a></p>
+<p><a href="{{ home }}{{ r.previous_videos.path }}#videos">{{ video_icon() }}{{ t.videos_of(r.previous_videos.label) }}</a></p>
 {% endif %}
 
 {% if r.jumps %}
-<nav class="on-this-page" aria-label="On this page">
-  <span>On this page</span>
+<nav class="on-this-page" aria-label="{{ t.on_this_page }}">
+  <span>{{ t.on_this_page }}</span>
 {% for jump in r.jumps %}
   <a href="#{{ jump.id }}">{{ jump.text }}</a>
 {% endfor %}
@@ -83,15 +83,16 @@
 
 {% for section in r.sections %}
 {% if section == "route" %}
-<h2 id="route">Route</h2>
-{% if ed.route_en %}
-<p>{{ ed.route_en | prose }}</p>
+<h2 id="route">{{ t.route }}</h2>
+{# Prose in the page's language or none: a Japanese page leaves English prose out (spec 6.6). #}
+{% if ed["route_" ~ lang] %}
+<p>{{ ed["route_" ~ lang] | prose }}</p>
 {% endif %}
 {% if r.route_map %}
 {% set rm = r.route_map %}
 <figure class="course">
   <div class="course-frame" style="padding-top: {{ rm.shape }}%">
-  <svg class="route-map" viewBox="{{ rm.viewbox }}" role="img" aria-label="Map of the route's stops in timetable order" focusable="false">
+  <svg class="route-map" viewBox="{{ rm.viewbox }}" role="img" aria-label="{{ t.route_map_label }}" focusable="false">
     <rect class="route-sea" x="0" y="0" width="{{ rm.width }}" height="{{ rm.height }}"/>
     <path class="route-land" d="{{ rm.land }}"/>
     {{ map_line("route-path", rm) }}
@@ -106,20 +107,20 @@
     <circle class="course-finish" cx="{{ rm.finish[0] }}" cy="{{ rm.finish[1] }}" r="8"/>
 {# Twice: a halo in the background colour, then the name, since old browsers lack paint-order. #}
 {% for label in rm.labels %}
-    <text class="map-label-halo" x="{{ label.x }}" y="{{ label.y }}" text-anchor="{{ label.anchor }}">{{ label.text }}</text>
-    <text class="map-label" x="{{ label.x }}" y="{{ label.y }}" text-anchor="{{ label.anchor }}">{{ label.text }}</text>
+    <text class="map-label-halo"{{ mark_en }} x="{{ label.x }}" y="{{ label.y }}" text-anchor="{{ label.anchor }}">{{ label.text }}</text>
+    <text class="map-label"{{ mark_en }} x="{{ label.x }}" y="{{ label.y }}" text-anchor="{{ label.anchor }}">{{ label.text }}</text>
 {% endfor %}
     {{ map_car("route-path", rm.car) }}
   </svg>
   </div>
-  <figcaption>Stops in timetable order, joined by straight lines, not the roads.{% if rm.overnights %} Ringed stops are overnight.{% endif %}</figcaption>
+  <figcaption>{{ t.route_map_caption }}{% if rm.overnights %}{{ t.route_map_overnight }}{% endif %}</figcaption>
 </figure>
 {% endif %}
 {% if r.chart %}
 <ol class="chart">
 {% for day in r.chart.days %}
   <li>
-    <span class="chart-when">{{ day.when }}: {{ day.summary }}</span>
+    <span class="chart-when">{{ day.when }}{{ t.colon }}{{ day.summary }}</span>
     <span class="chart-track" aria-hidden="true">
 {% for bar in day.bars %}
       <i style="left: {{ bar.left }}%; width: {{ bar.width }}%"></i>
@@ -131,16 +132,16 @@
 <p class="chart-axis"><span>{{ r.chart.start }}</span><span class="end">{{ r.chart.end }}</span></p>
 {% endif %}
 {% for day in ed.route or [] %}
-<h3>Day {{ loop.index }}: {{ day.date | weekday }}</h3>
-<div class="table-wrap" tabindex="0" role="region" aria-label="Day {{ loop.index }}: {{ day.date | weekday }}">
+<h3>{{ t.route_day(loop.index, day.date | weekday) }}</h3>
+<div class="table-wrap" tabindex="0" role="region" aria-label="{{ t.route_day(loop.index, day.date | weekday) }}">
   <table>
-    <thead><tr><th scope="col">Time</th><th scope="col">Place</th><th scope="col">Prefecture</th></tr></thead>
+    <thead><tr><th scope="col">{{ t.col_time }}</th><th scope="col">{{ t.col_place }}</th><th scope="col">{{ t.col_prefecture }}</th></tr></thead>
     <tbody>
 {% for point in day.checkpoints %}
       <tr>
-        <td class="num">{{ point.start_time }}{% if point.end_time %}–{{ point.end_time }}{% endif %}</td>
-        <td>{{ point.place_en }}{% if point.place_ja %}<br><span class="ja" lang="ja">{{ point.place_ja }}</span>{% endif %}</td>
-        <td>{{ point.prefecture }}</td>
+        <td class="num">{{ point.start_time }}{% if point.end_time %}{{ t.time_to }}{{ point.end_time }}{% endif %}</td>
+        <td>{{ local(point, "place") }}{% if point.place_ja and lang == "en" %}<br><span class="ja" lang="ja">{{ point.place_ja }}</span>{% endif %}</td>
+        <td>{{ point.prefecture | pref }}</td>
       </tr>
 {% endfor %}
     </tbody>
@@ -150,19 +151,19 @@
 
 {% elif section == "cars" %}
 <h2 id="cars">{{ r.cars_label }}</h2>
-<p>As of {{ ed.list_as_of.isoformat() }}.{% if r.list_provisional %} Provisional: {{ r.cars_caveat }}.{% endif %}</p>
+<p>{{ t.as_of(ed.list_as_of | ymd) }}{% if r.list_provisional %}{{ t.provisional(r.cars_caveat) }}{% endif %}</p>
 {# The two strips share one look, so each part of the list is headed with what it counts. #}
 {# The strips summarise the table, so where there is one the table folds away beneath it. #}
 {% set summarised = r.decades or r.makes %}
 {% if summarised %}
 <div class="strips">
-{% for strip, heading, kind in ((r.decades, "By decade", "decades"), (r.makes, "By make", "makes")) if strip %}
+{% for strip, heading, kind in ((r.decades, t.by_decade, "decades"), (r.makes, t.by_make, "makes")) if strip %}
 <div>
 <h3>{{ heading }}</h3>
 <ol class="chart {{ kind }}">
 {% for row in strip.rows %}
   <li>
-    <span class="chart-when">{% if kind == "makes" and row.label in make_pages %}<a href="{{ root }}{{ make_pages[row.label] }}">{{ row.label }}</a>{% else %}{{ row.label }}{% endif %}</span>
+    <span class="chart-when"{% if kind == "makes" %}{{ mark_en }}{% endif %}>{% if kind == "makes" and row.label in make_pages %}<a href="{{ home }}{{ make_pages[row.label] }}">{{ row.label }}</a>{% else %}{{ row.label }}{% endif %}</span>
     <span class="chart-track" aria-hidden="true">
 {% if row.count %}
       <i style="left: 0%; width: {{ row.width }}%"></i>
@@ -187,14 +188,14 @@
 {% endif %}
 {% if summarised %}
 <details class="all-cars">
-<summary>{% if r.cars | length > 1 %}All {{ r.cars | length }} cars{% else %}1 car{% endif %}</summary>
+<summary>{{ t.all_cars(r.cars | length) }}</summary>
 {% endif %}
 <div class="table-wrap" tabindex="0" role="region" aria-label="{{ r.cars_label }}">
   <table>
     <thead><tr>{% for col in r.car_columns %}<th scope="col">{{ col.label }}</th>{% endfor %}</tr></thead>
     <tbody>
 {% for car in r.cars %}
-      <tr>{% for col in r.car_columns %}<td{% if col.num %} class="num"{% elif col.key == "make" and r.flags %} class="{{ "flagged" if car.country else "unflagged" }}"{% endif %}>{% if col.key == "make" and car.country %}{{ flag(car.country) }}{% endif %}{% if col.key == "make" and car.make in make_pages %}<a href="{{ root }}{{ make_pages[car.make] }}">{{ car.make }}</a>{% else %}{{ car.get(col.key, "") }}{% endif %}</td>{% endfor %}</tr>
+      <tr>{% for col in r.car_columns %}<td{% if col.num %} class="num"{% elif col.key == "make" and r.flags %} class="{{ "flagged" if car.country else "unflagged" }}"{% endif %}{{ mark_en }}>{% if col.key == "make" and car.country %}{{ flag(car.country) }}{% endif %}{% if col.key == "make" and car.make in make_pages %}<a href="{{ home }}{{ make_pages[car.make] }}">{{ car.make }}</a>{% else %}{{ car.get(col.key, "") }}{% endif %}</td>{% endfor %}</tr>
 {% endfor %}
     </tbody>
   </table>
@@ -204,11 +205,11 @@
 {% endif %}
 
 {% elif section == "course" %}
-<h2 id="course">Course map</h2>
+<h2 id="course">{{ t.course_map }}</h2>
 {% set course = r.course %}
 <figure class="course">
   <div class="course-frame" style="padding-top: {{ course.shape }}%">
-  <svg class="course-map" viewBox="{{ course.viewbox }}" role="img" aria-label="Map of the time trial course, from start to finish" focusable="false">
+  <svg class="course-map" viewBox="{{ course.viewbox }}" role="img" aria-label="{{ t.course_map_label }}" focusable="false">
     {{ map_line("course-path", course) }}
 {% for cone in course.cones %}
     <circle class="course-cone" cx="{{ cone[0] }}" cy="{{ cone[1] }}" r="4.5"/>
@@ -218,11 +219,11 @@
     {{ map_car("course-path", course.car) }}
   </svg>
   </div>
-  <figcaption>Redrawn from the organiser's course map{% if ed.course.map_url %}<span data-hide-after="{{ ed.end.isoformat() }}"> (<a href="{{ ed.course.map_url }}">PDF</a>)</span>{% endif %}.</figcaption>
+  <figcaption>{{ t.course_map_caption }}{% if ed.course.map_url %}<span data-hide-after="{{ ed.end.isoformat() }}">{{ t.bracket_open }}<a href="{{ ed.course.map_url }}"{{ mark_en }}>PDF</a>{{ t.bracket_close }}</span>{% endif %}{{ t.full_stop }}</figcaption>
 </figure>
 
 {% elif section == "videos" %}
-<h2 id="videos">Videos</h2>
+<h2 id="videos">{{ t.videos }}</h2>
 <div class="videos">
 {% for video in r.videos %}
 {{ video_figure(video) }}
@@ -232,7 +233,7 @@
 {% endfor %}
 {# Not a section: it shows what the event is like, not what this edition has. #}
 {% if r.previous_videos and not r.videos %}
-<h2>From the {{ r.previous_videos.label }} event</h2>
+<h2>{{ t.from_event(r.previous_videos.label) }}</h2>
 {{ video_figure(r.previous_videos.videos[0]) }}
 {% endif %}
 {% endblock %}

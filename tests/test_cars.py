@@ -515,7 +515,7 @@ class HeaderLinkTests(unittest.TestCase):
 
 
     def nav(self, rel: str) -> str:
-        found = re.findall(r'<a class="site-nav"([^>]*)>Cars</a>', (self.out / rel).read_text(encoding="utf-8"))
+        found = re.findall(r'<a class="site-nav"([^>]*)>(?:Cars|車種)</a>', (self.out / rel).read_text(encoding="utf-8"))
         self.assertEqual(len(found), 1, rel)
         return found[0]
 
@@ -526,12 +526,13 @@ class HeaderLinkTests(unittest.TestCase):
             rel = page.relative_to(self.out)
             with self.subTest(page=str(rel)):
                 href = re.search(r'href="([^"]*)"', self.nav(str(rel))).group(1)
-                self.assertEqual((page.parent / href / "index.html").resolve(),
-                                 (self.out / "cars/index.html").resolve())
-                self.assertTrue((self.out / "cars/index.html").is_file())
+                # Each language's pages link its own cars page.
+                target = self.out / ("ja/" if rel.parts[0] == "ja" else "") / "cars/index.html"
+                self.assertEqual((page.parent / href / "index.html").resolve(), target.resolve())
+                self.assertTrue(target.is_file())
 
-    def test_japanese_page_marks_the_link_english(self):
-        self.assertIn('lang="en"', self.nav("ja/index.html"))
+    def test_japanese_page_names_the_link_in_japanese(self):
+        self.assertIn('<a class="site-nav" href="./cars/">車種</a>', (self.out / "ja/index.html").read_text(encoding="utf-8"))
 
     def test_404_link_is_root_absolute(self):
         self.assertIn('href="/cars/"', self.nav("404.html"))

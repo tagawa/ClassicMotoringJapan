@@ -82,6 +82,8 @@ EVENT_OPTIONAL = {
     # form at all. Printing the Latin name again under lang="ja" would tell a screen
     # reader to read it with Japanese pronunciation rules.
     "name_ja": "str",
+    # The venue as its own Japanese sources print it, for the Japanese pages (spec 6.6).
+    "venue_ja": "str",
     "organizer": "str", "summary_en": "prose", "street_address": "str",
     "nearest_station": "prose", "access_notes_en": "prose", "typical_eras": "strlist",
     "typical_scale": "str", "spectator_notes_en": "prose", "photography_notes_en": "prose",
@@ -95,7 +97,7 @@ EDITION_REQUIRED = {
     "source_url": "url", "last_verified": "date", "sequence": "count",
 }
 EDITION_OPTIONAL = {
-    "start_time": "time", "end_time": "time", "venue_en": "str", "street_address": "str",
+    "start_time": "time", "end_time": "time", "venue_en": "str", "venue_ja": "str", "street_address": "str",
     # For an event that moves: the prefecture this edition ran in, when it is not the event's.
     "prefecture": "str",
     "route_en": "prose", "route": "route", "list_as_of": "date", "cars": "cars",
@@ -114,6 +116,7 @@ CHECKPOINT_REQUIRED = {"start_time": "time", "place_en": "str", "prefecture": "s
 CHECKPOINT_OPTIONAL = {"end_time": "time", "place_ja": "str", "lat": "lat", "lon": "lon"}
 # The ID alone, not a URL, so the embed domain is chosen once, in VIDEO_EMBED_URL.
 VIDEO_REQUIRED = {"youtube_id": "youtube_id", "label_en": "str"}
+VIDEO_OPTIONAL = {"label_ja": "str"}
 # Fields the templates render into a single block. The cap has to apply to what a
 # reader actually sees there, not to each field measured on its own.
 COMBINED_PROSE = (("nearest_station", "access_notes_en"),)
@@ -537,7 +540,7 @@ def load_and_validate(data_dir: Path) -> tuple[dict, list]:
         _check_route(ed.get("route"), start, end, rel, errors)
         if isinstance(ed.get("videos"), list):
             for i, video in enumerate(ed["videos"], 1):
-                _check_fields(video, VIDEO_REQUIRED, {}, f"{rel}: videos item {i}", errors)
+                _check_fields(video, VIDEO_REQUIRED, VIDEO_OPTIONAL, f"{rel}: videos item {i}", errors)
         editions.append({"data": ed, "id": path.stem, "edition": name["edition"]})
 
     for path in sorted((data_dir / PHOTOS_DIR).glob("*")):

@@ -1,6 +1,7 @@
 """The Japanese page, Japanese formats, and marking Japanese runs in English pages."""
 
 import datetime as dt
+import json
 import re
 import unittest
 from html.parser import HTMLParser
@@ -49,7 +50,7 @@ class JapaneseFormatTests(unittest.TestCase):
 
 
 class JapanesePageTests(unittest.TestCase):
-    """/ja/: every edition in Japanese, from fields the data already has."""
+    """/ja/: the home page in Japanese (spec 6.6)."""
 
     @classmethod
     def setUpClass(cls):
@@ -60,80 +61,82 @@ class JapanesePageTests(unittest.TestCase):
         write_instance(data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-19"))
         write_instance(data, "meet", 2027, instance_yaml("meet", 2027, "2027-10-17", "2027-10-17", status="tentative"))
         write_event(data, "show", name_en="Show", name_ja=None, fee=None)
-        write_instance(data, "show", 2026, instance_yaml("show", 2026, "2026-11-07", "2026-11-08",
-                                                         extra='start_time: "10:00"\nend_time: "17:00"\n'))
+        write_instance(data, "show", "2026-autumn", instance_yaml("show", 2026, "2026-10-31", "2026-11-01"))
         write_event(data, "fair", name_en="Fair", fee=1000)
         write_instance(data, "fair", 2026, instance_yaml("fair", 2026, "2026-11-03", "2026-11-03",
-                                                         extra='start_time: "09:00"\nend_time: "16:00"\n'))
+                                                         extra="cutoff_year: 1975\n"))
         cls.out = cls.tmp / "site"
         build.build(data, cls.out)
         cls.html = (cls.out / "ja" / "index.html").read_text(encoding="utf-8")
         cls.home = (cls.out / "index.html").read_text(encoding="utf-8")
 
-
     def row(self, start: str) -> str:
-        """The list item for the edition starting on that date."""
-        return re.search(r'<li data-hide-after="[^"]+">(?:(?!</li>).)*?<time datetime="%s">.*?</li>' % start,
+        """The list item for the date starting that day."""
+        return re.search(r'<li data-end="[^"]+">\s*<div class="day-when"><time datetime="%s">.*?</ul>\s*</li>' % start,
                          self.html, re.S).group(0)
 
     def test_the_page_is_japanese_and_its_english_parts_say_so(self):
         self.assertTrue(self.html.startswith('<!doctype html>\n<html lang="ja">'))
-        self.assertIn('<footer class="site-footer" lang="en">', self.html)
-        # The logo's accessible name is the English site name.
-        self.assertIn('<a class="brand" href="../" lang="en">', self.html)
+        self.assertIn('<span lang="en">YouTube</span>チャンネル', self.html)
+        # The logo goes to this language's home; its accessible name is the English site name.
+        self.assertIn('<a class="brand" href="./" lang="en">', self.html)
+        # English pages add the Japanese name beside each event; a Japanese page has no need.
+        self.assertNotIn('<span lang="ja">', self.html)
 
     def test_title_heading_and_lede(self):
         self.assertIn("<title>日本のクラシックカーイベント | Classic Motoring Japan</title>", self.html)
         # Break points for word-break: keep-all, or the heading splits mid-word on a phone.
         self.assertIn("<h1>日本の<wbr>クラシックカー<wbr>イベント</h1>", self.html)
-        lede = "日本各地のクラシックカーイベントの日程です。ルート、エントリーリスト、動画などの詳細は英語のページにあります。"
+        lede = settings.JA_LEDE
+        self.assertNotIn("英語", lede)
         self.assertIn(f'<p class="lede">{lede}</p>', self.html)
         self.assertIn(f'<meta name="description" content="{lede}">', self.html)
 
     def test_a_japanese_name_is_shown_and_a_latin_one_is_marked_english(self):
-        self.assertIn("テストイベント", self.row("2026-10-18"))
-        self.assertIn('<span lang="en">Show</span>', self.row("2026-11-07"))
+        self.assertIn('<a href="events/meet/">テストイベント</a>', self.row("2026-10-18"))
+        self.assertIn('<a href="events/show/"><span lang="en">Show</span> 秋</a>', self.row("2026-10-31"))
 
-    def test_dates_months_and_prefecture(self):
-        self.assertIn("<h2>2026年10月</h2>", self.html)
-        self.assertIn("10月18日(日)〜19日(月)", self.row("2026-10-18"))
+    def test_months_dates_and_leaves(self):
+        self.assertIn("<h3>2026年10月</h3>", self.html)
+        row = self.row("2026-10-18")
+        self.assertIn('<span class="visually-hidden">10月18日(日)〜19日(月)</span>', row)
+        self.assertIn('<span class="leaf-day">日〜月</span><span class="leaf-date">18〜19</span>', row)
+        self.assertIn('<span class="leaf-date">10/31〜11/1</span>', self.row("2026-10-31"))
+        self.assertIn('<span class="leaf-day">火</span><span class="leaf-date">3</span>', self.row("2026-11-03"))
+
+    def test_prefecture_admission_and_cutoff(self):
         self.assertIn("静岡県", self.row("2026-10-18"))
-
-    def test_hours_only_on_a_timed_edition_and_marked_daily_over_several_days(self):
-        self.assertIn("10:00〜17:00（各日）", self.row("2026-11-07"))
-        self.assertIn("09:00〜16:00", self.row("2026-11-03"))
-        self.assertNotIn("（各日）", self.row("2026-11-03"))
-        self.assertNotIn(":", re.sub(r'<[^>]+>', "", self.row("2026-10-18")).replace("情報元：", ""))
-
-    def test_admission(self):
         self.assertIn("入場無料", self.row("2026-10-18"))
         self.assertIn("入場料 1,000円", self.row("2026-11-03"))
-        self.assertIn("入場料未発表", self.row("2026-11-07"))
+        self.assertIn("入場料未発表", self.row("2026-10-31"))
+        self.assertIn("1975年式まで", self.row("2026-11-03"))
 
     def test_status_badges_and_a_cancelled_edition_stays_listed(self):
-        self.assertIn("中止", self.row("2025-10-19"))
-        self.assertIn("日程未確定", self.row("2027-10-17"))
+        self.assertIn('<span class="badge cancelled">中止</span>', self.row("2025-10-19"))
+        self.assertIn('<span class="badge">日程未確定</span>', self.row("2027-10-17"))
         self.assertNotIn("中止", self.row("2026-10-18"))
 
-    def test_links_to_the_source_and_the_english_page(self):
-        row = self.row("2026-10-18")
-        self.assertIn('情報元：<a href="https://example.com/meet/">example.com</a>', row)
-        self.assertIn('<a href="../events/meet/">詳細（英語）</a>', row)
+    def test_year_strip(self):
+        self.assertIn('<span class="chart-when">2026年：3件、10月〜11月</span>', self.html)
+        self.assertIn('<span class="chart-when">2027年：1件、10月</span>', self.html)
+        self.assertIn("<span>1月</span><span>4月</span><span>7月</span><span>10月</span>", self.html)
 
-    def test_past_editions_and_emptied_months_drop_out_in_the_browser(self):
-        self.assertIn('<li data-hide-after="2026-10-19">', self.row("2026-10-18"))
-        # A month goes with its last edition, so no empty heading is left behind.
-        self.assertIn('<div class="month" data-hide-after="2026-11-08">', self.html)
-        self.assertIn('querySelectorAll("[data-hide-after]")', self.html)
+    def test_the_script_writes_japanese(self):
+        for text in ("今後のイベント", "今週末", "今日", "過去の"):
+            self.assertIn(json.dumps(text), self.html)
+        for text in ("Upcoming", "This weekend", "Today", "Show "):
+            self.assertIn(json.dumps(text), self.home)
 
-    def test_home_and_ja_name_each_other_and_no_other_page_does(self):
+    def test_footer_date(self):
+        self.assertIn("<p>最終確認：2026年9月20日</p>", self.html)
+
+    def test_home_and_ja_name_each_other_themselves_and_the_default(self):
+        # Every other pair is checked in test_languages.
         pair = ('<link rel="alternate" hreflang="en" href="https://classicmotoringjapan.com/">\n'
-                '<link rel="alternate" hreflang="ja" href="https://classicmotoringjapan.com/ja/">')
+                '<link rel="alternate" hreflang="ja" href="https://classicmotoringjapan.com/ja/">\n'
+                '<link rel="alternate" hreflang="x-default" href="https://classicmotoringjapan.com/">')
         self.assertIn(pair, self.html)
         self.assertIn(pair, self.home)
-        for page in self.out.rglob("*.html"):
-            if page.relative_to(self.out).as_posix() not in ("index.html", "ja/index.html"):
-                self.assertNotIn("hreflang", page.read_text(encoding="utf-8"), page)
 
     def test_the_header_links_each_language(self):
         self.assertIn('<a class="language" href="ja/" lang="ja" hreflang="ja">日本語</a>', self.home)
