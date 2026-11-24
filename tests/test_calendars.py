@@ -39,7 +39,7 @@ class AddToCalendarTests(unittest.TestCase):
 
     def links(self, rel: str) -> dict:
         """Each add-to-calendar link on a page, by where it points."""
-        hrefs = re.findall(r'<(span|tr) class="calendar-links" data-hide-after="[^"]+">(.*?)</\1>', self.html(rel), re.S)
+        hrefs = re.findall(r'<(span|tr) class="calendar-links" data-hide-after="[^"]+"[^>]*>(.*?)</\1>', self.html(rel), re.S)
         found = {"ics": [], "google": []}
         for _, block in hrefs:
             for href in re.findall(r'href="([^"]+)"', block):
@@ -91,15 +91,16 @@ class AddToCalendarTests(unittest.TestCase):
     def test_the_event_page_offers_them_in_a_row_under_their_edition(self):
         # From the Dates column to the edge, so a phone has the width, and no label, since the row above says which.
         html = self.html("events/meet/index.html")
-        row = re.search(r'<tr class="calendar-links" data-hide-after="2026-10-19">\s*<td></td>\s*<td colspan="3"><a ', html)
+        row = re.search(r'<tr class="calendar-links" data-hide-after="2026-10-19" role="row">\s*'
+                        r'<td class="spacer" role="cell"></td>\s*<td role="cell" colspan="3"><a ', html)
         self.assertIsNotNone(row)
-        self.assertLess(html.index('<td class="num">2026</td>'), row.start())
-        self.assertLess(row.start(), html.index('<td class="num">2025</td>'))
+        self.assertLess(html.index('<td class="edition num" role="cell">2026</td>'), row.start())
+        self.assertLess(row.start(), html.index('<td class="edition num" role="cell">2025</td>'))
         self.assertNotIn("2026, Sun 18 to Mon 19 Oct", html)
 
     def test_the_row_spans_only_the_columns_the_table_has(self):
         # Show has no edition page, so its table has no Details column.
-        self.assertIn('<td></td>\n        <td colspan="2"><a ', self.html("events/show/index.html"))
+        self.assertIn('<td class="spacer" role="cell"></td>\n        <td role="cell" colspan="2"><a ', self.html("events/show/index.html"))
 
     def test_the_links_carry_the_last_day_so_the_browser_can_drop_them_once_it_has_passed(self):
         self.assertIn('<span class="calendar-links" data-hide-after="2026-10-19">',

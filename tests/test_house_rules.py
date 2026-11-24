@@ -249,7 +249,8 @@ class ScrollableTableTests(unittest.TestCase):
 
     def test_the_focused_box_is_ringed_in_both_themes(self):
         css = (ROOT / "static/style.css").read_text(encoding="utf-8")
-        light, dark = css.split("@media (prefers-color-scheme: dark)")
+        # The main dark block is the first; a later one restates a breakpoint's colours.
+        light, dark = css.split("@media (prefers-color-scheme: dark)", 1)
         for scope, block in (("light", light), ("dark", dark)):
             with self.subTest(theme=scope):
                 self.assertRegex(block, r"\.table-wrap:focus-visible[^{]*\{[^}]*outline")

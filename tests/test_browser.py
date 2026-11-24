@@ -409,5 +409,82 @@ class CarsIndexWidthTest(unittest.TestCase):
         self.assertGreater(rows, 50, "expected the real list of makes")
         self.assertLessEqual(scroll, client)
 
+
+# Each status cell's word against its dot or cross: true where the word starts below the
+# mark's bottom edge, which is a status split across two lines.
+SPLIT_STATUSES = """() => {
+  var cells = document.querySelectorAll('.dates-table .status'), split = [];
+  for (var i = 0; i < cells.length; i++) {
+    var mark = cells[i].firstElementChild, word = document.createRange();
+    word.setStartAfter(mark);
+    word.setEnd(cells[i], cells[i].childNodes.length);
+    if (word.getBoundingClientRect().top >= mark.getBoundingClientRect().bottom) split.push(cells[i].textContent);
+  }
+  return split;
+}"""
+
+OVERFLOW = """() => {
+  var wrap = document.querySelector('.dates-table').parentNode, root = document.documentElement;
+  return [root.scrollWidth - root.clientWidth, wrap.scrollWidth - wrap.clientWidth];
+}"""
+
+
+@unittest.skipIf(sync_playwright is None, "playwright not installed")
+class DatesTableLayoutTest(unittest.TestCase):
+    """Below 620px the event page's Dates table stacks each event; wider, it stays a table."""
+
+    # SHCC's table, stacked at 390px. The sandbox measured 1,322px with a stand-in font.
+    HEIGHT_LIMIT = 1400
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = temp_dir(cls)
+        # The real data: SHCC's long rows are what the layout was measured on.
+        build.build(Path(__file__).resolve().parent.parent / "data", cls.tmp / "site")
+        cls.shcc = (cls.tmp / "site" / "events" / "shcc" / "index.html").as_uri()
+        try:
+            cls.pw = sync_playwright().start()
+            cls.browser = cls.pw.chromium.launch()
+        except Exception as e:
+            raise unittest.SkipTest(f"chromium unavailable: {e}")
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.browser.close()
+        cls.pw.stop()
+
+    def open(self, width: int, style: str = ""):
+        page = self.browser.new_page(viewport={"width": width, "height": 800})
+        page.goto(self.shcc)
+        if style:
+            page.add_style_tag(content=style)
+        self.addCleanup(page.close)
+        return page
+
+    def test_no_status_splits_from_its_dot_on_a_phone(self):
+        self.assertEqual(self.open(390).evaluate(SPLIT_STATUSES), [])
+
+    def test_the_split_check_fires_on_a_wrapped_status(self):
+        page = self.open(390, ".dates-table .status { display: block; width: 40px; white-space: normal; }")
+        self.assertGreater(len(page.evaluate(SPLIT_STATUSES)), 0)
+
+    def test_nothing_scrolls_sideways_on_a_phone(self):
+        self.assertEqual(self.open(390).evaluate(OVERFLOW), [0, 0])
+
+    def test_the_overflow_check_fires_on_a_wide_table(self):
+        page = self.open(390, ".dates-table { width: 1000px; display: table; }")
+        self.assertGreater(page.evaluate(OVERFLOW)[1], 0)
+
+    def test_the_stacked_table_is_under_its_height_limit(self):
+        height = self.open(390).evaluate("() => document.querySelector('.dates-table').getBoundingClientRect().height")
+        self.assertLessEqual(height, self.HEIGHT_LIMIT)
+
+    def test_it_stays_a_table_on_a_wide_screen(self):
+        shown = self.open(1280).evaluate(
+            "() => Array.prototype.map.call(document.querySelectorAll('.dates-table td'),"
+            " function (td) { return getComputedStyle(td).display; })")
+        self.assertGreater(len(shown), 10)
+        self.assertEqual(set(shown), {"table-cell"})
+
 if __name__ == "__main__":
     unittest.main()

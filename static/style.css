@@ -151,6 +151,8 @@ tr.calendar-links td { border-top-style: hidden; padding-top: 0; }
   vertical-align: 1px;
 }
 .dot.tentative { background: #5E4700; }
+/* Whatever the width, a status keeps its dot beside its word. */
+.dates-table .status { white-space: nowrap; }
 /* A cross, not a dot: it shares the dot's red family, so the shape carries the difference. */
 .cross { margin-right: 8px; vertical-align: 1px; color: #8E2A1B; }
 
@@ -294,6 +296,19 @@ summary { cursor: pointer; font-weight: 600; }
 .chart-today-label { display: block; position: relative; height: 24px; color: #5C5C5C; }
 .chart-today-label span { position: absolute; top: 0; white-space: nowrap; }
 
+/* Event pages' Dates table: below 620px SHCC's rows ran past 2 lines (measured 2026-11-24,
+   real build, 30px steps from 320px), so each event stacks: name, dates, status, link. */
+@media (max-width: 619px) {
+  .dates-table { display: block; }
+  .dates-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .dates-table tbody { display: block; border-bottom: 1px solid #E0E0E0; }
+  .dates-table tr { display: block; padding: 8px 0; border-top: 1px solid #E0E0E0; }
+  .dates-table td { display: block; padding: 0; border: 0; max-width: none; }
+  .dates-table .edition { font-weight: 600; }
+  .dates-table .details:empty, .dates-table .spacer { display: none; }
+  .dates-table tr.calendar-links { padding-top: 0; border-top: 0; }
+}
+
 @media (max-width: 480px) {
   .facts { grid-template-columns: 1fr; gap: 4px; }
   /* The date goes above its events; each thumbnail stays beside its own event. */
@@ -364,4 +379,8 @@ summary { cursor: pointer; font-weight: 600; }
   .flag { box-shadow: 0 0 0 1px #333333; }
   .venue-map circle { fill: #D0636A; stroke: #141414; }
   .venue-map circle.off { fill: #A8A8A8; }
+}
+@media (prefers-color-scheme: dark) and (max-width: 619px) {
+  .dates-table tbody { border-bottom-color: #333333; }
+  .dates-table tr { border-top-color: #333333; }
 }

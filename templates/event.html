@@ -12,23 +12,24 @@
 {% if rows %}
 {% set show_details = rows | selectattr("has_page") | list %}
 <div class="table-wrap" tabindex="0" role="region" aria-label="{{ t.dates }}">
-  <table>
-    <thead><tr><th scope="col">{{ t.col_event }}</th><th scope="col">{{ t.dates }}</th><th scope="col">{{ t.col_status }}</th>{% if show_details %}<th scope="col"><span class="visually-hidden">{{ t.details }}</span></th>{% endif %}</tr></thead>
-    <tbody>
+{# Explicit roles: Safari drops a table's semantics once CSS stacks it on a phone. #}
+  <table class="dates-table" role="table">
+    <thead role="rowgroup"><tr role="row"><th scope="col" role="columnheader">{{ t.col_event }}</th><th scope="col" role="columnheader">{{ t.dates }}</th><th scope="col" role="columnheader">{{ t.col_status }}</th>{% if show_details %}<th scope="col" role="columnheader"><span class="visually-hidden">{{ t.details }}</span></th>{% endif %}</tr></thead>
+    <tbody role="rowgroup">
 {% for r in rows | reverse %}
-      <tr>
-        <td class="num">{{ r.label }}</td>
-        <td>{{ r.when_full }}</td>
-        <td>{% if r.ed.status == "tentative" %}<span class="dot tentative" aria-hidden="true"></span>{{ t.not_confirmed }}{% elif r.ed.status == "cancelled" %}{{ cancelled_cross() }}{{ t.cancelled }}{% else %}<span class="dot" aria-hidden="true"></span><span data-last-day="{{ r.ed.end.isoformat() }}">{{ t.confirmed }}</span>{% endif %}</td>
+      <tr role="row">
+        <td class="edition num" role="cell">{{ r.label }}</td>
+        <td class="dates" role="cell">{{ r.when_full }}</td>
+        <td class="status" role="cell">{% if r.ed.status == "tentative" %}<span class="dot tentative" aria-hidden="true"></span>{{ t.not_confirmed }}{% elif r.ed.status == "cancelled" %}{{ cancelled_cross() }}{{ t.cancelled }}{% else %}<span class="dot" aria-hidden="true"></span><span data-last-day="{{ r.ed.end.isoformat() }}">{{ t.confirmed }}</span>{% endif %}</td>
 {% if show_details %}
-        <td>{% if r.has_page %}<a href="{{ home }}{{ r.path }}">{{ r.parts_phrase }}</a>{% endif %}</td>
+        <td class="details" role="cell">{% if r.has_page %}<a href="{{ home }}{{ r.path }}">{{ r.parts_phrase }}</a>{% endif %}</td>
 {% endif %}
       </tr>
 {# A row of their own, not the Dates cell: a phone leaves that column too narrow for them. #}
 {% if r.ics_path %}
-      <tr class="calendar-links" data-hide-after="{{ r.ed.end.isoformat() }}">
-        <td></td>
-        <td colspan="{{ 3 if show_details else 2 }}">{{ calendar_links(r, root) }}</td>
+      <tr class="calendar-links" data-hide-after="{{ r.ed.end.isoformat() }}" role="row">
+        <td class="spacer" role="cell"></td>
+        <td role="cell" colspan="{{ 3 if show_details else 2 }}">{{ calendar_links(r, root) }}</td>
       </tr>
 {% endif %}
 {% endfor %}

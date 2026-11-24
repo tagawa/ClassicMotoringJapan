@@ -4,6 +4,7 @@ import json
 import re
 import shutil
 import unittest
+from html.parser import HTMLParser
 
 from helpers import (CARS, cars_yaml, display_cars_yaml, instance_yaml, jsonld_blocks, make_fixture, ROOT,
                      ROUTE, ROUTE_ONE_DAY, temp_dir, unfold, write_event, write_instance)
@@ -833,3 +834,116 @@ class OnThisPageTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class _TableTags(HTMLParser):
+    """Collects the Dates table's tags, with the raw text of each cell."""
+
+    def __init__(self):
+        super().__init__()
+        self.tags, self.cell, self.depth = [], None, 0
+
+    def handle_starttag(self, tag, attrs):
+        if tag == "table" and ("class", "dates-table") in attrs:
+            self.depth = 1
+        elif tag == "table" and self.depth:
+            self.depth += 1
+        if not self.depth:
+            return
+        self.tags.append([tag, dict(attrs), ""])
+        if tag == "td":
+            self.cell = self.tags[-1]
+
+    def handle_endtag(self, tag):
+        if tag == "td":
+            self.cell = None
+        if tag == "table" and self.depth:
+            self.depth -= 1
+
+    def handle_data(self, data):
+        if self.cell is not None:
+            self.cell[2] += data
+
+
+CELL_CLASSES = {"edition", "dates", "status", "details"}
+
+
+def dates_table_problems(html: str) -> list:
+    """Everything the stacked layout relies on in an event page's Dates table."""
+    parser = _TableTags()
+    parser.feed(html)
+    tags = parser.tags
+    if not tags:
+        return ["no table with class dates-table"]
+    problems = []
+    roles = {"table": "table", "thead": "rowgroup", "tbody": "rowgroup", "tr": "row",
+             "th": "columnheader", "td": "cell"}
+    for tag, attrs, _ in tags:
+        if tag in roles and attrs.get("role") != roles[tag]:
+            problems.append(f"<{tag}> has role {attrs.get('role')!r}")
+    row = None
+    for tag, attrs, text in tags:
+        if tag == "tr":
+            row = {"calendar": "calendar-links" in attrs.get("class", "").split(), "first": True}
+            continue
+        if tag != "td":
+            continue
+        classes = set(attrs.get("class", "").split())
+        if row["calendar"]:
+            if row["first"] and "spacer" not in classes:
+                problems.append("a calendar-links row does not start with a spacer cell")
+        else:
+            named = classes & CELL_CLASSES
+            if len(named) != 1:
+                problems.append(f"an event cell has classes {sorted(classes)}")
+            # :empty fails on whitespace, so an empty Details cell must hold nothing at all.
+            if "details" in classes and text and not text.strip():
+                problems.append("a Details cell holds only whitespace")
+        row["first"] = False
+    return problems
+
+
+class DatesTableMarkupTests(unittest.TestCase):
+    """Below 660px CSS stacks the Dates table, so its cells are named and its roles explicit.
+
+    Safari drops a table's semantics once CSS changes its display, so the roles keep
+    screen readers announcing a table. The cells are named by class rather than position,
+    because the Details column is absent when no edition has a page.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = temp_dir(cls)
+        make_fixture(cls.tmp / "data")
+        build.build(cls.tmp / "data", cls.tmp / "site")
+        cls.pages = {}
+        for lang in ("", "ja/"):
+            for slug in ("autumn-rally", "culture-day-show", "hill-climb"):
+                path = cls.tmp / "site" / f"{lang}events/{slug}/index.html"
+                cls.pages[f"{lang}{slug}"] = path.read_text(encoding="utf-8")
+
+    def test_every_event_page_in_both_languages_names_its_cells_and_roles(self):
+        for name, html in self.pages.items():
+            with self.subTest(page=name):
+                self.assertEqual(dates_table_problems(html), [])
+
+    def test_the_fixture_covers_rows_with_and_without_details_and_calendar_links(self):
+        html = self.pages["hill-climb"]
+        self.assertIn('<td class="details" role="cell"></td>', html)
+        self.assertIn('<td class="details" role="cell"><a ', html)
+        self.assertIn('class="calendar-links"', self.pages["culture-day-show"])
+        self.assertNotIn('class="details"', self.pages["culture-day-show"])
+
+    def test_the_check_fires_on_a_table_missing_what_it_needs(self):
+        bad = ('<table class="dates-table" role="table"><thead role="rowgroup"><tr role="row">'
+               '<th>Event</th></tr></thead><tbody role="rowgroup"><tr role="row">'
+               '<td class="edition" role="cell">A</td><td role="cell">B</td>'
+               '<td class="details" role="cell"> </td></tr>'
+               '<tr class="calendar-links" role="row"><td role="cell"></td></tr></tbody></table>')
+        self.assertEqual(dates_table_problems(bad), [
+            "<th> has role None",
+            "an event cell has classes []",
+            "a Details cell holds only whitespace",
+            "a calendar-links row does not start with a spacer cell",
+        ])
+        self.assertEqual(dates_table_problems("<table></table>"), ["no table with class dates-table"])
