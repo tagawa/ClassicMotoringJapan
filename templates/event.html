@@ -18,7 +18,7 @@
     <tbody role="rowgroup">
 {% for r in rows | reverse %}
       <tr role="row">
-        <td class="edition num" role="cell">{{ r.label }}</td>
+        <th class="edition num" scope="row" role="rowheader">{{ r.label }}</th>
         <td class="dates" role="cell">{{ r.when_full }}</td>
         <td class="status" role="cell">{% if r.ed.status == "tentative" %}<span class="dot tentative" aria-hidden="true"></span>{{ t.not_confirmed }}{% elif r.ed.status == "cancelled" %}{{ cancelled_cross() }}{{ t.cancelled }}{% else %}<span class="dot" aria-hidden="true"></span><span data-last-day="{{ r.ed.end.isoformat() }}">{{ t.confirmed }}</span>{% endif %}</td>
 {% if show_details %}
@@ -29,7 +29,7 @@
 {% if r.ics_path %}
       <tr class="calendar-links" data-hide-after="{{ r.ed.end.isoformat() }}" role="row">
         <td class="spacer" role="cell"></td>
-        <td role="cell" colspan="{{ 3 if show_details else 2 }}">{{ calendar_links(r, root) }}</td>
+        <td role="cell" colspan="{{ 3 if show_details else 2 }}">{{ calendar_links(r, root, r.label) }}</td>
       </tr>
 {% endif %}
 {% endfor %}

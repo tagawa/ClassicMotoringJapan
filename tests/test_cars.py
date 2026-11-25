@@ -389,7 +389,7 @@ class EventsSectionTests(unittest.TestCase):
                           self.lines[slug])
 
     def cells(self, slug: str) -> list[str]:
-        return [text_of(cell).strip() for cell in re.findall(r"<td>(.*?)</td>", self.lines[slug], re.S)]
+        return [text_of(cell).strip() for cell in re.findall(r'<(?:td|th scope="row")>(.*?)</t[dh]>', self.lines[slug], re.S)]
 
     def test_heading_names_the_group(self):
         self.assertRegex(self.html, r'<h2 id="next-dates">Events where Nissan and Datsun cars have run</h2>')

@@ -315,7 +315,7 @@ class NextDateTest(unittest.TestCase):
         cls.pw.stop()
 
     def tables_at(self, utc_instant: str) -> dict:
-        """Each heading's text and visibility, and each table's rows as (event, visible dates, cell count)."""
+        """Each heading's text and visibility, and each table's rows as (event, visible dates, cell count, last cell)."""
         ctx = self.browser.new_context(timezone_id="Europe/London")
         page = ctx.new_page()
         page.clock.set_fixed_time(utc_instant)
@@ -324,7 +324,7 @@ class NextDateTest(unittest.TestCase):
         for key, box in (("next-dates", "dated-events"), ("no-date", "undated-events")):
             heading, wrap = page.locator(f"#{key}"), page.locator(f"#{box}")
             rows = [(tr.locator("a").first.inner_text(), tr.locator(".next-date:visible").all_inner_texts(),
-                     tr.locator("td").count())
+                     tr.locator("th, td").count(), tr.locator("th, td").last.inner_text())
                     for tr in wrap.locator("tbody tr").all()]
             found[key] = (heading.inner_text() if heading.is_visible() else None, wrap.is_visible(), rows)
         ctx.close()
@@ -340,14 +340,14 @@ class NextDateTest(unittest.TestCase):
 
     def test_shows_first_date_not_ended(self):
         rows = self.tables_at("2026-12-01T03:00:00Z")["next-dates"][2]
-        self.assertEqual(self.row(rows, "Bravo")[1:], (["Sat 8 May 2027"], 3))
-        self.assertEqual(self.row(rows, "Echo")[1:], (["Sat 1 Apr 2028"], 3))
+        self.assertEqual(self.row(rows, "Bravo")[1:3], (["Sat 8 May 2027"], 3))
+        self.assertEqual(self.row(rows, "Echo")[1:3], (["Sat 1 Apr 2028"], 3))
 
     def test_undated_events_move_to_second_table_a_to_z(self):
         heading, shown, rows = self.tables_at("2026-12-01T03:00:00Z")["no-date"]
         self.assertEqual((heading, shown), ("No date announced yet", True))
-        # Their Next date cell is gone, matching the second table's two columns.
-        self.assertEqual(rows, [("Alpha", [], 2), ("Delta", [], 2)])
+        # Their Next date cell is gone, matching the second table's two columns, and the latest list stays.
+        self.assertEqual(rows, [("Alpha", [], 2, "1 in 2026"), ("Delta", [], 2, "1 in 2026")])
 
     def test_same_next_date_keeps_a_to_z(self):
         # Passes without the script too, since the build's order is A to Z: a guard on the final order.
@@ -357,7 +357,7 @@ class NextDateTest(unittest.TestCase):
     def test_still_shown_on_last_day_in_japan(self):
         # 23:30 on 14 March in Japan: Charlie's second day is still running.
         rows = self.tables_at("2027-03-14T14:30:00Z")["next-dates"][2]
-        self.assertEqual(self.row(rows, "Charlie")[1:], (["Sat 13 to Sun 14 Mar 2027"], 3))
+        self.assertEqual(self.row(rows, "Charlie")[1:3], (["Sat 13 to Sun 14 Mar 2027"], 3))
 
     def test_date_drops_once_ended_in_japan(self):
         # 00:30 on 15 March in Japan.

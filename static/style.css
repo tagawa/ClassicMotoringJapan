@@ -167,6 +167,8 @@ th, td {
   border-bottom: 1px solid #E0E0E0;
 }
 td { max-width: 320px; }
+/* A row header names its row to a screen reader; on screen it reads as an ordinary cell. */
+tbody th { font-weight: normal; max-width: 320px; }
 .num { font-variant-numeric: tabular-nums; white-space: nowrap; }
 /* A car's country, before its make. Every make cell in such a list is indented by the
    flag's width, and a cell with a flag starts its first line back in that indent. So a
@@ -310,7 +312,7 @@ summary { cursor: pointer; font-weight: 600; }
   .dates-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
   .dates-table tbody { display: block; border-bottom: 1px solid #E0E0E0; }
   .dates-table tr { display: block; display: grid; grid-template-columns: 1fr auto; padding: 8px 0; border-top: 1px solid #E0E0E0; }
-  .dates-table td { display: block; padding: 0; border: 0; max-width: none; }
+  .dates-table td, .dates-table tbody th { display: block; padding: 0; border: 0; max-width: none; }
   .dates-table .edition { grid-column: 1; grid-row: 1; font-weight: 600; }
   .dates-table .status { grid-column: 2; grid-row: 1; margin-left: 16px; }
   .dates-table .dates { grid-column: 1 / 3; grid-row: 2; }

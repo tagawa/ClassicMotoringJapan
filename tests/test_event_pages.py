@@ -853,11 +853,11 @@ class _TableTags(HTMLParser):
         if not self.depth:
             return
         self.tags.append([tag, dict(attrs), ""])
-        if tag == "td":
+        if tag in ("td", "th"):
             self.cell = self.tags[-1]
 
     def handle_endtag(self, tag):
-        if tag == "td":
+        if tag in ("td", "th"):
             self.cell = None
         if tag == "table" and self.depth:
             self.depth -= 1
@@ -881,16 +881,22 @@ def dates_table_problems(html: str) -> list:
     roles = {"table": "table", "thead": "rowgroup", "tbody": "rowgroup", "tr": "row",
              "th": "columnheader", "td": "cell"}
     for tag, attrs, _ in tags:
-        if tag in roles and attrs.get("role") != roles[tag]:
+        # Each edition's row starts with its header, which names the row (WCAG 2.4.4).
+        if tag == "th" and attrs.get("scope") == "row":
+            if attrs.get("role") != "rowheader":
+                problems.append(f"<th scope=row> has role {attrs.get('role')!r}")
+        elif tag in roles and attrs.get("role") != roles[tag]:
             problems.append(f"<{tag}> has role {attrs.get('role')!r}")
     row = None
     for tag, attrs, text in tags:
         if tag == "tr":
             row = {"calendar": "calendar-links" in attrs.get("class", "").split(), "first": True}
             continue
-        if tag != "td":
+        if tag != "td" and not (tag == "th" and attrs.get("scope") == "row"):
             continue
         classes = set(attrs.get("class", "").split())
+        if not row["calendar"] and row["first"] and tag != "th":
+            problems.append("an edition's row does not start with a row header")
         if row["calendar"]:
             if row["first"] and "spacer" not in classes:
                 problems.append("a calendar-links row does not start with a spacer cell")
@@ -944,6 +950,7 @@ class DatesTableMarkupTests(unittest.TestCase):
                '<tr class="calendar-links" role="row"><td role="cell"></td></tr></tbody></table>')
         self.assertEqual(dates_table_problems(bad), [
             "<th> has role None",
+            "an edition's row does not start with a row header",
             "an event cell has classes []",
             "a Details cell holds only whitespace",
             "a calendar-links row does not start with a spacer cell",

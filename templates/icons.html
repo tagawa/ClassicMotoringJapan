@@ -44,9 +44,12 @@
 
 {# One edition into the visitor's own calendar. The caller wraps it in a .calendar-links
    element carrying data-hide-after, so drop_passed() removes it once the last day has ended. #}
-{% macro calendar_links(r, root) %}
-{%- if r.ics_path %}<a href="{{ root }}{{ r.ics_path }}" data-fathom="Calendar file downloaded">{{ calendar_icon() }}{{ t.add_apple }}</a><br><a href="{{ r.google_url }}" data-fathom="Google Calendar form opened">{{ calendar_icon() }}{{ t.add_google }}</a>{% endif -%}
+{# A label names the edition to a screen reader where several share a page (WCAG 2.4.4). #}
+{% macro calendar_links(r, root, label=none) %}
+{%- if r.ics_path %}<a href="{{ root }}{{ r.ics_path }}" data-fathom="Calendar file downloaded">{{ calendar_icon() }}{{ t.add_apple }}{{ edition_name(label) }}</a><br><a href="{{ r.google_url }}" data-fathom="Google Calendar form opened">{{ calendar_icon() }}{{ t.add_google }}{{ edition_name(label) }}</a>{% endif -%}
 {% endmacro %}
+
+{% macro edition_name(label) %}{% if label %}<span class="visually-hidden"> ({{ label }})</span>{% endif %}{% endmacro %}
 
 {# The build never reads the clock, so what has passed is decided here, on Japan's date. #}
 {% macro drop_passed() %}

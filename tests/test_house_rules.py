@@ -4,6 +4,7 @@ import ast
 import re
 import tempfile
 import unittest
+from html.parser import HTMLParser
 from pathlib import Path
 
 from markupsafe import escape
@@ -293,6 +294,94 @@ class ScrollableTableTests(unittest.TestCase):
         for scope, block in (("light", light), ("dark", dark)):
             with self.subTest(theme=scope):
                 self.assertRegex(block, r"\.table-wrap:focus-visible[^{]*\{[^}]*outline")
+
+
+def unplaced_links(html: str) -> tuple[int, list[str]]:
+    """Links in table rows that share their text with a link elsewhere going somewhere else,
+    in a row with no row header to tell them apart (WCAG 2.4.4). Also the count of row links seen."""
+
+    class Walker(HTMLParser):
+        def __init__(self):
+            super().__init__()
+            self.links, self.rows, self.link, self.row, self.body = [], [], None, None, 0
+
+        def handle_starttag(self, tag, attrs):
+            a = dict(attrs)
+            if tag == "tbody":
+                self.body += 1
+            elif tag == "tr" and self.body:
+                self.row = [False, []]
+            elif tag == "th" and self.row is not None and a.get("scope") == "row":
+                self.row[0] = True
+            elif tag == "a":
+                self.link = [a.get("aria-label") or "", a.get("href"), bool(a.get("aria-label"))]
+
+        def handle_data(self, data):
+            if self.link is not None and not self.link[2]:
+                self.link[0] += data
+
+        def handle_endtag(self, tag):
+            if tag == "a" and self.link is not None:
+                text = " ".join(self.link[0].split())
+                self.links.append((text, self.link[1]))
+                if self.row is not None:
+                    self.row[1].append(text)
+                self.link = None
+            elif tag == "tr" and self.row is not None:
+                self.rows.append(self.row)
+                self.row = None
+            elif tag == "tbody":
+                self.body -= 1
+
+    w = Walker()
+    w.feed(html)
+    targets = {}
+    for text, href in w.links:
+        targets.setdefault(text, set()).add(href)
+    seen = sum(len(texts) for _, texts in w.rows)
+    return seen, sorted({t for header, texts in w.rows if not header for t in texts if len(targets[t]) > 1})
+
+
+class RowHeaderTests(unittest.TestCase):
+    """A link whose text repeats with another target is told apart by its row header or its own name (WCAG 2.4.4)."""
+
+    def test_the_checker_finds_a_repeated_link_without_a_row_header(self):
+        # Proves the page test below can fail: same text, two targets, no header; the rest pass.
+        html = ('<table><tbody>'
+                '<tr><td>Alpha</td><td><a href="/a/2026/">1 in 2026</a></td></tr>'
+                '<tr><td>Bravo</td><td><a href="/b/2026/">1 in 2026</a></td></tr>'
+                '<tr><th scope="row">Charlie</th><td><a href="/c/2026/">2 in 2026</a></td></tr>'
+                '<tr><td>Delta</td><td><a href="/d/2026/">2 in 2026</a></td></tr>'
+                '<tr><td><a href="/cars/fiat/">Fiat</a></td><td><a href="/cars/fiat/">Fiat</a></td></tr>'
+                '</tbody></table>')
+        self.assertEqual(unplaced_links(html), (6, ["1 in 2026", "2 in 2026"]))
+
+    def test_no_page_of_the_real_site_leaves_a_repeated_link_unplaced(self):
+        out = temp_dir(self)
+        build.build(ROOT / "data", out)
+        seen = 0
+        for page in sorted(out.rglob("*.html")):
+            count, found = unplaced_links(page.read_text(encoding="utf-8"))
+            seen += count
+            with self.subTest(page=page.relative_to(out).as_posix()):
+                self.assertEqual(found, [])
+        # A checker that saw no links in rows would pass every page.
+        self.assertGreater(seen, 1000)
+
+    def test_a_calendar_link_names_its_edition_on_the_event_page(self):
+        out = temp_dir(self)
+        data = out / "data"
+        write_event(data, "meet")
+        write_instance(data, "meet", "2027-spring", instance_yaml("meet", 2027, "2027-04-04", "2027-04-04"))
+        write_instance(data, "meet", "2027-autumn", instance_yaml("meet", 2027, "2027-10-03", "2027-10-03"))
+        build.build(data, out / "site")
+        html = (out / "site/events/meet/index.html").read_text(encoding="utf-8")
+        self.assertRegex(html, r'Add to Google Calendar<span class="visually-hidden"> \(Autumn 2027\)</span></a>')
+        self.assertRegex(html, r'Add to Google Calendar<span class="visually-hidden"> \(Spring 2027\)</span></a>')
+
+    def test_a_row_header_keeps_the_weight_of_a_cell(self):
+        css = (ROOT / "static/style.css").read_text(encoding="utf-8")
+        self.assertRegex(css, r'tbody th \{[^}]*font-weight: normal;')
 
 
 def old_browser_breakers(js: str) -> list[str]:

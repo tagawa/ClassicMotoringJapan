@@ -89,13 +89,13 @@ class AddToCalendarTests(unittest.TestCase):
         self.assertEqual(self.links("events/show/index.html")["ics"], [f"{settings.SITE_URL}/events/show/2026.ics"])
 
     def test_the_event_page_offers_them_in_a_row_under_their_edition(self):
-        # From the Dates column to the edge, so a phone has the width, and no label, since the row above says which.
+        # From the Dates column to the edge, so a phone has the width; no visible label, since the row above says which.
         html = self.html("events/meet/index.html")
         row = re.search(r'<tr class="calendar-links" data-hide-after="2026-10-19" role="row">\s*'
                         r'<td class="spacer" role="cell"></td>\s*<td role="cell" colspan="3"><a ', html)
         self.assertIsNotNone(row)
-        self.assertLess(html.index('<td class="edition num" role="cell">2026</td>'), row.start())
-        self.assertLess(row.start(), html.index('<td class="edition num" role="cell">2025</td>'))
+        self.assertLess(html.index('<th class="edition num" scope="row" role="rowheader">2026</th>'), row.start())
+        self.assertLess(row.start(), html.index('<th class="edition num" scope="row" role="rowheader">2025</th>'))
         self.assertNotIn("2026, Sun 18 to Mon 19 Oct", html)
 
     def test_the_row_spans_only_the_columns_the_table_has(self):

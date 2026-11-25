@@ -327,7 +327,7 @@ class JapanesePagesTests(unittest.TestCase):
         self.assertIn("<title>Tour：来場ガイド</title>", html)
         self.assertIn('<meta name="description" content="Tour（静岡県）の日程・会場・入場料。">', html)
         self.assertIn('<h1><span lang="en">Tour</span></h1>', html)
-        self.assertIn('<td class="edition num" role="cell">2026年</td>\n        <td class="dates" role="cell">2026年10月18日(日)〜19日(月)</td>', html)
+        self.assertIn('<th class="edition num" scope="row" role="rowheader">2026年</th>\n        <td class="dates" role="cell">2026年10月18日(日)〜19日(月)</td>', html)
         self.assertIn('<th scope="col" role="columnheader">開催回</th>', html)
         self.assertIn("日程未確定", html)
         self.assertIn('<a href="../../events/tour/2026/">動画・ルート</a>', html)

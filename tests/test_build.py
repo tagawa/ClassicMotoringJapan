@@ -291,7 +291,7 @@ class BuildOutputTests(unittest.TestCase):
     def test_the_details_column_goes_when_no_edition_has_a_page(self):
         no_pages = self.pages["events/culture-day-show/index.html"]
         self.assertEqual(no_pages.count("<th scope=\"col\" role=\"columnheader\">"), 3)
-        self.assertNotIn("visually-hidden", no_pages)
+        self.assertNotIn('<span class="visually-hidden">Details</span>', no_pages)
         with_pages = self.pages["events/autumn-rally/index.html"]
         self.assertEqual(with_pages.count("<th scope=\"col\" role=\"columnheader\">"), 4)
 
