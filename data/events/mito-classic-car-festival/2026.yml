@@ -1,0 +1,23 @@
+slug: mito-classic-car-festival
+year: 2026
+status: confirmed
+start: 2026-01-25
+end: 2026-01-25
+# The 2nd; the 1st ran in 2025 as the Mito Classic Car Meeting. Supported by Mito
+# city, Ibaraki Toyota and Ibaraki Toyopet.
+start_time: "10:00"
+end_time: "14:00"
+venue_en: Senba Park, Fureai to Seseragi squares
+venue_ja: 千波公園ふれあい広場〜せせらぎ広場
+street_address: 546 Senbacho, Mito, Ibaraki (茨城県水戸市千波町546)
+lat: 36.3671
+lon: 140.4584
+# The club post reproduces the committee's flyer.
+source_url: https://minkara.carview.co.jp/userid/2251740/blog/48787469/
+last_verified: 2026-11-25
+sequence: 0
+videos:
+  # Video by GTP 潟菱 (GaTaPishi).
+  - youtube_id: rrbMLvcX-dA
+    label_en: Cars arriving and leaving
+    label_ja: 車両の入場と退場

@@ -1,0 +1,24 @@
+slug: nagoya-nostalgic-car-festival
+name_en: Gulf Nagoya Nostalgic Car Festival
+name_ja: Gulf 名古屋ノスタルジックカーフェスティバル
+organizer: 名古屋ノスタルジックカーフェスティバル実行委員会 (the festival's committee)
+official_url: https://nostalgic-car.com/
+# The site's gallery has 2022 to 2024 in Nagoya, 2025 as the Aichi Nostalgic
+# Car Parade, and 2026 at Tokugawa-en.
+summary_en: >
+  A display of cars built up to 2005 and a parade, THE Tokugawa RUN, from
+  Tokugawa-en garden through central Nagoya past the castle. In 2027 the cars
+  are shown at Higashi Betsuin temple (10:00 to 16:00) and Tokugawa-en (9:00
+  to 11:30), and the parade runs from Tokugawa-en to Higashi Betsuin. For the
+  Mazda Cosmo Sport's 60th anniversary, rotary-engined cars of any year are
+  accepted, the first 20 free.
+prefecture: Aichi
+venue_en: Higashi Betsuin and Tokugawa-en
+venue_ja: 東別院・徳川園
+# OSM's pin for Higashi Betsuin (真宗大谷派名古屋別院), the main site in 2027.
+lat: 35.1520
+lon: 136.9021
+# Neither the site nor the press release states an admission.
+spectator_fee_jpy: null
+cutoff_year: 2005
+last_verified: 2026-11-25

@@ -1,0 +1,31 @@
+slug: sano-new-year-classic-car-meeting
+name_en: New Year Classic Car Meeting in Sano
+name_ja: ニューイヤークラシックカーミーティング in 佐野うんめぇもん祭り
+organizer: 日本旧軽車会 (Nihon Kyukeisha-kai)
+# The club has no site of its own. This post reproduces its flyer and entry form.
+official_url: https://minkara.carview.co.jp/userid/2251740/blog/49403344/
+# The flyer prints 平成21年 beside 2000; Heisei 21 is 2009. The club's other flyers
+# give 平成12年 (2000), and the post says 2000, so 2000 is taken.
+summary_en: >
+  Up to 100 vehicles built between 1946 and 2000, plus prewar ones, shown at
+  three car parks around Sano city hall during the city's New Year food
+  festival. Cars, kei cars, motorcycles and three-wheelers are accepted,
+  Japanese and imported. Miniature cars, supercars, the Copen and Mitsuoka cars
+  are accepted from any year. There are 5 swap meet stalls.
+prefecture: Tochigi
+venue_en: Sano City Hall and nearby car parks
+venue_ja: 佐野市役所駐車場ほか
+street_address: 1 Takasagocho, Sano, Tochigi (栃木県佐野市高砂町1)
+# GSI's pin for the address; OSM's reverse lookup names the city hall.
+lat: 36.3144
+lon: 139.5784
+access_notes_en: >
+  Visitors park at the city hall or in the car parks around Sano Yakuyoke
+  Daishi, which is busy with New Year visits that weekend.
+typical_scale: Up to 100 vehicles
+spectator_fee_jpy: 0
+spectator_notes_en: >
+  Free to watch. The meeting runs in rain.
+photography_notes_en: Allowed.
+cutoff_year: 2000
+last_verified: 2026-11-25

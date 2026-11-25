@@ -1,0 +1,23 @@
+slug: nagoya-nostalgic-car-festival
+year: 2026
+status: confirmed
+start: 2026-03-20
+end: 2026-03-20
+# No page of the organiser's dates the 2026 run. The source is the film posted by
+# the committee chair's channel on 30 March 2026, which links the official site;
+# the date comes from four other channels' uploads of 20 to 23 March that name it.
+venue_en: Tokugawa-en
+venue_ja: 徳川園
+street_address: 1001 Tokugawacho, Higashi-ku, Nagoya, Aichi (愛知県名古屋市東区徳川町1001)
+# GSI's pin for the address; OSM's reverse lookup names the Tokugawa Art Museum
+# beside the garden.
+lat: 35.1838
+lon: 136.9330
+source_url: https://www.youtube.com/watch?v=rq1TSAHDmeQ
+last_verified: 2026-11-25
+sequence: 0
+videos:
+  # Video by the committee chair's own channel, named after the chair.
+  - youtube_id: rq1TSAHDmeQ
+    label_en: Highlights of the day
+    label_ja: 当日のダイジェスト

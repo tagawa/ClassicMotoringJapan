@@ -1,0 +1,13 @@
+slug: sano-new-year-classic-car-meeting
+year: 2027
+status: confirmed
+start: 2027-01-10
+end: 2027-01-10
+# Show cars leave from 15:05. The three sites are the city hall, the car park of
+# the art museum 東石美術館 and the chamber of commerce car park, where the food
+# festival is.
+start_time: "10:00"
+end_time: "15:00"
+source_url: https://minkara.carview.co.jp/userid/2251740/blog/49403344/
+last_verified: 2026-11-25
+sequence: 0

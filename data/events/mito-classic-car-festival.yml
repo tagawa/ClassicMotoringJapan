@@ -1,0 +1,26 @@
+slug: mito-classic-car-festival
+name_en: Mito Classic Car Festival
+name_ja: 水戸クラシックカーフェスティバル
+organizer: 水戸クラシックカーフェスティバル実行委員会 (the festival's committee)
+# The committee's entry form, the only page of its own found for 2027. The
+# 2026 flyer is reproduced at https://minkara.carview.co.jp/userid/2251740/blog/48787469/
+official_url: https://docs.google.com/forms/d/e/1FAIpQLScEpLou5P_8GwCmFPxkPCfwALdSS1-tjqJLwEjvs53dI5yKbw/viewform
+summary_en: >
+  Up to 500 Japanese and imported vehicles, entered in advance, on the shore of
+  Lake Senba next to Kairakuen garden. In 2026 they had to be at least 20 years
+  old, which let in classics, neo-classics, kei cars and commercial vehicles,
+  and the theme car was the Crown, with a contest. There are shop stalls and a
+  parts swap area.
+prefecture: Ibaraki
+venue_en: Senba Lake Park, Sakura, Fureai and Hanamizuki squares
+venue_ja: 水戸千波湖公園 さくら広場・ふれあい広場・はなみずき広場
+street_address: 546 Senbacho, Mito, Ibaraki (茨城県水戸市千波町546)
+# GSI's pin for the address on the 2026 flyer, at the lake's south-west shore
+# where the flyer's map puts the cars. OSM's pin for the park is the lake's
+# centre, 350 m away.
+lat: 36.3671
+lon: 140.4584
+typical_scale: Up to 500 vehicles
+# Neither the 2026 flyer nor the 2027 form states an admission.
+spectator_fee_jpy: null
+last_verified: 2026-11-25
