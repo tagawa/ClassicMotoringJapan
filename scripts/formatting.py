@@ -14,9 +14,46 @@ from settings import JST
 LINK_RE = re.compile(r"\[([^\[\]]+)\]\((https://[^\s()]+)\)")
 
 
+def prose_blocks(v: str) -> list[tuple[str, str | list[str]]]:
+    """Prose as ("p", text) and ("ul", items) blocks (spec 4.7).
+
+    A line starting "- " begins an item, any other line continues the item or paragraph
+    above it, and a blank line ends a list, so text after one needs a blank line.
+    """
+    blocks: list[tuple[str, str | list[str]]] = []
+    for chunk in re.split(r"\n\s*\n", v.strip()):
+        lead: list[str] = []
+        items: list[list[str]] = []
+        for line in chunk.splitlines():
+            line = line.strip()
+            if line.startswith("- "):
+                items.append([line[2:].strip()])
+            elif items:
+                items[-1].append(line)
+            else:
+                lead.append(line)
+        if lead:
+            blocks.append(("p", " ".join(lead)))
+        if items:
+            blocks.append(("ul", [" ".join(item) for item in items]))
+    return blocks
+
+
+def has_list(v: str) -> bool:
+    return any(kind == "ul" for kind, _ in prose_blocks(v))
+
+
 def prose_text(v: str) -> str:
-    """Prose as a reader hears it: each link reduced to its text."""
-    return LINK_RE.sub(r"\1", v)
+    """Prose as a reader hears it: each link reduced to its text, a list read as one sentence."""
+    if not has_list(v):
+        return LINK_RE.sub(r"\1", v)
+    parts = []
+    for kind, body in prose_blocks(v):
+        if kind == "ul":
+            body = "; ".join(body)
+            body += "" if body[-1] in ".!?" else "."
+        parts.append(body)
+    return LINK_RE.sub(r"\1", " ".join(parts))
 
 
 # Kana, CJK punctuation, ideographs and full-width forms. A run keeps Latin letters, digits
@@ -37,7 +74,29 @@ def mark_ja(v: str) -> Markup:
 
 
 def prose_html(v: str) -> Markup:
-    """Prose for a page: escaped throughout, with each link made an anchor."""
+    """Prose for a page: inline as before, or paragraphs and a list where it has one."""
+    if not has_list(v):
+        return _inline_html(v)
+    out = []
+    for kind, body in prose_blocks(v):
+        if kind == "p":
+            out.append(Markup("<p>{}</p>").format(_inline_html(body)))
+        else:
+            out.append(Markup("<ul>{}</ul>").format(
+                Markup("").join(Markup("<li>{}</li>").format(_inline_html(item)) for item in body)))
+    return Markup("").join(out)
+
+
+def prose_para(v: str, cls: str = "") -> Markup:
+    """Prose where the page wants a paragraph: a <div> instead once it holds a list,
+    since a <ul> inside a <p> would close the paragraph."""
+    attr = Markup(' class="{}"').format(cls) if cls else Markup("")
+    tag = "div" if has_list(v) else "p"
+    return Markup("<{0}{1}>{2}</{0}>").format(Markup(tag), attr, prose_html(v))
+
+
+def _inline_html(v: str) -> Markup:
+    """Escaped throughout, with each link made an anchor."""
     out, pos = [], 0
     for m in LINK_RE.finditer(v):
         out += [mark_ja(v[pos:m.start()]),

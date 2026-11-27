@@ -19,9 +19,10 @@ venue_ja: 昭和縁結び通り商店街・まほろば通り商店街・庁舎�
 lat: 38.0038
 lon: 140.1982
 nearest_station: Takahata (JR Yamagata Shinkansen and Ou line)
-access_notes_en: >
-  About 10 minutes by car from the station, and about 10 minutes from Nanyo-Takahata
-  IC on the Tohoku-Chuo Expressway.
+access_notes_en: |
+  By car:
+  - about 10 minutes from the station
+  - about 10 minutes from Nanyo-Takahata IC on the Tohoku-Chuo Expressway
 typical_scale: 180 to 200 cars
 spectator_fee_jpy: 1500
 spectator_notes_en: >

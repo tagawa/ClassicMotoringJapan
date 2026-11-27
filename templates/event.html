@@ -5,7 +5,7 @@
 {% if ev.name_ja and lang == "en" %}<p class="ja" lang="ja">{{ ev.name_ja }}</p>{% endif %}
 {{ hero(photo, root) }}
 {% if ev.summary_en %}
-<p class="lede">{{ ev.summary_en | prose }}</p>
+{{ ev.summary_en | prose_para("lede") }}
 {% endif %}
 
 <h2>{{ t.dates }}</h2>

@@ -86,7 +86,7 @@
 <h2 id="route">{{ t.route }}</h2>
 {# Prose in the page's language or none: a Japanese page leaves English prose out (spec 6.6). #}
 {% if ed["route_" ~ lang] %}
-<p>{{ ed["route_" ~ lang] | prose }}</p>
+{{ ed["route_" ~ lang] | prose_para }}
 {% endif %}
 {% if r.route_map %}
 {% set rm = r.route_map %}

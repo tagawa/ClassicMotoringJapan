@@ -20,12 +20,14 @@ videos:
   - youtube_id: vJERHS8x77U
     label_en: Day 2 at Hiruzen Kogen Center, in the rain
     label_ja: 2日目、雨の蒜山高原センター
-route_en: >
+route_en: |
   The 28th running. Cars gathered at the shrine from 07:00 and set off from
-  08:30. Saturday's leg ran through Akaiwa, Bizen, Setouchi, Wake and Mimasaka to
-  an overnight stop at Yubara Onsen; Sunday's went through Kagamino, Hiruzen and
-  Misaki back to Okayama. Times are for the lead car, with the last car up to 45
-  minutes behind.
+  08:30.
+  - Saturday: through Akaiwa, Bizen, Setouchi, Wake and Mimasaka to an overnight
+    stop at Yubara Onsen
+  - Sunday: through Kagamino, Hiruzen and Misaki back to Okayama
+
+  Times are for the lead car, with the last car up to 45 minutes behind.
 route:
   - date: 2026-10-03
     checkpoints:

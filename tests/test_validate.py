@@ -372,6 +372,135 @@ class ProseLinkTests(unittest.TestCase):
         self.assertIn("[text](https://", message)
 
 
+class ProseListTests(unittest.TestCase):
+    """A list of facts in prose is a bullet list on the page and one sentence everywhere else."""
+
+    SITES = ("Three sites:\n- the shrine grounds (140 cars)\n- the car park at 5107 Yaho (10)\n"
+             "- the JA car park at\n  1-12-8 Fujimidai (40)")
+    ITEMS = ("<ul><li>the shrine grounds (140 cars)</li><li>the car park at 5107 Yaho (10)</li>"
+             "<li>the JA car park at 1-12-8 Fujimidai (40)</li></ul>")
+
+    def setUp(self):
+        self.tmp = temp_dir(self)
+        self.data = self.tmp / "data"
+
+    def event_page(self, text: str, field="summary_en") -> str:
+        write_event(self.data, "meet", extra=f"{field}: {json.dumps(text)}\n")
+        write_instance(self.data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-18"))
+        build.build(self.data, self.tmp / "site")
+        return (self.tmp / "site" / "events" / "meet" / "index.html").read_text(encoding="utf-8")
+
+    def edition_build(self, text: str) -> str:
+        write_event(self.data, "meet")
+        write_instance(self.data, "meet", 2026, instance_yaml(
+            "meet", 2026, "2026-10-18", "2026-10-18", extra=f"route_en: {json.dumps(text)}\n"))
+        build.build(self.data, self.tmp / "site")
+        return (self.tmp / "site" / "events" / "meet" / "2026" / "index.html").read_text(encoding="utf-8")
+
+    def test_the_summary_becomes_a_div_of_the_lede_class(self):
+        # A <ul> inside a <p> would close the paragraph and leave the list unstyled.
+        html = self.event_page(self.SITES)
+        self.assertIn(f'<div class="lede"><p>Three sites:</p>{self.ITEMS}</div>', html)
+        self.assertNotIn('<p class="lede">', html)
+
+    def test_a_summary_without_a_list_renders_as_before(self):
+        self.assertIn('<p class="lede">A plain summary.</p>', self.event_page("A plain summary."))
+
+    def test_the_route_is_never_a_list_inside_a_paragraph(self):
+        html = self.edition_build(self.SITES)
+        self.assertIn(f"<div><p>Three sites:</p>{self.ITEMS}</div>", html)
+
+    def test_a_notes_field_carries_the_list_in_its_dd(self):
+        html = self.event_page("Tickets:\n- ¥1,200 in advance\n- ¥1,500 at the gate", "spectator_notes_en")
+        self.assertIn("<dd><p>Tickets:</p><ul><li>¥1,200 in advance</li><li>¥1,500 at the gate</li></ul></dd>",
+                      html)
+
+    def test_a_blank_line_ends_the_list(self):
+        html = self.event_page("Tickets:\n- ¥1,200 in advance\n- ¥1,500 at the gate\n\nCash only.",
+                               "spectator_notes_en")
+        self.assertIn("<li>¥1,500 at the gate</li></ul><p>Cash only.</p></dd>", html)
+
+    def test_items_carry_links_and_are_escaped(self):
+        html = self.event_page("Sites:\n- [Fuji Speedway](https://en.fujispeedway.jp/)\n- <b>A</b> & B")
+        self.assertIn('<li><a href="https://en.fujispeedway.jp/">Fuji Speedway</a></li>', html)
+        self.assertIn("<li>&lt;b&gt;A&lt;/b&gt; &amp; B</li>", html)
+
+    def test_plain_text_reads_the_items_as_one_sentence(self):
+        self.edition_build(self.SITES)
+        api = json.loads((self.tmp / "site" / "api" / "events.json").read_text(encoding="utf-8"))
+        self.assertEqual(api["events"][0]["route_en"],
+                         "Three sites: the shrine grounds (140 cars); the car park at 5107 Yaho (10); "
+                         "the JA car park at 1-12-8 Fujimidai (40).")
+
+    def test_jsonld_describes_with_the_text_before_the_list(self):
+        # Markup may claim only text the page shows word for word (spec 6.2), which no
+        # sentence joined across list items is; the lead-in ending in a colon goes too.
+        html = self.event_page("A meeting in the park. Tickets:\n- ¥1,200 in advance\n"
+                               "- ¥1,500 at the gate\n\nCash only.")
+        block, = jsonld_blocks(html)
+        self.assertEqual(block["description"], "A meeting in the park.")
+
+    def test_jsonld_has_no_description_when_the_summary_opens_with_its_list(self):
+        block, = jsonld_blocks(self.event_page("Tickets:\n- ¥1,200 in advance\n- ¥1,500 at the gate"))
+        self.assertNotIn("description", block)
+
+    def test_items_count_towards_the_word_cap(self):
+        items = "".join(f"\n- Word{n}" for n in range(validate.PROSE_MAX_WORDS))
+        with self.assertRaises(validate.ValidationError):
+            self.event_page(f"Lead.{items}")
+
+
+class FactListTests(unittest.TestCase):
+    """Facts that each carry a number are a bullet list, not a sentence (spec 4.7)."""
+
+    # The sentence that shipped on the Yabo Tenmangu 2026 page and prompted the rule.
+    SHIPPED = ("Three sites: the shrine grounds (140 cars), the Endo-gumi car park opposite the "
+               "shrine approach at 5107 Yaho (10), and the JA Tokyo Midori Fujimidai branch car "
+               "park at 1-12-8 Fujimidai (40).")
+    TIMETABLE = ("Cars arrive from 8:00, the opening ceremony is at 10:00, the display opens at "
+                 "10:30, and awards and the closing ceremony are at 14:00.")
+
+    def setUp(self):
+        self.tmp = temp_dir(self)
+        self.data = self.tmp / "data"
+
+    def build_with_prose(self, text: str, field="summary_en"):
+        write_event(self.data, "meet", extra=f"{field}: {json.dumps(text)}\n")
+        write_instance(self.data, "meet", 2026, instance_yaml("meet", 2026, "2026-10-18", "2026-10-18"))
+        build.build(self.data, self.tmp / "site")
+
+    def refusal(self, text: str, field="summary_en") -> str:
+        with self.assertRaises(validate.ValidationError) as ctx:
+            self.build_with_prose(text, field)
+        return str(ctx.exception)
+
+    def test_the_sentence_that_shipped_is_refused_with_the_way_out(self):
+        message = self.refusal(self.SHIPPED)
+        self.assertIn("summary_en", message)
+        self.assertIn("bullet", message)
+
+    def test_a_timetable_in_a_sentence_is_refused(self):
+        self.assertIn("access_notes_en", self.refusal(self.TIMETABLE, "access_notes_en"))
+
+    def test_the_same_facts_as_a_list_are_accepted(self):
+        self.build_with_prose(ProseListTests.SITES)
+
+    def test_a_list_item_is_checked_on_its_own(self):
+        self.assertIn("bullet", self.refusal(f"Lead:\n- {self.TIMETABLE}"))
+
+    def test_sentences_that_are_not_fact_lists_are_accepted(self):
+        for text in (
+            "¥1,200 in advance until the day before, ¥1,500 at the gate.",  # two items: beyond it
+            "Held on the last Sunday of October in 2024, 2025 and 2026.",  # years are not facts
+            "Cars from the 1950s, the 1960s and the 1970s, Japanese and imported.",
+            "Up to 200 vehicles built between 1946 and 2000, half of them kei cars of 360, 550 and 660cc.",
+            "There are food trucks, a flea market and a clear-out auction.",
+        ):
+            with self.subTest(text=text):
+                self.build_with_prose(text)
+                shutil.rmtree(self.data)
+
+
 class ValidationTests(unittest.TestCase):
     def setUp(self):
         self.tmp = temp_dir(self)

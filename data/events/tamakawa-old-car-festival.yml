@@ -15,9 +15,12 @@ venue_ja: ボートピア玉川 駐車場
 # No lat/lon: GSI matches only the sub-district and OSM does not know the venue.
 street_address: 116-2 Ganpoji, Tamakawa, Fukushima (福島県石川郡玉川村大字岩法寺字新屋敷116-2)
 nearest_station: Izumigo (JR Suigun line), about 5 minutes by car
-access_notes_en: >
-  About 2 minutes by car from Fukushima Airport and about 5 minutes from Tamakawa
-  IC on the Abukuma Kogen Road. Parking for 500 cars.
+access_notes_en: |
+  By car:
+  - about 2 minutes from Fukushima Airport
+  - about 5 minutes from Tamakawa IC on the Abukuma Kogen Road
+
+  Parking for 500 cars.
 # iwafu says free, but in an AI-written summary; the tourism page states no fee.
 spectator_fee_jpy: null
 last_verified: 2026-11-03

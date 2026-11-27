@@ -14,13 +14,20 @@ street_address: 1-1-1 Minatomirai, Nishi, Yokohama, Kanagawa (神奈川県横浜
 lat: 35.4600
 lon: 139.6353
 nearest_station: Minatomirai (Minatomirai line), or Sakuragicho (JR Negishi line, Yokohama Municipal Subway Blue Line)
-access_notes_en: >
-  About 5 minutes on foot from Minatomirai, through Queen's Square Yokohama and over
-  the footbridge, or about 12 minutes from Sakuragicho. From Tokyo, Shinagawa,
-  Haneda or Narita, change at Yokohama for the Minatomirai line.
+access_notes_en: |
+  On foot:
+  - about 5 minutes from Minatomirai, through Queen's Square Yokohama and over the
+    footbridge
+  - about 12 minutes from Sakuragicho
+
+  From Tokyo, Shinagawa, Haneda or Narita, change at Yokohama for the Minatomirai
+  line.
 spectator_fee_jpy: 4500
-spectator_notes_en: >
-  For 2027, ¥3,500 in advance or ¥4,500 on the day, and each ticket includes a
-  ¥1,000 voucher. Free for primary school age and under. Last entry 16:30. Advance
-  sales had not opened when this was checked.
+spectator_notes_en: |
+  For 2027:
+  - ¥3,500 in advance
+  - ¥4,500 on the day
+
+  Each ticket includes a ¥1,000 voucher. Free for primary school age and under.
+  Last entry 16:30. Advance sales had not opened when this was checked.
 last_verified: 2026-10-08

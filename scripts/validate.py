@@ -8,7 +8,7 @@ from pathlib import Path
 
 import yaml
 
-from formatting import prose_text
+from formatting import LINK_RE, prose_blocks, prose_text
 from maps import COURSE_VIEWBOX, course_steps
 from page_meta import event_description
 from photos import PHOTOS_DIR, PHOTO_LICENSES, PHOTO_MIN_WIDTH, _open_photo, photo_metadata
@@ -66,6 +66,14 @@ AMERICAN_SPELLINGS = {
     "favorite": "favourite", "neighborhood": "neighbourhood",
     "kilometer": "kilometre", "kilometers": "kilometres", "tires": "tyres",
 }
+# A list of facts written as a sentence (spec 4.7): comma-separated parts that each carry a
+# number other than a year, decade included, and two words. Three parts, not two, so that a
+# match is always a real list: two-part sentences like "arrive before 10:30 and leave after
+# 17:30" are too often not one.
+FACT_LIST_MIN = 3
+FACT_LIST_SEP_RE = re.compile(r",\s+(?:(?:and|or)\s+)?")
+YEAR_RE = re.compile(r"\b(?:1[89]|20)\d\ds?\b")
+SENTENCE_RE = re.compile(r"(?<=[.;!?])\s+")
 AMERICAN_RE = re.compile(r"\b(" + "|".join(AMERICAN_SPELLINGS) + r")\b", re.IGNORECASE)
 # Proper names spelt the American way, which the spelling check skips.
 AMERICAN_SPELLING_NAMES = ("Hiruzen Kogen Center",)
@@ -167,6 +175,25 @@ def _check_editorial(v: str, where: str, errors: list[str]) -> None:
         )
 
 
+def _check_fact_lists(v: str, where: str, errors: list[str]) -> None:
+    """Refuse facts listed inside a sentence, which a reader has to parse to find one."""
+    texts = [t for kind, body in prose_blocks(v) for t in (body if kind == "ul" else [body])]
+    for text in texts:
+        text = unicodedata.normalize("NFKC", LINK_RE.sub(r"\1", text))
+        for sentence in SENTENCE_RE.split(text):
+            run = 0
+            for part in FACT_LIST_SEP_RE.split(sentence):
+                fact = (re.search(r"\d", YEAR_RE.sub("", part))
+                        and len(re.findall(r"\b[A-Za-z]{2,}\b", part)) >= 2)
+                run = run + 1 if fact else 0
+                if run == FACT_LIST_MIN:
+                    errors.append(
+                        f"{where}: {sentence!r} lists facts inside a sentence. Write them as bullet "
+                        f"points (a line starting '- ' each, in a '|' block), so a reader can find one "
+                        f"without reading the rest")
+                    break
+
+
 def _check_house_style(v: str, where: str, errors: list[str]) -> None:
     """Refuse em dashes and American spellings in English text."""
     if "\u2014" in v:
@@ -239,6 +266,7 @@ def _check_value(kind: str, v, where: str, errors: list[str]) -> None:
             errors.append(f"{where}: must be non-empty text, got {v!r}")
         else:
             _check_links(v, where, errors)
+            original = v
             # Measured on what a reader sees, so a long URL costs nothing.
             v = prose_text(v)
             if len(v.split()) > PROSE_MAX_WORDS:
@@ -248,6 +276,7 @@ def _check_value(kind: str, v, where: str, errors: list[str]) -> None:
                     f"or a diagram, or move the detail into structured fields such as `route` or `cars`"
                 )
             _check_editorial(v, where, errors)
+            _check_fact_lists(original, where, errors)
     elif kind == "youtube_id":
         if not isinstance(v, str) or not YOUTUBE_ID_RE.match(v):
             errors.append(f"{where}: must be the 11-character video ID, the part of the address "

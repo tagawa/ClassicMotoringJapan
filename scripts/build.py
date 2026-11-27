@@ -26,7 +26,7 @@ from calendars import build_ics, ics_calendar
 from car_pages import INDEX_DESCRIPTION, group_pages, index_flags, make_index
 from cards import draw_card, plan_cards
 from charts import year_chart
-from formatting import mark_ja, prose_html
+from formatting import mark_ja, prose_html, prose_para
 from languages import (CARS_DESCRIPTION_JA, FILTERS, LANGUAGE_NAMES, LANGUAGES, PREFIX, TEXT, countries, event_text,
                        group_text, local, months_text, row_text, years_text)
 from machine_files import build_api, build_api_catalog, build_ard_catalog, build_llms_txt
@@ -94,6 +94,7 @@ def build(data_dir: Path, out_dir: Path,
                            local=lambda obj, base: local(lang, obj, base))
         env.filters.update(FILTERS[lang])
         env.filters["prose"] = prose_html
+        env.filters["prose_para"] = prose_para
         env.filters["mark_ja"] = mark_ja
         return env
 

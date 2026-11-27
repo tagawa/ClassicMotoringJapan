@@ -12,10 +12,12 @@ last_verified: 2026-11-17
 sequence: 1
 venue_en: Large Lawn, Aichi Expo Memorial Park (Morikoro Park), Nagakute
 venue_ja: 愛・地球博記念公園 大芝生広場（モリコロパーク、長久手市）
-route_en: >
-  A departure ceremony at the museum at 08:30, then about 120 cars on a 12 km
-  parade on public roads through Nagakute to the park, finishing by 10:45. The
-  museum and seven Japanese makers showed 11 cars of their own at the park.
+route_en: |
+  About 120 cars on a 12 km parade on public roads through Nagakute to the park:
+  - 08:30: departure ceremony at the museum
+  - 10:45: last cars in at the park
+
+  The museum and seven Japanese makers showed 11 cars of their own at the park.
 videos:
   # The museum says it will post its own film of the day on its YouTube channel; prefer it once it appears.
   # Video by superSPORTS.

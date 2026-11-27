@@ -19,11 +19,16 @@ street_address: 90-48 Imai, Inuyama, Aichi (愛知県犬山市今井成沢90-48)
 lat: 35.3731
 lon: 137.0189
 nearest_station: Inuyama (Meitetsu Inuyama line)
-access_notes_en: >
-  Gifu Bus from Inuyama station takes about 20 minutes. Inuyama is about 30
-  minutes from Meitetsu Nagoya and 40 from Meitetsu Gifu. The car park in front
-  of the entrance costs ¥1,000 a car and ¥500 a motorcycle, cash only. The 2026
-  festival was held elsewhere, at Wood Forum Hida in Takayama, Gifu.
+access_notes_en: |
+  Gifu Bus from Inuyama station takes about 20 minutes. Inuyama is:
+  - about 30 minutes from Meitetsu Nagoya
+  - about 40 minutes from Meitetsu Gifu
+
+  The car park in front of the entrance costs, cash only:
+  - ¥1,000 a car
+  - ¥500 a motorcycle
+
+  The 2026 festival was held elsewhere, at Wood Forum Hida in Takayama, Gifu.
 # About 130 came to Takayama in 2026; the 2027 flyer offers 200 places at Little World.
 typical_scale: About 130 cars, with room for 200 at Little World
 spectator_fee_jpy: null

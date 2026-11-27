@@ -16,7 +16,9 @@ lat: 35.6473
 lon: 140.0347
 nearest_station: Kaihimmakuhari (JR Keiyo line)
 spectator_fee_jpy: null
-spectator_notes_en: >
-  Tickets for 2027 are not on sale yet. In 2026 a day ticket cost from ¥8,000 at
-  the door or from ¥7,500 in advance, and students paid ¥2,000 at the weekend.
+spectator_notes_en: |
+  Tickets for 2027 are not on sale yet. In 2026 a day ticket cost:
+  - from ¥8,000 at the door
+  - from ¥7,500 in advance
+  - ¥2,000 for students at the weekend
 last_verified: 2026-10-04

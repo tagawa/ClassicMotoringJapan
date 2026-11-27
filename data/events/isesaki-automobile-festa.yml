@@ -15,10 +15,13 @@ street_address: 3074 Miyakocho, Isesaki, Gunma (群馬県伊勢崎市宮子町30
 lat: 36.3351
 lon: 139.1633
 nearest_station: Isesaki (JR Ryomo and Tobu Isesaki lines), or Komagata (JR Ryomo line)
-access_notes_en: >
-  Neither station is walkable. Both are about 10 minutes away by taxi: about ¥1,500
-  from Isesaki and ¥1,700 from Komagata. The track's free shuttle bus runs on race
-  days only. By car, the site is 1.3 km from Komagata IC.
+access_notes_en: |
+  Neither station is walkable. Both are about 10 minutes away by taxi:
+  - about ¥1,500 from Isesaki
+  - about ¥1,700 from Komagata
+
+  The track's free shuttle bus runs on race days only. By car, the site is 1.3 km
+  from Komagata IC.
 typical_scale: About 250 vehicles
 spectator_fee_jpy: 0
 spectator_notes_en: >

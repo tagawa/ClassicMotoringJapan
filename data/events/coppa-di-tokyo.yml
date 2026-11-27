@@ -17,11 +17,13 @@ street_address: 2-17-1 Higashi-Shimbashi, Minato, Tokyo (東京都港区東新�
 lat: 35.6612
 lon: 139.7577
 nearest_station: Shiodome (Toei Oedo line and Yurikamome), or Shimbashi for the JR lines
-access_notes_en: >
-  In a straight line the park is about 300 metres from Shiodome station and
-  about 550 metres from JR Shimbashi. The organiser asks people coming to watch
-  to use public transport: only registered cars may enter the park, and there
-  is little paid parking nearby.
+access_notes_en: |
+  In a straight line the park is:
+  - about 300 metres from Shiodome station
+  - about 550 metres from JR Shimbashi
+
+  The organiser asks people coming to watch to use public transport: only
+  registered cars may enter the park, and there is little paid parking nearby.
 # 84 on the 2025 entry list; the 2026 guide allows 77 (70, plus 7 bubble cars).
 typical_scale: About 80 cars
 # The organiser's site states no admission. Free is from Stripes Japan's listing for

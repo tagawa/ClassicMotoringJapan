@@ -6,7 +6,7 @@ import re
 
 from markupsafe import Markup
 
-from formatting import prose_text
+from formatting import has_list, prose_blocks, prose_text
 from settings import SITE_NAME, SITE_URL
 
 
@@ -44,8 +44,21 @@ def build_jsonld(r: dict) -> Markup | None:
     # Markup may claim only what its page shows, and only the event page shows the summary.
     # No organizer: the field describes the organiser for visitors rather than naming it.
     if ev.get("summary_en") and not r["has_page"]:
-        data["description"] = prose_text(ev["summary_en"]).strip()
+        description = _shown_summary(ev["summary_en"])
+        if description:
+            data["description"] = description
     return jsonld_markup(data)
+
+
+def _shown_summary(v: str) -> str:
+    """The summary as one run of text the page shows word for word: all of it, or what
+    comes before its first list without the lead-in sentence that ends in a colon."""
+    if not has_list(v):
+        return prose_text(v).strip()
+    kind, first = prose_blocks(v)[0]
+    if kind == "ul":
+        return ""
+    return prose_text(re.sub(r"(?:^|(?<=[.!?]) )[^.!?]*:$", "", first)).strip()
 
 
 def jsonld_markup(data: dict) -> Markup:

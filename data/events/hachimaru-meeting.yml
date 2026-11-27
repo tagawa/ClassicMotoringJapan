@@ -17,16 +17,18 @@ street_address: 694 Nakahinata, Oyama, Sunto District, Shizuoka (静岡県駿東
 lat: 35.3721
 lon: 138.9286
 nearest_station: Gotemba (JR Gotemba line)
-access_notes_en: >
-  From Gotemba, the bus for Fuji Speedway takes about 25 minutes, getting off at 
-  Fuji Speedway West Gate. It runs on weekends and public holidays only. 
-  A taxi takes about 20 minutes and about ¥4,000. By car it's about 20
-  minutes from Gotemba IC and about 10 minutes from Shin-Gotemba IC.
+access_notes_en: |
+  From Gotemba, the bus for Fuji Speedway takes about 25 minutes, getting off at
+  Fuji Speedway West Gate. It runs on weekends and public holidays only. A taxi
+  takes about 20 minutes and about ¥4,000. By car:
+  - about 20 minutes from Gotemba IC
+  - about 10 minutes from Shin-Gotemba IC
 typical_eras: [1980s, 1990s]
 spectator_fee_jpy: 3000
-spectator_notes_en: >
+spectator_notes_en: |
   In 2026, admission is sold by WHEELVERSE and includes Fuji Speedway entry:
-  ¥3,000 a person on foot, paid at the gate, or ¥5,000 a car in advance
-  (¥6,000 on the day), covering passengers and parking. Gates open at 7:00.
-  The meeting runs in rain or shine.
+  - ¥3,000 a person on foot, paid at the gate
+  - ¥5,000 a car in advance, or ¥6,000 on the day, covering passengers and parking
+
+  Gates open at 7:00. The meeting runs in rain or shine.
 last_verified: 2026-11-05
