@@ -25,7 +25,7 @@
     <thead><tr><th scope="col">{{ t.col_event_name }}</th><th scope="col">{{ t.col_next_date }}</th><th scope="col">{{ t.col_latest }}</th></tr></thead>
     <tbody>
 {% for line in page.events %}
-      <tr><th scope="row"><a href="{{ home }}events/{{ line.slug }}/">{{ local(line.ev, "name") }}</a></th><td>{% for d in line.dates %}{% if not loop.first %}<span class="date-sep">; </span>{% endif %}<span class="next-date" data-start="{{ d.start.isoformat() }}" data-ends="{{ d.end.isoformat() }}">{{ d.text }}</span>{% endfor %}<span class="no-next"{% if line.dates %} hidden{% endif %}>{{ t.next_not_announced }}</span></td><td><a href="{{ home }}{{ line.row.path }}">{{ line.text }}</a></td></tr>
+      <tr><th scope="row"><a href="{{ home }}events/{{ line.slug }}/">{{ local(line.ev, "name") }}</a></th><td>{% for d in line.dates %}{% if not loop.first %}<span class="date-sep">; </span>{% endif %}<span class="next-date" data-start="{{ d.start.isoformat() }}" data-ends="{{ d.end.isoformat() }}">{{ d.text }}</span>{% endfor %}<span class="no-next"{% if line.dates %} hidden{% endif %}>{{ t.next_not_announced }}</span></td><td><a href="{{ home }}{{ line.path }}">{{ line.text }}</a></td></tr>
 {% endfor %}
     </tbody>
   </table>

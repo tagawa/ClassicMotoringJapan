@@ -1,6 +1,8 @@
 """The cars section: /cars/ and one page per make group (spec 4.11 and section 5)."""
 from __future__ import annotations
 
+from datetime import date
+
 from formatting import fmt_span
 from settings import COUNTRIES, PAGE_MIN_EDITIONS
 from validate import make_slug
@@ -22,20 +24,60 @@ def _counts_text(cars: int, lists: int) -> str:
     return f"{_n(cars, 'car')} on {_n(lists, 'entry list')}"
 
 
-def _event_line(latest: dict, rows: list[dict]) -> dict:
-    """An event's line: the count from its latest list including the group, and the dates.
+def _dates(slug: str, since, rows: list[dict]) -> list[dict]:
+    """The build never reads the clock, so a line gives every edition from its evidence on (on,
+    so an upcoming edition with its own list keeps its date) and the browser picks the next."""
+    return [{"start": d["ed"]["start"], "end": d["ed"]["end"], "tentative": d["ed"]["status"] == "tentative",
+             "text": fmt_span(d["ed"]["start"], d["ed"]["end"], year=True)
+                     + (" (dates not confirmed)" if d["ed"]["status"] == "tentative" else "")}
+            for d in rows if d["slug"] == slug and d["ed"]["start"] >= since and d["ed"]["status"] != "cancelled"]
 
-    The build never reads the clock, so it gives every edition from the counted one on (on,
-    so an upcoming edition with its own list keeps its date) and the browser picks the next.
-    """
+
+def _event_line(latest: dict, rows: list[dict]) -> dict:
+    """An event's line from its latest list including the group: the count, and the dates."""
     r, n = latest["row"], latest["count"]
     text = f"{n} in {r['label']}" + (", provisional" if r["list_provisional"] else "")
-    dates = [{"start": d["ed"]["start"], "end": d["ed"]["end"], "tentative": d["ed"]["status"] == "tentative",
-              "text": fmt_span(d["ed"]["start"], d["ed"]["end"], year=True)
-                      + (" (dates not confirmed)" if d["ed"]["status"] == "tentative" else "")}
-             for d in rows if d["slug"] == r["slug"] and d["ed"]["start"] >= r["ed"]["start"]
-             and d["ed"]["status"] != "cancelled"]
-    return {"ev": r["ev"], "slug": r["slug"], "row": r, "text": text, "dates": dates}
+    return {"ev": r["ev"], "slug": r["slug"], "row": r, "path": r["path"], "text": text,
+            "dates": _dates(r["slug"], r["ed"]["start"], rows)}
+
+
+def _photo_line(ph: dict, rows: list[dict]) -> dict | None:
+    """An event's line from a photo taken there: the year, linked to the edition's page when it has one."""
+    ev_rows = [r for r in rows if r["slug"] == ph["event"]]
+    if not ev_rows:
+        return None
+    r = next((r for r in ev_rows if r["id"] == ph.get("edition")), None)
+    since = r["ed"]["start"] if r else date(ph["year"], 1, 1)
+    return {"ev": ev_rows[0]["ev"], "slug": ph["event"], "row": r, "photo_year": ph["year"],
+            "path": r["path"] if r and r["has_page"] else f"events/{ph['event']}/",
+            "text": f"Photographed in {ph['year']}", "dates": _dates(ph["event"], since, rows)}
+
+
+def _sightings(lists: list[dict], photos: list[dict], rows: list[dict]) -> list[dict]:
+    """Every event a group's page has evidence of, A to Z: its entry lists, then its photos (spec 4.11).
+    A new kind of evidence belongs here, so the table cannot miss what the page shows elsewhere."""
+    latest_by_event: dict[str, dict] = {}
+    for x in lists:  # newest first, so the first seen per event is its latest
+        latest_by_event.setdefault(x["row"]["slug"], x)
+    lines = {slug: _event_line(x, rows) for slug, x in latest_by_event.items()}
+    # An event with a list keeps its count; of several photos at one event, the latest year speaks.
+    for ph in sorted((item["data"] for item in photos if item["data"].get("event")), key=lambda ph: -ph["year"]):
+        if ph["event"] not in lines and (line := _photo_line(ph, rows)):
+            lines[ph["event"]] = line
+    return sorted(lines.values(), key=lambda line: line["ev"]["name_en"].casefold())
+
+
+def unlisted_photo_events(pages: list[dict], car_photos: dict) -> list[str]:
+    """The build's guard: a page whose photo names an event its table lacks (spec 4.11)."""
+    errors = []
+    for page in pages:
+        listed = {line["slug"] for line in page["events"]}
+        for item in car_photos.get(page["name"], []):
+            ph = item["data"]
+            if ph.get("event") and ph["event"] not in listed:
+                errors.append(f"car_photos.yml: {ph['file']} was taken at {ph['event']}, but the "
+                              f"{page['name']} page's events table does not list it")
+    return errors
 
 
 def _group_of(groups: dict[str, list[str]]) -> dict[str, str]:
@@ -46,8 +88,9 @@ def _join(names: list[str]) -> str:
     return names[0] if len(names) == 1 else f"{', '.join(names[:-1])} and {names[-1]}"
 
 
-def group_pages(rows: list[dict], groups: dict[str, list[str]]) -> list[dict]:
-    """One record per group on lists from enough editions, sorted by slug."""
+def group_pages(rows: list[dict], groups: dict[str, list[str]], car_photos: dict | None = None) -> list[dict]:
+    """One record per group on lists from enough editions, sorted by slug. Photos add events to a
+    page's table but never decide whether the page exists, which lists alone do."""
     owner = _group_of(groups)
     editions: dict[str, set] = {}
     verified: dict[str, object] = {}
@@ -75,11 +118,7 @@ def group_pages(rows: list[dict], groups: dict[str, list[str]]) -> list[dict]:
                 lists.append({"row": r, "count": n, "when": fmt_span(r["ed"]["start"], r["ed"]["end"], year=True),
                               "text": _n(n, "car")})
         lists.reverse()
-        latest_by_event: dict[str, dict] = {}
-        for x in lists:  # newest first, so the first seen per event is its latest
-            latest_by_event.setdefault(x["row"]["slug"], x)
-        events = sorted((_event_line(x, rows) for x in latest_by_event.values()),
-                        key=lambda line: line["ev"]["name_en"].casefold())
+        events = _sightings(lists, (car_photos or {}).get(name, []), rows)
         pages.append({"name": name, "slug": slug, "title": title, "members": members, "named": named,
                       "path": f"cars/{slug}/",
                       "verified": verified[name], "lists": lists, "events": events,

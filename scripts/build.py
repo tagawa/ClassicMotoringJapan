@@ -23,7 +23,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 from markupsafe import Markup
 
 from calendars import build_ics, ics_calendar
-from car_pages import INDEX_DESCRIPTION, group_pages, index_flags, make_index
+from car_pages import INDEX_DESCRIPTION, group_pages, index_flags, make_index, unlisted_photo_events
 from cards import draw_card, plan_cards
 from charts import year_chart
 from formatting import mark_ja, prose_html, prose_para
@@ -206,9 +206,12 @@ def build(data_dir: Path, out_dir: Path,
         t = TEXT[lang]
         # Built from the page language's rows, so each list links and names its edition in that language.
         lang_rows = local_rows(rows, lang)
+        with_photos = group_pages(lang_rows, groups, car_photos)
+        if errors := unlisted_photo_events(with_photos, car_photos):
+            raise BuildError(errors)
         pages = [{**page, **group_text(page, lang),
                   "photo": next((car_photo_info(item, lang_rows, events) for item in car_photos.get(page["name"], [])), None)}
-                 for page in group_pages(lang_rows, groups)]
+                 for page in with_photos]
         make_lines = make_index(rows, makes, groups, pages)
         root = "../" * (1 + home.count("/"))
         write(f"{home}cars/index.html", envs[lang].get_template("cars.html").render(

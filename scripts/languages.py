@@ -451,8 +451,12 @@ def group_text(page: dict, lang: str) -> dict:
     lines = []
     for line in page["events"]:
         r = line["row"]
-        count = next(x["count"] for x in page["lists"] if x["row"] is r)
-        lines.append({**line, "text": f"{r['label']}：{count}台" + ("（暫定）" if r["list_provisional"] else ""),
+        if line.get("photo_year"):
+            text = f"{line['photo_year']}年に撮影"
+        else:
+            count = next(x["count"] for x in page["lists"] if x["row"] is r)
+            text = f"{r['label']}：{count}台" + ("（暫定）" if r["list_provisional"] else "")
+        lines.append({**line, "text": text,
                       "dates": [{**d, "text": span_ja(d["start"], d["end"], year=True)
                                  + ("（日程未確定）" if d["tentative"] else "")} for d in line["dates"]]})
     return {

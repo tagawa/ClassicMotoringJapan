@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 import build  # noqa: E402
 import photos  # noqa: E402
+import car_pages  # noqa: E402
 import settings  # noqa: E402
 import validate  # noqa: E402
 from helpers import (HeadParser, instance_yaml, make_fixture, temp_dir, write_event,  # noqa: E402
@@ -591,6 +592,59 @@ class EventPhotoCarTests(unittest.TestCase):
                          '（2024年開催時）、撮影：<a href="https://commons.wikimedia.org/wiki/File:Test.jpg" lang="en">'
                          'Test Author</a>、<a href="https://creativecommons.org/licenses/by-sa/4.0/" lang="en">'
                          'CC BY-SA 4.0</a>')
+
+
+class PhotoSightingTests(unittest.TestCase):
+    """A make page's events table also holds the events its photos were taken at (spec 4.11, 4.12).
+    meet-d's 2026 list has no Nissan-group car, so only the photo puts Meet D on the Nissan page."""
+
+    def build_with(self, entry) -> Path:
+        tmp = temp_dir(self)
+        write_car_site(tmp / "data", {"Nissan": [entry]})
+        build.build(tmp / "data", tmp / "site")
+        return tmp / "site"
+
+    def row(self, site: Path, lang="") -> str:
+        html = (site / lang / "cars/nissan/index.html").read_text(encoding="utf-8")
+        table = re.search(r'(?s)id="dated-events">.*?</table>', html).group(0)
+        return next(tr for tr in re.findall(r"(?s)<tr>.*?</tr>", table) if "meet-d" in tr)
+
+    def test_the_photos_event_gets_a_row_linked_to_its_edition(self):
+        site = self.build_with({**CAR_PHOTO, "car_year": 1970, "event": "meet-d", "year": 2026, "edition": "2026"})
+        row = self.row(site)
+        self.assertIn('<a href="../../events/meet-d/">Meet D</a>', row)
+        self.assertIn('<a href="../../events/meet-d/2026/">Photographed in 2026</a>', row)
+        self.assertIn('data-start="2026-05-10"', row)
+        self.assertIn('<a href="../../events/meet-d/2026/">2026年に撮影</a>', self.row(site, "ja"))
+
+    def test_without_an_edition_the_row_links_the_event_page(self):
+        site = self.build_with({**CAR_PHOTO, "car_year": 1970, "event": "meet-d", "year": 2024})
+        row = self.row(site)
+        self.assertIn('<a href="../../events/meet-d/">Photographed in 2024</a>', row)
+        self.assertIn('data-start="2026-05-10"', row)
+
+    def test_a_photo_counts_towards_no_list_or_total(self):
+        site = self.build_with({**CAR_PHOTO, "car_year": 1970, "event": "meet-d", "year": 2026, "edition": "2026"})
+        html = (site / "cars/nissan/index.html").read_text(encoding="utf-8")
+        self.assertIn("6 cars on 3 entry lists", html)
+        lists = re.search(r'(?s)<details class="all-cars">.*?</details>', html).group(0)
+        self.assertNotIn("meet-d", lists)
+
+    def test_an_event_with_a_list_keeps_the_lists_count(self):
+        site = self.build_with({**CAR_PHOTO, "car_year": 1970, "event": "meet-b", "year": 2026, "edition": "2026"})
+        html = (site / "cars/nissan/index.html").read_text(encoding="utf-8")
+        self.assertIn(">3 in 2026</a>", html)
+        self.assertNotIn("Photographed", html)
+
+    def test_the_build_check_names_a_photo_whose_event_the_table_lacks(self):
+        photos_by_group = {"Nissan": [{"data": {**CAR_PHOTO, "event": "meet-d", "year": 2026}}]}
+        pages = [{"name": "Nissan", "events": [{"slug": "meet-b"}]}]
+        msg = car_pages.unlisted_photo_events(pages, photos_by_group)
+        self.assertEqual(len(msg), 1)
+        self.assertIn("meet-d", msg[0])
+        self.assertIn("datsun-meet-b", msg[0])
+        pages[0]["events"].append({"slug": "meet-d"})
+        self.assertEqual(car_pages.unlisted_photo_events(pages, photos_by_group), [])
 
 
 class CarPhotoCaptionTests(unittest.TestCase):
