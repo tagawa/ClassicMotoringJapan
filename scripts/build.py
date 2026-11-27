@@ -32,7 +32,7 @@ from languages import (CARS_DESCRIPTION_JA, FILTERS, LANGUAGE_NAMES, LANGUAGES, 
 from machine_files import build_api, build_api_catalog, build_ard_catalog, build_llms_txt
 from maps import MAP_HEIGHT, MAP_WIDTH, japan_path, venue_pin
 from page_meta import build_breadcrumbs, build_website_jsonld, edition_description, event_description
-from photos import car_photo_info, photo_info, write_car_photo, write_photo
+from photos import car_photo_info, edition_cars, photo_car, photo_info, write_car_photo, write_photo
 from rows import make_rows, month_groups
 from settings import (ABOUT_DESCRIPTION, ARD_PATH, ARD_PREDECESSOR_PATH, CONTENT_SIGNAL, CONTENT_USAGE,
                       FEED_FILE, INDEXNOW_KEY, ISSUES_URL, JA_LEDE, PREFECTURES_JA, ROOT,
@@ -80,6 +80,7 @@ def build(data_dir: Path, out_dir: Path,
     # Each make in an edition's car table links to its group's page, where one exists.
     make_pages = {member: page["path"] for page in car_groups for member in page["members"]}
     car_photos = load_car_photos(data_dir, groups, events, editions, {page["name"] for page in car_groups})
+    photographed = edition_cars(car_photos, make_pages)
     og, cards, errors = plan_cards(events, rows)
     if errors:
         raise BuildError(errors)
@@ -167,7 +168,7 @@ def build(data_dir: Path, out_dir: Path,
                 title=TEXT[lang]["event_title"](ev.get(f"name_{lang}") or ev["name_en"]),
                 description=event_description(ev) if lang == "en" else shown["description"],
                 ev=shown, rows=ev_rows, verified=verified, pin=venue_pin(ev),
-                photo=photo_info(ev), og_image=og[slug],
+                photo=photo_info(ev, photo_car(ev, car_photos, make_pages)), og_image=og[slug],
                 # The Event blocks stay on the English page: one event, described once.
                 jsonld=[r["jsonld"] for r in ev_rows if lang == "en" and not r["has_page"] and r["jsonld"]]))
             sitemap.append((f"{SITE_URL}/{home}{path}", verified))
@@ -188,7 +189,8 @@ def build(data_dir: Path, out_dir: Path,
                 canonical=f"{SITE_URL}/{home}{r['path']}",
                 title=f"{r['full_name']}{TEXT[lang]['title_sep']}{r['parts_phrase']}",
                 description=edition_description(r) if lang == "en" else r["description"],
-                ev=ev, r=r, ed=ed, photo=photo_info(ev), og_image=og[r["path"]], make_pages=make_pages,
+                ev=ev, r=r, ed=ed, photo=photo_info(ev, photo_car(ev, car_photos, make_pages)), og_image=og[r["path"]], make_pages=make_pages,
+                photographed=photographed.get((slug, r["id"]), []),
                 jsonld=[block for block in (event_block, crumbs) if block]))
             sitemap.append((f"{SITE_URL}/{home}{r['path']}", ed["last_verified"]))
 

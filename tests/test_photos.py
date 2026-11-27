@@ -516,6 +516,22 @@ class CarPhotoPageTests(unittest.TestCase):
         img = re.search(r"<img [^>]+>", self.page("ja/cars/nissan/index.html")).group(0)
         self.assertIn('lang="en"', img)
 
+    # The way back from the edition to the make page, as a list (spec 4.12).
+    def test_the_edition_page_lists_the_photo_as_a_bullet_linked_to_its_make_page(self):
+        html = self.page("events/meet-b/2026/index.html")
+        self.assertRegex(html, r'<h2>Car photos from this event</h2>\s*<ul>\s*'
+                               r'<li>1970 <a href="\.\./\.\./\.\./cars/nissan/">Datsun Car</a></li>\s*</ul>')
+
+    def test_the_japanese_edition_page_lists_it_too(self):
+        html = self.page("ja/events/meet-b/2026/index.html")
+        self.assertRegex(html, r'<h2>この開催時に撮影された車の写真</h2>\s*<ul>\s*'
+                               r'<li>1970年式 <a href="\.\./\.\./\.\./cars/nissan/"><span lang="en">Datsun Car</span></a></li>')
+
+    def test_the_list_is_not_a_section(self):
+        html = self.page("events/meet-b/2026/index.html")
+        self.assertNotIn('href="#car-photos"', html)
+        self.assertNotIn("photo", re.search(r"<title>(.*?)</title>", html).group(1).lower())
+
     def test_an_own_photo_is_the_share_image_in_both_languages(self):
         for rel in ("cars/nissan/index.html", "ja/cars/nissan/index.html"):
             meta = HeadParser(self.page(rel)).meta
@@ -532,9 +548,49 @@ class CarPhotoPageTests(unittest.TestCase):
         pages = sorted(p.relative_to(bare / "site") for p in (bare / "site").rglob("*.html"))
         self.assertGreater(len(pages), 10)
         for rel in pages:
-            if rel.as_posix() in ("cars/nissan/index.html", "ja/cars/nissan/index.html"):
+            # The make page shows the photo; the edition page lists it (spec 4.12).
+            if rel.as_posix() in ("cars/nissan/index.html", "ja/cars/nissan/index.html",
+                                  "events/meet-b/2026/index.html", "ja/events/meet-b/2026/index.html"):
                 continue
             self.assertEqual((self.out / rel).read_bytes(), (bare / "site" / rel).read_bytes(), rel)
+
+
+class EventPhotoCarTests(unittest.TestCase):
+    """An event photo that is also a make page's photo names the car and links its page (spec 4.10)."""
+    SOURCE = "https://commons.wikimedia.org/wiki/File:Test.jpg"
+    CREDIT = (', by <a href="https://commons.wikimedia.org/wiki/File:Test.jpg">Test Author</a>, '
+              '<a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>')
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = temp_dir(cls)
+        cls.data, cls.out = cls.tmp / "data", cls.tmp / "site"
+        credit = {"credit": "Test Author", "license": "CC BY-SA 4.0", "source_url": cls.SOURCE}
+        write_car_site(cls.data, {"Nissan": [{**CAR_PHOTO, "car_year": 1970, **credit}]})
+        write_event(cls.data, "meet-b", name_en="Meet B", extra=(
+            "photo:\n  alt_en: A white Datsun Car coupe\n  year: 2024\n"
+            f"  credit: Test Author\n  license: CC BY-SA 4.0\n  source_url: {cls.SOURCE}\n"))
+        write_photo(cls.data, "meet-b")
+        build.build(cls.data, cls.out)
+
+    def caption(self, rel: str) -> str:
+        html = (self.out / rel).read_text(encoding="utf-8")
+        return " ".join(re.search(r"(?s)<figcaption>(.*?)</figcaption>", html).group(1).split())
+
+    def test_the_event_page_names_the_car_and_links_its_make_page(self):
+        self.assertEqual(self.caption("events/meet-b/index.html"),
+                         'Photo: 1970 <a href="../../cars/nissan/">Datsun Car</a> at the 2024 event' + self.CREDIT)
+
+    def test_the_edition_page_does_the_same(self):
+        self.assertEqual(self.caption("events/meet-b/2026/index.html"),
+                         'Photo: 1970 <a href="../../../cars/nissan/">Datsun Car</a> at the 2024 event' + self.CREDIT)
+
+    def test_the_japanese_page_links_the_japanese_make_page(self):
+        self.assertEqual(self.caption("ja/events/meet-b/index.html"),
+                         '写真：1970年式 <a href="../../cars/nissan/"><span lang="en">Datsun Car</span></a>'
+                         '（2024年開催時）、撮影：<a href="https://commons.wikimedia.org/wiki/File:Test.jpg" lang="en">'
+                         'Test Author</a>、<a href="https://creativecommons.org/licenses/by-sa/4.0/" lang="en">'
+                         'CC BY-SA 4.0</a>')
 
 
 class CarPhotoCaptionTests(unittest.TestCase):
@@ -545,12 +601,18 @@ class CarPhotoCaptionTests(unittest.TestCase):
         write_car_site(tmp / "data", {"Nissan": [entry]}, **kw)
         build.build(tmp / "data", tmp / "site")
         html = (tmp / "site" / lang / "cars/nissan/index.html").read_text(encoding="utf-8")
-        self.html = html
+        self.html, self.site = html, tmp / "site"
         return " ".join(re.search(r"(?s)<figcaption>(.*?)</figcaption>", html).group(1).split())
 
     def test_an_event_without_an_edition_links_the_event_page(self):
         self.assertEqual(self.caption({**CAR_PHOTO, "car_year": 1970, "event": "meet-b", "year": 2024}),
                          'Photo: 1970 Datsun Car at <a href="../../events/meet-b/">Meet B 2024</a>')
+        # With no edition named, no edition page lists it.
+        edition = self.html_at("events/meet-b/2026/index.html")
+        self.assertNotIn("Car photos from this event", edition)
+
+    def html_at(self, rel: str) -> str:
+        return (self.site / rel).read_text(encoding="utf-8")
 
     def test_without_an_event_there_is_no_link(self):
         self.assertEqual(self.caption({**CAR_PHOTO, "car_year": 1970}), "Photo: 1970 Datsun Car")

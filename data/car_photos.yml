@@ -7,6 +7,7 @@ Bandini:
     car_year: 1968
     event: coppa-di-tokyo
     year: 2024
+    edition: "2024"
     alt_en: A red 1968 Bandini Saloncino, rally number 60, driving past spectators at Shiodome
     credit: Mr.choppers
     license: CC BY-SA 3.0
@@ -18,6 +19,7 @@ Bristol:
     car_year: 1960
     event: coppa-di-tokyo
     year: 2024
+    edition: "2024"
     alt_en: A silver 1960 Bristol 406 saloon, rally number 26, driving along a Tokyo street
     credit: Mr.choppers
     license: CC BY-SA 3.0

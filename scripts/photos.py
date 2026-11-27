@@ -119,13 +119,39 @@ def _credit(ph: dict) -> dict:
             "license_url": PHOTO_LICENSES.get(ph.get("license")), "source_url": ph.get("source_url")}
 
 
-def photo_info(ev: dict) -> dict | None:
+def _linked_cars(car_photos: dict, make_pages: dict):
+    """Each make-page photo with the car as its caption names it and the make page it is on."""
+    for item in (item for items in car_photos.values() for item in items):
+        ph = item["data"]
+        if ph["make"] in make_pages:
+            yield ph, {"car_year": ph.get("car_year"), "car": f"{ph['make']} {ph['model']}",
+                       "path": make_pages[ph["make"]]}
+
+
+def photo_car(ev: dict, car_photos: dict, make_pages: dict) -> dict | None:
+    """The car in an event's photo, when the same picture is a make page's (spec 4.10)."""
+    source = (ev.get("photo") or {}).get("source_url")
+    return next((car for ph, car in _linked_cars(car_photos, make_pages)
+                 if source and ph.get("source_url") == source), None)
+
+
+def edition_cars(car_photos: dict, make_pages: dict) -> dict:
+    """The make-page photos taken at each edition, keyed (event, edition), for its page's list (spec 4.12)."""
+    found = {}
+    for ph, car in _linked_cars(car_photos, make_pages):
+        if ph.get("edition"):
+            found.setdefault((ph["event"], ph["edition"]), []).append(
+                ((ph["make"], ph["model"], ph.get("car_year") or 0), car))
+    return {key: [car for _, car in sorted(pairs, key=lambda p: p[0])] for key, pairs in found.items()}
+
+
+def photo_info(ev: dict, car: dict | None = None) -> dict | None:
     """What the templates need for an event's photo. Paths are relative to the site root."""
     ph = ev.get("photo")
     if not ph:
         return None
     slug, own = ev["slug"], "credit" not in ph
-    return {"alt": ph["alt_en"], "year": ph["year"], "own": own, "stem": f"static/photos/{slug}",
+    return {"alt": ph["alt_en"], "year": ph["year"], "own": own, "stem": f"static/photos/{slug}", "car": car,
             **_sources(f"static/photos/{slug}", PHOTO_WIDTHS[0] // 2), **_credit(ph),
             # A link preview has no room for the credit a licence asks for, so only the
             # site's own photos are ever shared that way.

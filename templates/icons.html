@@ -82,6 +82,17 @@
 {% endif %}
 {%- endmacro %}
 
+{# An event's photo on its event and edition pages. When the same picture is a make page's,
+   the caption names the car and links that page (spec 4.10). #}
+{% macro event_hero(photo, root, home) -%}
+{% if photo and photo.car %}
+{% set car %}{% if photo.car.car_year %}{{ t.car_year(photo.car.car_year) }}{% endif %}<a href="{{ home }}{{ photo.car.path }}">{{ photo.car.car | latin }}</a>{% endset %}
+{{ hero(photo, root, t.photo_car_caption(car, photo.year)) }}
+{% else %}
+{{ hero(photo, root, t.photo_caption(photo.year) if photo) }}
+{% endif %}
+{%- endmacro %}
+
 {# Each flag a page uses is drawn once, then referenced by every flag() on the page. #}
 {% macro flag_defs(flags) -%}
 <svg class="flag-defs" width="0" height="0" aria-hidden="true" focusable="false"><defs>{% for f in flags %}<g id="flag-{{ f.code | lower }}">{{ f.art | safe }}</g>{% endfor %}</defs></svg>

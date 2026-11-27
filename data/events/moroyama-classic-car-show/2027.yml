@@ -1,0 +1,11 @@
+slug: moroyama-classic-car-show
+year: 2027
+status: confirmed
+start: 2027-03-28
+end: 2027-03-28
+# The 2nd. Show cars leave from 15:00.
+start_time: "10:00"
+end_time: "14:45"
+source_url: https://minkara.carview.co.jp/userid/2251740/blog/49434032/
+last_verified: 2026-11-27
+sequence: 0

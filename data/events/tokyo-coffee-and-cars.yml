@@ -1,0 +1,24 @@
+slug: tokyo-coffee-and-cars
+name_en: Tokyo Coffee and Cars
+organizer: オクタン日本版編集部 (Octane Japan editorial team), with Bespoke Automotive
+official_url: https://octane.jp/articles/detail/11825
+# The site lists only the morning session, the one for older cars (owner, 2026-11-27).
+summary_en: >
+  A regular morning meeting of owners and their cars over coffee, from vintage
+  cars to modern sports cars. In December 2026 it runs in two sessions by build
+  year, and this site lists the morning one, for cars built up to 1990. Cars
+  enter free by application, chosen by lot when oversubscribed. A coffee wagon
+  sells drinks and light meals.
+prefecture: Tokyo
+venue_en: Tokyo Prince Hotel, car park 2, Shibakoen
+venue_ja: 東京プリンスホテル 第2駐車場
+street_address: 3-3-1 Shibakoen, Minato, Tokyo (東京都港区芝公園3-3-1)
+# The hotel itself; no source places car park 2.
+lat: 35.6590
+lon: 139.7481
+# The article is written for entrants and says nothing about spectators.
+spectator_fee_jpy: null
+spectator_notes_en: >
+  The announcement says nothing about spectators. Held in rain; it may be
+  cancelled or postponed in a storm.
+last_verified: 2026-11-27

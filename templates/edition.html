@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "icons.html" import map_link, video_icon, calendar_links, drop_passed, hero, flag, flag_defs %}
+{% from "icons.html" import map_link, video_icon, calendar_links, drop_passed, event_hero, flag, flag_defs %}
 {# Seen from above, nose along +x, which rotate="auto" turns to the line's heading. Without
    SMIL it stays at the origin, outside the drawn line, and the still map shows (spec 4.8). #}
 {% macro map_car(path_id, car) -%}
@@ -29,7 +29,7 @@
 </nav>
 <h1>{{ local(ev, "name") }} {{ r.label }}</h1>
 {% if ev.name_ja and lang == "en" %}<p class="ja" lang="ja">{{ ev.name_ja }}</p>{% endif %}
-{{ hero(photo, root, t.photo_caption(photo.year) if photo) }}
+{{ event_hero(photo, root, home) }}
 
 {% if ed.status == "tentative" %}
 <p class="note"><a href="{{ ed.source_url }}">{{ ed.source_url | domain }}</a>{{ t.unconfirmed_after }}</p>
@@ -231,6 +231,15 @@
 </div>
 {% endif %}
 {% endfor %}
+{# Not a section: make-page photos taken at this edition, the way back to those pages (spec 4.12). #}
+{% if photographed %}
+<h2>{{ t.photographed_heading }}</h2>
+<ul>
+{% for c in photographed %}
+  <li>{% if c.car_year %}{{ t.car_year(c.car_year) }}{% endif %}<a href="{{ home }}{{ c.path }}">{{ c.car | latin }}</a></li>
+{% endfor %}
+</ul>
+{% endif %}
 {# Not a section: it shows what the event is like, not what this edition has. #}
 {% if r.previous_videos and not r.videos %}
 <h2>{{ t.from_event(r.previous_videos.label) }}</h2>

@@ -54,6 +54,9 @@ TEXT = {
         "add_apple": "Add to Apple Calendar or Outlook",
         "add_google": "Add to Google Calendar",
         "photo_caption": lambda year: f"Photo: {year} event",
+        # An event photo that is also a make page's (spec 4.10); car arrives as markup, a link.
+        "photo_car_caption": lambda car, year: Markup("Photo: {} at the {} event").format(car, year),
+        "photographed_heading": "Car photos from this event",
         # A make page's photo (spec 4.12). car and where arrive as markup, the second a link or empty.
         "car_photo_caption": lambda car, where: Markup("Photo: {}").format(car)
                                                  + (Markup(" at {}").format(where) if where else ""),
@@ -175,6 +178,8 @@ TEXT = {
         "add_apple": f"{_en('Apple')}カレンダー・{_en('Outlook')}に追加",
         "add_google": f"{_en('Google')}カレンダーに追加",
         "photo_caption": lambda year: f"写真：{year}年開催時",
+        "photo_car_caption": lambda car, year: Markup("写真：{}（{}年開催時）").format(car, year),
+        "photographed_heading": "この開催時に撮影された車の写真",
         "car_photo_caption": lambda car, where: Markup("写真：{}").format(car)
                                                  + (Markup("（{}開催時）").format(where) if where else ""),
         "car_year": lambda year: f"{year}年式 ",

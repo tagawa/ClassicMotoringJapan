@@ -1,0 +1,19 @@
+slug: coppa-di-tokyo
+year: 2024
+status: confirmed
+start: 2024-11-23
+end: 2024-11-23
+# The 18th edition, dated by its poster. The organiser's site has a photo page for
+# 2024 (photo2024.html) but no entry list or result sheet, so there are no cars here.
+source_url: https://www.coppa-di-tokyo.com/imgposter/2024_poster.jpg
+last_verified: 2026-11-27
+sequence: 0
+videos:
+  # Video by ISETTA FILM.
+  - youtube_id: arcaWLeMlV8
+    label_en: The day at Shiodome
+    label_ja: 汐留での一日
+  # Video by まるめんチャンネル.
+  - youtube_id: GEYjlMbDLbc
+    label_en: The start at Shiodome
+    label_ja: 汐留でのスタート

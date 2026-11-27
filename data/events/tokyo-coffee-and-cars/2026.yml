@@ -1,0 +1,13 @@
+slug: tokyo-coffee-and-cars
+year: 2026
+status: confirmed
+start: 2026-12-13
+end: 2026-12-13
+# The morning session (ASAKATSU). The afternoon one, 12:30 to 15:30, is for cars from 1991.
+start_time: "08:00"
+end_time: "11:00"
+source_url: https://octane.jp/articles/detail/11825
+last_verified: 2026-11-27
+sequence: 0
+# The morning session's limit, new in 2026.
+cutoff_year: 1990
