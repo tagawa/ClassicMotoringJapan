@@ -64,12 +64,19 @@
 </script>
 {% endmacro %}
 
+{# The content column less its 16px padding each side, up to the column's 720px (spec 4.10). #}
+{% set hero_sizes = "(max-width: 720px) calc(100vw - 32px), 688px" %}
+{% macro srcset(files, root) %}{% for src, w in files %}{{ root }}{{ src }} {{ w }}w{{ ", " if not loop.last }}{% endfor %}{% endmacro %}
+
 {# A photo under the heading, on event, edition and make pages. The caller gives the caption's
    opening; someone else's photo then carries the credit its licence asks for. #}
 {% macro hero(photo, root, caption) -%}
 {% if photo %}
 <figure class="hero">
-  <img src="{{ root }}{{ photo.src }}" srcset="{% for src, w in photo.srcset %}{{ root }}{{ src }} {{ w }}w{{ ", " if not loop.last }}{% endfor %}" sizes="(max-width: 720px) 100vw, 688px" width="{{ photo.width }}" height="{{ photo.height }}" alt="{{ photo.alt }}"{{ mark_en }}>
+  <picture>
+    <source type="image/webp" srcset="{{ srcset(photo.webp_srcset, root) }}" sizes="{{ hero_sizes }}">
+    <img src="{{ root }}{{ photo.src }}" srcset="{{ srcset(photo.srcset, root) }}" sizes="{{ hero_sizes }}" width="{{ photo.width }}" height="{{ photo.height }}" alt="{{ photo.alt }}"{{ mark_en }}>
+  </picture>
   <figcaption>{{ caption }}{% if not photo.own %}{{ t.photo_by }}<a href="{{ photo.source_url }}"{{ mark_en }}>{{ photo.credit }}</a>{{ t.sep }}<a href="{{ photo.license_url }}"{{ mark_en }}>{{ photo.license }}</a>{{ t.photo_edited }}{% endif %}</figcaption>
 </figure>
 {% endif %}

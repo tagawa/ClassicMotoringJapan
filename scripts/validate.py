@@ -722,6 +722,16 @@ def _check_car_photo_event(ph: dict, events: dict, editions: list, at: str, erro
     if event not in events:
         errors.append(f"{at}: event {event!r} is not an event in data/events/")
         return
+    # Any of the event's lists, so a photo from a year with no edition file is caught too. Every
+    # car of that make and year counts, so two different cars at one event are both accepted.
+    make, model, car_year = ph.get("make"), ph.get("model"), ph.get("car_year")
+    same = sorted({car.get("model") for x in editions if x["data"].get("slug") == event
+                   for car in x["data"].get("cars") or []
+                   if isinstance(car, dict) and car.get("make") == make and car.get("year") == car_year}, key=str)
+    if car_year is not None and same and model not in same:
+        errors.append(f"{at}: {make} {model} ({car_year}) is spelt otherwise on {event}'s lists, whose {car_year} "
+                      f"{make} models are {', '.join(map(str, same))}. Spell it as the list does; if the photo "
+                      f"shows a different car, this check (spec 4.12) needs an exception for it")
     if edition is None:
         return
     ed = next((x["data"] for x in editions if x["data"].get("slug") == event and x["id"] == edition), None)

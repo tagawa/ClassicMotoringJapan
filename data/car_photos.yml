@@ -2,7 +2,7 @@
 Bandini:
   - file: bandini-saloncino-coppa-di-tokyo-2024
     make: Bandini
-    model: 1000 Berlinetta Saloncino
+    model: Saloncino
     car_year: 1968
     event: coppa-di-tokyo
     year: 2024

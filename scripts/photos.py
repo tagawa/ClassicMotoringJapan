@@ -9,8 +9,9 @@ from settings import SHARE_SIZE
 
 # Photos (spec 4.10): data/photos/<slug>.jpg, one per event, faces already blurred.
 PHOTOS_DIR = "photos"
-# Two to one, so a phone still shows the facts under the photo on the first screen.
-PHOTO_WIDTHS = (720, 1440)
+# Each written as JPEG and WebP. 1080 is for 3x phones, which need 1074px on a 390px screen
+# and would otherwise take the 1440 (spec 4.10).
+PHOTO_WIDTHS = (720, 1080, 1440)
 PHOTO_MIN_WIDTH = PHOTO_WIDTHS[-1]
 PHOTO_QUALITY = 80
 # Make-page photos (spec 4.12) keep their own shape, between these two ratios; a wider one is
@@ -78,14 +79,39 @@ def _crop(img: Image.Image, ratio_w: int, ratio_h: int) -> Image.Image:
     return img.crop((0, top, w, top + nh))
 
 
-def _save_jpeg(img: Image.Image, size: tuple[int, int], path: Path, icc: bytes | None) -> None:
-    # Saved without exif=, so nothing the camera wrote (GPS included) reaches the site. The
-    # colour profile stays: it holds no personal data, and a phone's Display P3 shot would
-    # otherwise come out duller.
+# Saved without exif=, so nothing the camera wrote (GPS included) reaches the site. The colour
+# profile stays: it holds no personal data, and a phone's Display P3 shot would otherwise come
+# out duller.
+def _save_jpeg(img: Image.Image, path: Path, icc: bytes | None) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     extra = {"icc_profile": icc} if icc else {}
-    img.resize(size, Image.LANCZOS).save(path, "JPEG", quality=PHOTO_QUALITY, optimize=True,
-                                         progressive=True, **extra)
+    img.save(path, "JPEG", quality=PHOTO_QUALITY, optimize=True, progressive=True, **extra)
+
+
+def _save_webp(img: Image.Image, path: Path, icc: bytes | None) -> None:
+    # Method 6 saved about 5% more but took 2.4 times as long, paid on every build and test run.
+    path.parent.mkdir(parents=True, exist_ok=True)
+    extra = {"icc_profile": icc} if icc else {}
+    img.save(path, "WEBP", quality=PHOTO_QUALITY, method=4, **extra)
+
+
+def _sources(stem: str, height: int) -> dict:
+    """The hero's files, relative to the site root: the JPEG img and the WebP source."""
+    return {"src": f"{stem}-{PHOTO_WIDTHS[0]}.jpg",
+            "srcset": [(f"{stem}-{w}.jpg", w) for w in PHOTO_WIDTHS],
+            "webp_srcset": [(f"{stem}-{w}.webp", w) for w in PHOTO_WIDTHS],
+            "width": PHOTO_WIDTHS[0], "height": height}
+
+
+def _write_widths(img: Image.Image, out_dir: Path, stem: str, icc: bytes | None) -> None:
+    for w in PHOTO_WIDTHS:
+        sized = img.resize((w, round(w * img.height / img.width)), Image.LANCZOS)
+        _save_jpeg(sized, out_dir / f"{stem}-{w}.jpg", icc)
+        _save_webp(sized, out_dir / f"{stem}-{w}.webp", icc)
+
+
+def _write_share(img: Image.Image, path: Path, icc: bytes | None) -> None:
+    _save_jpeg(_crop(img, *SHARE_SIZE).resize(SHARE_SIZE, Image.LANCZOS), path, icc)
 
 
 def _credit(ph: dict) -> dict:
@@ -99,11 +125,8 @@ def photo_info(ev: dict) -> dict | None:
     if not ph:
         return None
     slug, own = ev["slug"], "credit" not in ph
-    return {"alt": ph["alt_en"], "year": ph["year"], "own": own,
-            "src": f"static/photos/{slug}-{PHOTO_WIDTHS[0]}.jpg",
-            "srcset": [(f"static/photos/{slug}-{w}.jpg", w) for w in PHOTO_WIDTHS],
-            "width": PHOTO_WIDTHS[0], "height": PHOTO_WIDTHS[0] // 2,
-            **_credit(ph),
+    return {"alt": ph["alt_en"], "year": ph["year"], "own": own, "stem": f"static/photos/{slug}",
+            **_sources(f"static/photos/{slug}", PHOTO_WIDTHS[0] // 2), **_credit(ph),
             # A link preview has no room for the credit a licence asks for, so only the
             # site's own photos are ever shared that way.
             "share": f"static/photos/{slug}-share.jpg" if own else None}
@@ -135,9 +158,8 @@ def car_photo_info(item: dict, rows: list[dict], events: dict) -> dict:
     stem, own = f"static/photos/cars/{ph['file']}", "credit" not in ph
     row = next((r for r in rows if r["slug"] == ph.get("event") and r["id"] == ph.get("edition")
                 and r["has_page"]), None)
-    return {"alt": ph["alt_en"], "own": own, "src": f"{stem}-{PHOTO_WIDTHS[0]}.jpg",
-            "srcset": [(f"{stem}-{width}.jpg", width) for width in PHOTO_WIDTHS],
-            "width": PHOTO_WIDTHS[0], "height": round(PHOTO_WIDTHS[0] * h / w), **_credit(ph),
+    return {"alt": ph["alt_en"], "own": own, "stem": stem,
+            **_sources(stem, round(PHOTO_WIDTHS[0] * h / w)), **_credit(ph),
             "share": f"{stem}-share.jpg" if own else None,
             "car_year": ph.get("car_year"), "car": f"{ph['make']} {ph['model']}",
             "ev": events.get(ph.get("event")), "year": ph.get("year"), "row": row}
@@ -148,18 +170,15 @@ def write_car_photo(item: dict, data_dir: Path, out_dir: Path) -> None:
     img = _open_photo(data_dir / CAR_PHOTOS_DIR / f"{item['data']['file']}.jpg")
     icc = img.info.get("icc_profile")
     shown = _crop(img, *CAR_RATIO_MAX) if car_photo_size(*img.size) != img.size else img
-    for src, w in info["srcset"]:
-        _save_jpeg(shown, (w, round(w * shown.height / shown.width)), out_dir / src, icc)
+    _write_widths(shown, out_dir, info["stem"], icc)
     if info["share"]:
-        _save_jpeg(_crop(img, *SHARE_SIZE), SHARE_SIZE, out_dir / info["share"], icc)
+        _write_share(img, out_dir / info["share"], icc)
 
 
 def write_photo(ev: dict, data_dir: Path, out_dir: Path) -> None:
     info = photo_info(ev)
     img = _open_photo(data_dir / PHOTOS_DIR / f"{ev['slug']}.jpg")
     icc = img.info.get("icc_profile")
-    hero = _crop(img, 2, 1)
-    for src, w in info["srcset"]:
-        _save_jpeg(hero, (w, w // 2), out_dir / src, icc)
+    _write_widths(_crop(img, 2, 1), out_dir, info["stem"], icc)
     if info["share"]:
-        _save_jpeg(_crop(img, *SHARE_SIZE), SHARE_SIZE, out_dir / info["share"], icc)
+        _write_share(img, out_dir / info["share"], icc)

@@ -63,6 +63,31 @@ def write_photo(data: Path, slug: str, size=(1600, 900), meta=()) -> None:
     save_jpeg(data / "photos" / f"{slug}.jpg", size, meta)
 
 
+SIZES = 'sizes="(max-width: 720px) calc(100vw - 32px), 688px"'
+
+
+def assert_picture(case: unittest.TestCase, html: str, stem: str, height: int) -> None:
+    """The hero's <picture>: a WebP source and a JPEG img, both at the three widths (spec 4.10)."""
+    pic = re.search(r'(?s)<figure class="hero">\s*<picture>(.*?)</picture>', html).group(1)
+    source = re.search(r"<source [^>]+>", pic).group(0)
+    img = re.search(r"<img [^>]+>", pic).group(0)
+    case.assertIn('type="image/webp"', source)
+    for tag, ext in ((source, "webp"), (img, "jpg")):
+        case.assertRegex(tag, 'srcset="' + ", ".join(rf"(?:\.\./)*{re.escape(stem)}-{w}\.{ext} {w}w"
+                                                    for w in (720, 1080, 1440)) + '"')
+        case.assertIn(SIZES, tag)
+    case.assertRegex(img, rf'src="[^"]*{re.escape(stem)}-720\.jpg"')
+    case.assertIn(f'width="720" height="{height}"', img)
+    case.assertNotIn("loading", img, "it is the first thing on the page")
+
+
+def assert_files(case: unittest.TestCase, folder: Path, stem: str, heights: dict) -> None:
+    for w, h in heights.items():
+        for ext, fmt in (("jpg", "JPEG"), ("webp", "WEBP")):
+            with Image.open(folder / f"{stem}-{w}.{ext}") as im:
+                case.assertEqual((im.size, im.format), ((w, h), fmt), f"{stem}-{w}.{ext}")
+
+
 def share_path(out: Path, url: str) -> Path:
     return out / url.removeprefix(f"{settings.SITE_URL}/").split("?")[0]
 
@@ -156,11 +181,9 @@ class PhotoOutputTests(unittest.TestCase):
     def page(self, rel: str) -> str:
         return (self.out / rel).read_text(encoding="utf-8")
 
-    def test_each_photo_is_written_at_both_widths_in_two_to_one(self):
+    def test_each_photo_is_written_at_three_widths_in_both_formats_in_two_to_one(self):
         for slug in ("own", "commons"):
-            for w in photos.PHOTO_WIDTHS:
-                with Image.open(self.out / f"static/photos/{slug}-{w}.jpg") as img:
-                    self.assertEqual(img.size, (w, w // 2))
+            assert_files(self, self.out / "static/photos", slug, {720: 360, 1080: 540, 1440: 720})
 
     def test_no_camera_data_reaches_the_site(self):
         # GPS lives in EXIF, so no EXIF at all means no location either.
@@ -174,13 +197,11 @@ class PhotoOutputTests(unittest.TestCase):
             html = self.page(rel)
             self.assertRegex(html, r'(?s)</h1>.*?<figure class="hero">.*?<dl class="facts">', rel)
 
-    def test_the_image_has_size_alt_and_both_widths(self):
-        img = re.search(r"<img [^>]+>", self.page("events/own/index.html")).group(0)
-        self.assertIn('alt="A red coupe on the start line"', img)
-        self.assertIn('width="720" height="360"', img)
-        self.assertIn("static/photos/own-720.jpg 720w", img)
-        self.assertIn("static/photos/own-1440.jpg 1440w", img)
-        self.assertNotIn('loading="lazy"', img, "it is the first thing on the page")
+    def test_the_image_has_size_alt_and_three_widths_in_both_formats(self):
+        for rel in ("events/own/index.html", "events/own/2026/index.html"):
+            html = self.page(rel)
+            assert_picture(self, html, "static/photos/own", 360)
+            self.assertIn('alt="A red coupe on the start line"', re.search(r"<img [^>]+>", html).group(0))
 
     def test_an_own_photo_names_its_edition_and_no_one(self):
         cap = re.search(r"(?s)<figcaption>(.*?)</figcaption>", self.page("events/own/index.html")).group(1)
@@ -387,6 +408,31 @@ class CarPhotoValidationTests(unittest.TestCase):
         self.accepts({"Nissan": [{**CAR_PHOTO, "model": "Fairlady", "event": "meet-a", "year": 2025,
                                   "edition": "2025"}]})
 
+    # meet-b 2024 has no edition file, as Coppa di Tokyo 2024 has none; its 2026 list holds 1970 Datsuns.
+    def test_a_model_the_events_lists_spell_otherwise_for_that_make_and_year_is_refused(self):
+        msg = self.errors({"Nissan": [{**CAR_PHOTO, "model": "Fairlady", "car_year": 1970, "event": "meet-b",
+                                       "year": 2024}]})
+        self.assertIn("Datsun Fairlady (1970)", msg)
+        self.assertIn("1970 Datsun models are Car", msg)
+
+    def test_two_cars_of_one_make_and_year_at_an_event_are_both_accepted(self):
+        # A second meet-b list with a 1970 Datsun of another model.
+        for model in ("Car", "Fairlady"):
+            with self.subTest(model):
+                shutil.rmtree(self.tmp)
+                write_instance(self.data, "meet-b", 2025, instance_yaml(
+                    "meet-b", 2025, "2025-05-10", "2025-05-10",
+                    extra='list_as_of: 2025-05-01\ncars:\n  - entry_no: "01"\n    year: 1970\n'
+                          "    make: Datsun\n    model: Fairlady\n"))
+                self.accepts({"Nissan": [{**CAR_PHOTO, "model": model, "car_year": 1970, "event": "meet-b",
+                                          "year": 2024}]})
+
+    def test_another_year_or_no_car_year_is_not_held_to_the_lists(self):
+        for extra in ({"car_year": 1971}, {}):
+            with self.subTest(extra):
+                shutil.rmtree(self.tmp)
+                self.accepts({"Nissan": [{**CAR_PHOTO, "model": "Fairlady", "event": "meet-b", "year": 2024, **extra}]})
+
     def test_no_file_means_no_photos_and_the_cars_folder_is_not_an_event_photo(self):
         self.accepts(None, files=())
         self.accepts({"Nissan": [CAR_PHOTO]})
@@ -412,19 +458,16 @@ class CarPhotoPageTests(unittest.TestCase):
         self.assertRegex(self.page("cars/nissan/index.html"),
                          r'(?s)</h1>\s*<figure class="hero">.*?</figure>\s*<p>\d+ cars on')
 
-    def test_the_image_keeps_its_shape_at_both_widths(self):
-        img = re.search(r"<img [^>]+>", self.page("cars/nissan/index.html")).group(0)
-        self.assertIn('width="720" height="480"', img)
-        self.assertIn("static/photos/cars/datsun-meet-b-720.jpg 720w", img)
-        self.assertIn("static/photos/cars/datsun-meet-b-1440.jpg 1440w", img)
-        self.assertIn('alt="A white Datsun coupe"', img)
-        self.assertNotIn("loading", img)
-        for w, h in ((720, 480), (1440, 960)):
-            with Image.open(self.out / f"static/photos/cars/datsun-meet-b-{w}.jpg") as im:
-                self.assertEqual(im.size, (w, h))
+    def test_the_image_keeps_its_shape_at_three_widths_in_both_formats(self):
+        html = self.page("cars/nissan/index.html")
+        assert_picture(self, html, "static/photos/cars/datsun-meet-b", 480)
+        self.assertIn('alt="A white Datsun coupe"', re.search(r"<img [^>]+>", html).group(0))
+        assert_files(self, self.out / "static/photos/cars", "datsun-meet-b", {720: 480, 1080: 720, 1440: 960})
 
     def test_written_files_carry_no_exif_and_keep_the_colour_profile(self):
-        for p in (self.out / "static/photos/cars").iterdir():
+        written = sorted((self.out / "static/photos/cars").iterdir())
+        self.assertEqual(len(written), 7, "three widths in two formats, and the share image")
+        for p in written:
             with Image.open(p) as im:
                 self.assertEqual(dict(im.getexif()), {}, p.name)
                 self.assertEqual(im.info.get("icc_profile"), b"profile bytes", p.name)
@@ -495,9 +538,7 @@ class CarPhotoCaptionTests(unittest.TestCase):
         tmp = temp_dir(self)
         write_car_site(tmp / "data", {"Nissan": [CAR_PHOTO]}, size=(3000, 1000))
         build.build(tmp / "data", tmp / "site")
-        for w in (720, 1440):
-            with Image.open(tmp / "site" / f"static/photos/cars/datsun-meet-b-{w}.jpg") as im:
-                self.assertEqual(im.size, (w, w // 2))
+        assert_files(self, tmp / "site/static/photos/cars", "datsun-meet-b", {720: 360, 1080: 540, 1440: 720})
 
     def test_pending_lists_a_make_page_photo_still_carrying_metadata(self):
         tmp = temp_dir(self)

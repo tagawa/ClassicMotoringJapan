@@ -625,5 +625,46 @@ class VideoPlayedTest(unittest.TestCase):
         self.assertEqual(self.p.evaluate("window.sent"), [])
 
 
+@unittest.skipIf(sync_playwright is None, "playwright not installed")
+class HeroFileChoiceTest(unittest.TestCase):
+    """Spec 4.10: the file the browser picks, given the hero's srcset and sizes."""
+
+    @classmethod
+    def setUpClass(cls):
+        from test_photos import OWN_PHOTO, write_photo
+        cls.tmp = temp_dir(cls)
+        data = cls.tmp / "data"
+        write_event(data, "own", name_en="Own Meet", extra=OWN_PHOTO)
+        write_photo(data, "own", size=(2000, 1000))
+        build.build(data, cls.tmp / "site")
+        cls.url = (cls.tmp / "site" / "events" / "own" / "index.html").as_uri()
+        try:
+            cls.pw = sync_playwright().start()
+            cls.browser = cls.pw.chromium.launch()
+        except Exception as e:
+            raise unittest.SkipTest(f"chromium unavailable: {e}")
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.browser.close()
+        cls.pw.stop()
+
+    def chosen(self, width: int, scale: int) -> str:
+        # A fresh context each time, so no file is already in the cache to sway the choice.
+        ctx = self.browser.new_context(viewport={"width": width, "height": 844}, device_scale_factor=scale)
+        page = ctx.new_page()
+        page.goto(self.url)
+        page.wait_for_function("document.querySelector('.hero img').complete")
+        src = page.eval_on_selector(".hero img", "img => img.currentSrc")
+        ctx.close()
+        return src.rsplit("/", 1)[1]
+
+    def test_each_screen_gets_the_smallest_webp_wide_enough(self):
+        for width, scale, name in ((390, 3, "own-1080.webp"), (390, 2, "own-720.webp"),
+                                   (1280, 1, "own-720.webp"), (1280, 2, "own-1440.webp")):
+            with self.subTest(width=width, scale=scale):
+                self.assertEqual(self.chosen(width, scale), name)
+
+
 if __name__ == "__main__":
     unittest.main()

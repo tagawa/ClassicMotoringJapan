@@ -254,6 +254,7 @@ summary { cursor: pointer; font-weight: 600; }
 #past-list .venue-map circle { fill: #5C5C5C; }
 
 .hero { margin: 0 0 24px; }
+.hero picture { display: block; }
 .hero img { display: block; width: 100%; height: auto; border-radius: 8px; }
 .hero figcaption { margin-top: 8px; color: #5C5C5C; }
 
