@@ -32,12 +32,12 @@ from languages import (CARS_DESCRIPTION_JA, FILTERS, LANGUAGE_NAMES, LANGUAGES, 
 from machine_files import build_api, build_api_catalog, build_ard_catalog, build_llms_txt
 from maps import MAP_HEIGHT, MAP_WIDTH, japan_path, venue_pin
 from page_meta import build_breadcrumbs, build_website_jsonld, edition_description, event_description
-from photos import photo_info, write_photo
+from photos import car_photo_info, photo_info, write_car_photo, write_photo
 from rows import make_rows, month_groups
 from settings import (ABOUT_DESCRIPTION, ARD_PATH, ARD_PREDECESSOR_PATH, CONTENT_SIGNAL, CONTENT_USAGE,
                       FEED_FILE, INDEXNOW_KEY, ISSUES_URL, JA_LEDE, PREFECTURES_JA, ROOT,
                       SHARE_SIZE, SITE_LEDE, SITE_NAME, SITE_URL, YOUTUBE_CHANNEL_URL)
-from validate import BuildError, load_and_validate, load_make_groups, load_makes
+from validate import BuildError, load_and_validate, load_car_photos, load_make_groups, load_makes
 
 def reset_out_dir(out_dir: Path) -> None:
     """Empty out_dir, but only if it is empty or holds a previous build."""
@@ -79,9 +79,16 @@ def build(data_dir: Path, out_dir: Path,
     car_groups = group_pages(rows, groups)
     # Each make in an edition's car table links to its group's page, where one exists.
     make_pages = {member: page["path"] for page in car_groups for member in page["members"]}
+    car_photos = load_car_photos(data_dir, groups, events, editions, {page["name"] for page in car_groups})
     og, cards, errors = plan_cards(events, rows)
     if errors:
         raise BuildError(errors)
+    for page in car_groups:
+        # One photo per group for now (spec 4.12); someone else's is never shared (8.3).
+        for item in car_photos.get(page["name"], [])[:1]:
+            info = car_photo_info(item, rows, events)
+            if info["share"]:
+                og[page["path"]] = {"url": f"{SITE_URL}/{info['share']}", "alt": info["alt"]}
 
     def make_env(lang: str) -> Environment:
         # One environment per language: the same filter names, bound to that language's formatters.
@@ -113,6 +120,9 @@ def build(data_dir: Path, out_dir: Path,
     for ev in events.values():
         if ev.get("photo"):
             write_photo(ev, data_dir, out_dir)
+    for items in car_photos.values():
+        for item in items:
+            write_car_photo(item, data_dir, out_dir)
     for rel, layout, dots in cards:
         draw_card(layout, dots, out_dir / rel)
     for image in og.values():
@@ -193,7 +203,10 @@ def build(data_dir: Path, out_dir: Path,
         home = PREFIX[lang]
         t = TEXT[lang]
         # Built from the page language's rows, so each list links and names its edition in that language.
-        pages = [{**page, **group_text(page, lang)} for page in group_pages(local_rows(rows, lang), groups)]
+        lang_rows = local_rows(rows, lang)
+        pages = [{**page, **group_text(page, lang),
+                  "photo": next((car_photo_info(item, lang_rows, events) for item in car_photos.get(page["name"], [])), None)}
+                 for page in group_pages(lang_rows, groups)]
         make_lines = make_index(rows, makes, groups, pages)
         root = "../" * (1 + home.count("/"))
         write(f"{home}cars/index.html", envs[lang].get_template("cars.html").render(
@@ -210,7 +223,7 @@ def build(data_dir: Path, out_dir: Path,
                 **common, **pair(page["path"], lang, root), root=root, home="../../",
                 canonical=f"{SITE_URL}/{home}{page['path']}",
                 title=page.get("page_title", f"{plain} at classic car events in Japan"), description=page["description"],
-                og_image=og["site"], page=page, latest=page["verified"], jsonld=[build_breadcrumbs([
+                og_image=og.get(page["path"], og["site"]), page=page, latest=page["verified"], jsonld=[build_breadcrumbs([
                     (str(t["crumb_home"]), f"{SITE_URL}/{home}"), (str(t["nav_cars"]), f"{SITE_URL}/{home}cars/"),
                     (plain, None)])]))
             sitemap.append((f"{SITE_URL}/{home}{page['path']}", page["verified"]))

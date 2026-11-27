@@ -144,6 +144,37 @@ def display_cars_yaml(models, as_of="2026-09-15") -> str:
     return f"list_as_of: {as_of}\ncars:\n{rows}"
 
 
+# The cars section's fixture (spec 4.11), shared by test_cars.py and test_photos.py.
+MAKES = ("Austin-Healey: GB\nDatsun: JP\nFord: null\nHealey: GB\nLotus: GB\nNissan: JP\nNissan Diesel: JP\n"
+         "Prince: JP\nUnknown: null\n")
+GROUPS = "Nissan: [Nissan, Datsun, Prince, Nissan Diesel]\nAustin-Healey: [Austin-Healey, Healey]\n"
+
+# One edition per event: its slug, its year, its cars and, optionally, a dict of `verified`,
+# `as_of` and `day` (the one day it runs, 10 May unless given). Cars given as makes are an entry list; as (make, model) pairs, a
+# display list. Nissan's group is on 3 editions, so it gets a page; Lotus is on 2, and
+# Unknown on 2. meet-d, checked last, has no Nissan group car.
+NISSAN_LISTS = (("meet-a", 2025, ["Nissan", "Nissan", "Lotus"]),
+                ("meet-b", 2026, ["Datsun", "Datsun", "Datsun"], {"verified": "2026-09-25"}),
+                ("meet-c", 2026, ["Nissan Diesel", "Lotus", "Unknown"]),
+                ("meet-d", 2026, ["Unknown"], {"verified": "2026-10-05"}))
+
+
+def write_site(data: Path, lists, makes=MAKES, groups=GROUPS) -> None:
+    for slug, year, cars, *opts in lists:
+        opts = opts[0] if opts else {}
+        as_of = opts.get("as_of", f"{year}-05-12")
+        car_list = (display_cars_yaml(cars, as_of=as_of) if isinstance(cars[0], tuple)
+                    else cars_yaml([1970] * len(cars), as_of=as_of, makes=cars))
+        write_event(data, slug, name_en=slug.replace("-", " ").title())
+        day = opts.get("day", f"{year}-05-10")
+        write_instance(data, slug, year, instance_yaml(
+            slug, year, day, day, verified=opts.get("verified", "2026-09-20"),
+            extra=car_list))
+    (data / "makes.yml").write_text(makes, encoding="utf-8")
+    if groups is not None:
+        (data / "make_groups.yml").write_text(groups, encoding="utf-8")
+
+
 def unfold(ics: str) -> list[str]:
     return ics.replace("\r\n ", "").split("\r\n")
 

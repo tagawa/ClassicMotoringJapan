@@ -29,7 +29,7 @@
 </nav>
 <h1>{{ local(ev, "name") }} {{ r.label }}</h1>
 {% if ev.name_ja and lang == "en" %}<p class="ja" lang="ja">{{ ev.name_ja }}</p>{% endif %}
-{{ hero(photo, root) }}
+{{ hero(photo, root, t.photo_caption(photo.year) if photo) }}
 
 {% if ed.status == "tentative" %}
 <p class="note"><a href="{{ ed.source_url }}">{{ ed.source_url | domain }}</a>{{ t.unconfirmed_after }}</p>

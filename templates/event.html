@@ -3,7 +3,7 @@
 {% block main %}
 <h1>{{ local(ev, "name") }}</h1>
 {% if ev.name_ja and lang == "en" %}<p class="ja" lang="ja">{{ ev.name_ja }}</p>{% endif %}
-{{ hero(photo, root) }}
+{{ hero(photo, root, t.photo_caption(photo.year) if photo) }}
 {% if ev.summary_en %}
 {{ ev.summary_en | prose_para("lede") }}
 {% endif %}

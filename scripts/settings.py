@@ -40,6 +40,9 @@ VIDEO_WATCH_URL = "https://www.youtube.com/watch?v="
 
 # Share cards (spec 8.3): what a link preview shows.
 SHARE_SIZE = (1200, 630)
+# A make group needs lists from this many editions for a page (spec 5, /cars/<group>/);
+# a smaller one has a line on /cars/. Here so validate.py can name it without importing car_pages.
+PAGE_MIN_EDITIONS = 3
 
 
 def _stripes(colours, across: bool) -> str:

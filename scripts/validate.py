@@ -11,8 +11,9 @@ import yaml
 from formatting import LINK_RE, prose_blocks, prose_text
 from maps import COURSE_VIEWBOX, course_steps
 from page_meta import event_description
-from photos import PHOTOS_DIR, PHOTO_LICENSES, PHOTO_MIN_WIDTH, _open_photo, photo_metadata
-from settings import COUNTRIES, PREFECTURES_JA, SHARE_SIZE
+from photos import (CAR_PHOTOS_DIR, PHOTOS_DIR, PHOTO_LICENSES, PHOTO_MIN_WIDTH, _open_photo, car_photo_problem,
+                    photo_metadata)
+from settings import COUNTRIES, PAGE_MIN_EDITIONS, PREFECTURES_JA, SHARE_SIZE
 
 STATUSES = {"confirmed", "tentative", "cancelled"}
 SLUG_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
@@ -28,6 +29,9 @@ YOUTUBE_ID_RE = re.compile(r"^[A-Za-z0-9_-]{11}$")
 PHOTO_REQUIRED = {"alt_en": "str", "year": "int"}
 # Someone else's photo: all three, or none for the site's own.
 PHOTO_CREDIT = {"credit": "str", "license": "license", "source_url": "url"}
+# A make page's photo (spec 4.12).
+CAR_PHOTO_REQUIRED = {"file": "str", "make": "str", "model": "str", "alt_en": "str"}
+CAR_PHOTO_OPTIONAL = {"car_year": "int", "event": "str", "year": "int", "edition": "str", **PHOTO_CREDIT}
 
 URL_RE = re.compile(r"^https?://\S+$")
 
@@ -583,7 +587,8 @@ def load_and_validate(data_dir: Path) -> tuple[dict, list]:
 
     for path in sorted((data_dir / PHOTOS_DIR).glob("*")):
         rel = path.relative_to(data_dir).as_posix()
-        if path.name.startswith("."):
+        # photos/cars/ holds the make pages' photos, checked by load_car_photos.
+        if path.name.startswith(".") or path.is_dir():
             continue
         if path.suffix != ".jpg":
             errors.append(f"{rel}: photos must be JPEG files named <slug>.jpg")
@@ -598,31 +603,138 @@ def load_and_validate(data_dir: Path) -> tuple[dict, list]:
     return events, editions
 
 
-def _check_photo(ev: dict, data_dir: Path, rel: str, errors: list[str]) -> None:
-    if not isinstance(ev.get("photo"), dict):
-        return
-    src = data_dir / PHOTOS_DIR / f"{ev['slug']}.jpg"
+def _read_photo(src: Path, data_dir: Path, rel: str, errors: list[str]) -> tuple[int, int] | None:
+    """A photo's size, or None after reporting it missing, unreadable or still carrying metadata."""
     src_rel = src.relative_to(data_dir).as_posix()
     if not src.is_file():
         errors.append(f"{rel}: photo is given but {src_rel} does not exist")
-        return
+        return None
     try:
         kinds = photo_metadata(src)
-        w, h = _open_photo(src).size
+        size = _open_photo(src).size
     except OSError as e:
         errors.append(f"{src_rel}: not a readable JPEG ({e})")
-        return
+        return None
     if kinds:
         # By the time the build sees it, the file is in the public repository.
         errors.append(f"{src_rel} still carries {', '.join(kinds)}, which can hold the GPS position, "
                       f"the camera's serial number and the photographer's name. The file is already "
                       f"public: run the original through tools/photo.py and upload the result")
+        return None
+    return size
+
+
+def _check_photo(ev: dict, data_dir: Path, rel: str, errors: list[str]) -> None:
+    if not isinstance(ev.get("photo"), dict):
         return
+    src = data_dir / PHOTOS_DIR / f"{ev['slug']}.jpg"
+    size = _read_photo(src, data_dir, rel, errors)
+    if size is None:
+        return
+    w, h = size
+    src_rel = src.relative_to(data_dir).as_posix()
     # The hero is cropped to 2:1 and the share image to 1200x630, so both have to fit.
     need_h = max(PHOTO_MIN_WIDTH // 2, SHARE_SIZE[1])
     if w < PHOTO_MIN_WIDTH or h < need_h:
         errors.append(f"{src_rel}: {w}x{h} is too small. It needs at least {PHOTO_MIN_WIDTH} wide and "
                       f"{need_h} high, so the page stays sharp on a high-density screen")
+
+
+def load_car_photos(data_dir: Path, groups: dict[str, list[str]], events: dict, editions: list,
+                    pages: set[str]) -> dict[str, list[dict]]:
+    """data/car_photos.yml (spec 4.12): group name to [{"data": entry, "size": (w, h)}].
+
+    pages names the groups that have a make page, which only the rows can tell.
+    """
+    path = data_dir / "car_photos.yml"
+    listed = (_load_unique_yaml(path) if path.exists() else None) or {}
+    if not isinstance(listed, dict):
+        raise ValidationError(["car_photos.yml: must be one make group per key, each holding a list of photos"])
+    owner = {member: name for name, members in groups.items() for member in members}
+    errors: list[str] = []
+    found: dict[str, list[dict]] = {}
+    named: set[str] = set()
+    for key, items in listed.items():
+        where = f"car_photos.yml: {key}"
+        if key not in groups:
+            hint = f"; {key} is in the {owner[key]} group, so use {owner[key]}" if key in owner else ""
+            errors.append(f"{where}: not a make group in make_groups.yml or a make in makes.yml{hint}")
+            continue
+        if key not in pages:
+            errors.append(f"{where}: {key} has no make page yet; it gets one at {PAGE_MIN_EDITIONS} entry lists")
+            continue
+        if not isinstance(items, list) or not items:
+            errors.append(f"{where}: must be a list of photos, each starting '- file:'")
+            continue
+        if len(items) > 1:
+            errors.append(f"{where}: one photo per group until Photos change 2 ships")
+            continue
+        for i, ph in enumerate(items, 1):
+            at = f"{where}: photo {i}"
+            if not _check_fields(ph, CAR_PHOTO_REQUIRED, CAR_PHOTO_OPTIONAL, at, errors):
+                continue
+            file = ph.get("file")
+            if not isinstance(file, str) or not _check_slug(file, f"{at}: file", errors):
+                continue
+            if file in named:
+                errors.append(f"{at}: {file} is named twice; each photo file belongs to one entry")
+                continue
+            named.add(file)
+            if ph.get("make") not in groups[key]:
+                errors.append(f"{at}: make {ph.get('make')!r} is not in the {key} group ({', '.join(groups[key])})")
+            year = ph.get("car_year")
+            if _is_int(year) and not 1000 <= year <= 9999:
+                errors.append(f"{at}: car_year must be four digits, got {year}")
+            if 0 < sum(k in ph for k in PHOTO_CREDIT) < len(PHOTO_CREDIT):
+                errors.append(f"{at}: give credit, license and source_url together for someone "
+                              f"else's photo, or none of them for the site's own")
+            _check_car_photo_event(ph, events, editions, at, errors)
+            src = data_dir / CAR_PHOTOS_DIR / f"{file}.jpg"
+            size = _read_photo(src, data_dir, at, errors)
+            if size and (problem := car_photo_problem(*size)):
+                errors.append(f"{src.relative_to(data_dir).as_posix()}: {problem}")
+            elif size:
+                found.setdefault(key, []).append({"data": ph, "size": size})
+    folder = data_dir / CAR_PHOTOS_DIR
+    for p in sorted(folder.glob("*")) if folder.is_dir() else []:
+        if p.name.startswith("."):
+            continue
+        if p.suffix != ".jpg" or p.stem not in named:
+            # Otherwise a photo could go live with no alt text and no credit.
+            errors.append(f"{p.relative_to(data_dir).as_posix()}: no entry in car_photos.yml names it "
+                          f"(photos here are JPEG files named <file>.jpg)")
+    if errors:
+        raise ValidationError(errors)
+    return found
+
+
+def _check_car_photo_event(ph: dict, events: dict, editions: list, at: str, errors: list[str]) -> None:
+    """event with year, edition within event, and the car spelt as the edition's list spells it."""
+    event, year, edition = ph.get("event"), ph.get("year"), ph.get("edition")
+    if ("event" in ph) != ("year" in ph):
+        errors.append(f"{at}: give event and year together, or neither")
+        return
+    if "edition" in ph and "event" not in ph:
+        errors.append(f"{at}: edition needs event and year")
+        return
+    if event is None:
+        return
+    if event not in events:
+        errors.append(f"{at}: event {event!r} is not an event in data/events/")
+        return
+    if edition is None:
+        return
+    ed = next((x["data"] for x in editions if x["data"].get("slug") == event and x["id"] == edition), None)
+    if ed is None:
+        errors.append(f"{at}: edition {edition!r} is not an edition of {event} (events/{event}/<edition>.yml)")
+        return
+    if ed.get("year") != year:
+        errors.append(f"{at}: edition {edition} is in {ed.get('year')}, but year is {year}")
+    models = sorted({car.get("model") for car in ed.get("cars") or []
+                     if isinstance(car, dict) and car.get("make") == ph.get("make")}, key=str)
+    if models and ph.get("model") not in models:
+        errors.append(f"{at}: {ph.get('make')} {ph.get('model')} is not on events/{event}/{edition}.yml's car list, "
+                      f"whose {ph.get('make')} models are {', '.join(map(str, models))}. Spell it as the list does")
 
 
 def make_slug(name: str) -> str:

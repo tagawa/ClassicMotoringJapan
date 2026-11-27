@@ -1,4 +1,4 @@
-"""Event photos: the metadata check, the crops, and the files the pages use."""
+"""Event and make-page photos: the metadata check, the crops, and the files the pages use."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -13,6 +13,11 @@ PHOTOS_DIR = "photos"
 PHOTO_WIDTHS = (720, 1440)
 PHOTO_MIN_WIDTH = PHOTO_WIDTHS[-1]
 PHOTO_QUALITY = 80
+# Make-page photos (spec 4.12) keep their own shape, between these two ratios; a wider one is
+# cropped to the widest, since a panorama shows a car as a strip.
+CAR_PHOTOS_DIR = "photos/cars"
+CAR_RATIO_MIN = (4, 3)
+CAR_RATIO_MAX = (2, 1)
 # Licences that allow cropping and need no more than a credit. ND forbids the crop; NC is
 # left out so the question of what counts as commercial never has to be answered.
 PHOTO_LICENSES = {
@@ -58,7 +63,7 @@ def photo_metadata(path: Path) -> list[str]:
 def photos_with_metadata(data_dir: Path) -> list[str]:
     """One line per photo in data/photos/ still carrying metadata, for tools/pending.py."""
     return [f"{p.relative_to(data_dir).as_posix()} carries {', '.join(kinds)}: run it through tools/photo.py"
-            for p in sorted((data_dir / PHOTOS_DIR).glob("*.jpg")) if (kinds := photo_metadata(p))]
+            for p in sorted((data_dir / PHOTOS_DIR).rglob("*.jpg")) if (kinds := photo_metadata(p))]
 
 
 def _crop(img: Image.Image, ratio_w: int, ratio_h: int) -> Image.Image:
@@ -83,6 +88,11 @@ def _save_jpeg(img: Image.Image, size: tuple[int, int], path: Path, icc: bytes |
                                          progressive=True, **extra)
 
 
+def _credit(ph: dict) -> dict:
+    return {"credit": ph.get("credit"), "license": ph.get("license"),
+            "license_url": PHOTO_LICENSES.get(ph.get("license")), "source_url": ph.get("source_url")}
+
+
 def photo_info(ev: dict) -> dict | None:
     """What the templates need for an event's photo. Paths are relative to the site root."""
     ph = ev.get("photo")
@@ -93,11 +103,55 @@ def photo_info(ev: dict) -> dict | None:
             "src": f"static/photos/{slug}-{PHOTO_WIDTHS[0]}.jpg",
             "srcset": [(f"static/photos/{slug}-{w}.jpg", w) for w in PHOTO_WIDTHS],
             "width": PHOTO_WIDTHS[0], "height": PHOTO_WIDTHS[0] // 2,
-            "credit": ph.get("credit"), "license": ph.get("license"),
-            "license_url": PHOTO_LICENSES.get(ph.get("license")), "source_url": ph.get("source_url"),
+            **_credit(ph),
             # A link preview has no room for the credit a licence asks for, so only the
             # site's own photos are ever shared that way.
             "share": f"static/photos/{slug}-share.jpg" if own else None}
+
+
+def car_photo_size(w: int, h: int) -> tuple[int, int]:
+    """A make-page photo's size once anything wider than CAR_RATIO_MAX is cropped to it."""
+    rw, rh = CAR_RATIO_MAX
+    return (h * rw // rh, h) if w * rh > h * rw else (w, h)
+
+
+def car_photo_problem(w: int, h: int) -> str | None:
+    """Why a make-page photo of w x h cannot be used, or None. The build and tools/photo.py both ask."""
+    rw, rh = CAR_RATIO_MIN
+    if w * rh < h * rw:
+        return (f"{w}x{h} is {w / h:.2f}:1. Make-page photos are landscape, from {rw}:{rh} "
+                f"({rw / rh:.2f}:1) to {CAR_RATIO_MAX[0]}:{CAR_RATIO_MAX[1]}")
+    cw, ch = car_photo_size(w, h)
+    if cw < PHOTO_MIN_WIDTH:
+        cropped = f", {cw}x{ch} once cropped to 2:1," if (cw, ch) != (w, h) else ""
+        return (f"{w}x{h}{cropped} is too small. It needs at least {PHOTO_MIN_WIDTH} wide, "
+                f"so the page stays sharp on a high-density screen")
+    return None
+
+
+def car_photo_info(item: dict, rows: list[dict], events: dict) -> dict:
+    """What a make page needs for its photo; rows are in the page's language, for the caption's link."""
+    ph, (w, h) = item["data"], car_photo_size(*item["size"])
+    stem, own = f"static/photos/cars/{ph['file']}", "credit" not in ph
+    row = next((r for r in rows if r["slug"] == ph.get("event") and r["id"] == ph.get("edition")
+                and r["has_page"]), None)
+    return {"alt": ph["alt_en"], "own": own, "src": f"{stem}-{PHOTO_WIDTHS[0]}.jpg",
+            "srcset": [(f"{stem}-{width}.jpg", width) for width in PHOTO_WIDTHS],
+            "width": PHOTO_WIDTHS[0], "height": round(PHOTO_WIDTHS[0] * h / w), **_credit(ph),
+            "share": f"{stem}-share.jpg" if own else None,
+            "car_year": ph.get("car_year"), "car": f"{ph['make']} {ph['model']}",
+            "ev": events.get(ph.get("event")), "year": ph.get("year"), "row": row}
+
+
+def write_car_photo(item: dict, data_dir: Path, out_dir: Path) -> None:
+    info = car_photo_info(item, [], {})
+    img = _open_photo(data_dir / CAR_PHOTOS_DIR / f"{item['data']['file']}.jpg")
+    icc = img.info.get("icc_profile")
+    shown = _crop(img, *CAR_RATIO_MAX) if car_photo_size(*img.size) != img.size else img
+    for src, w in info["srcset"]:
+        _save_jpeg(shown, (w, round(w * shown.height / shown.width)), out_dir / src, icc)
+    if info["share"]:
+        _save_jpeg(_crop(img, *SHARE_SIZE), SHARE_SIZE, out_dir / info["share"], icc)
 
 
 def write_photo(ev: dict, data_dir: Path, out_dir: Path) -> None:

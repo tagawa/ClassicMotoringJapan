@@ -7,6 +7,7 @@ import sys
 import unittest
 from pathlib import Path
 
+import yaml
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -16,7 +17,7 @@ import photos  # noqa: E402
 import settings  # noqa: E402
 import validate  # noqa: E402
 from helpers import (HeadParser, instance_yaml, make_fixture, temp_dir, write_event,  # noqa: E402
-                     write_instance, CARS)
+                     write_instance, write_site, CARS, NISSAN_LISTS)
 
 OWN_PHOTO = "photo:\n  alt_en: A red coupe on the start line\n  year: 2025\n"
 CC_PHOTO = ("photo:\n  alt_en: Two roadsters parked by a fountain\n  year: 2024\n"
@@ -260,6 +261,249 @@ class ShareCardTests(unittest.TestCase):
         tmp = temp_dir(self)
         write_event(tmp / "data", "long", name_en=" ".join(["Extraordinarily"] * 12))
         self.assertIn("events/long.yml", errors_for(tmp / "data", tmp / "site"))
+
+
+
+# Make-page photos (spec 4.12), on the cars fixture: Nissan's group (Nissan, Datsun, Prince,
+# Nissan Diesel) has a page; Lotus, on two lists, does not. meet-b's 2026 list holds three
+# Datsuns, each a 1970 "Car".
+CAR_PHOTO = {"file": "datsun-meet-b", "make": "Datsun", "model": "Car", "alt_en": "A white Datsun coupe"}
+
+
+def write_car_site(data: Path, photos_by_group=None, size=(1500, 1000), meta=(), icc=None, files=("datsun-meet-b",),
+                   lists=NISSAN_LISTS):
+    write_site(data, lists)
+    if photos_by_group is not None:
+        (data / "car_photos.yml").write_text(yaml.safe_dump(photos_by_group, sort_keys=False), encoding="utf-8")
+    for stem in files:
+        save_jpeg(data / "photos" / "cars" / f"{stem}.jpg", size, meta, icc=icc)
+
+
+class CarPhotoValidationTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = temp_dir(self)
+        self.data, self.out = self.tmp / "data", self.tmp / "site"
+
+    def errors(self, photos_by_group, **kw) -> str:
+        write_car_site(self.data, photos_by_group, **kw)
+        return errors_for(self.data, self.out)
+
+    def accepts(self, photos_by_group, **kw) -> None:
+        write_car_site(self.data, photos_by_group, **kw)
+        build.build(self.data, self.out)
+
+    def test_a_key_that_is_not_a_group_is_refused(self):
+        self.assertIn("car_photos.yml: Toyota", self.errors({"Toyota": [CAR_PHOTO]}))
+
+    def test_a_member_of_a_group_is_not_a_key_and_the_message_names_the_group(self):
+        msg = self.errors({"Datsun": [CAR_PHOTO]})
+        self.assertIn("car_photos.yml: Datsun", msg)
+        self.assertIn("Nissan group", msg)
+
+    def test_a_group_without_a_page_is_refused(self):
+        msg = self.errors({"Lotus": [{**CAR_PHOTO, "make": "Lotus"}]})
+        self.assertIn("Lotus has no make page yet; it gets one at 3 entry lists", msg)
+
+    def test_a_make_outside_the_group_is_refused(self):
+        msg = self.errors({"Nissan": [{**CAR_PHOTO, "make": "Lotus"}]})
+        self.assertIn("car_photos.yml: Nissan", msg)
+        self.assertIn("Lotus", msg)
+
+    def test_a_second_photo_waits_for_change_2(self):
+        msg = self.errors({"Nissan": [CAR_PHOTO, {**CAR_PHOTO, "file": "two"}]}, files=("datsun-meet-b", "two"))
+        self.assertIn("one photo per group until Photos change 2 ships", msg)
+
+    def test_an_unknown_field_is_refused(self):
+        self.assertIn("unknown field 'colour'", self.errors({"Nissan": [{**CAR_PHOTO, "colour": "White"}]}))
+
+    def test_a_missing_required_field_is_refused(self):
+        entry = {k: v for k, v in CAR_PHOTO.items() if k != "alt_en"}
+        self.assertIn("missing required field 'alt_en'", self.errors({"Nissan": [entry]}))
+
+    def test_an_event_needs_its_year(self):
+        self.assertIn("event and year", self.errors({"Nissan": [{**CAR_PHOTO, "event": "meet-b"}]}))
+
+    def test_an_event_must_exist(self):
+        msg = self.errors({"Nissan": [{**CAR_PHOTO, "event": "meet-z", "year": 2026}]})
+        self.assertIn("meet-z", msg)
+
+    def test_an_editions_year_must_be_the_photos_year(self):
+        msg = self.errors({"Nissan": [{**CAR_PHOTO, "event": "meet-b", "year": 2025, "edition": "2026"}]})
+        self.assertIn("edition 2026", msg)
+        self.assertIn("2025", msg)
+
+    def test_an_edition_must_be_one_of_the_events(self):
+        msg = self.errors({"Nissan": [{**CAR_PHOTO, "event": "meet-b", "year": 2026, "edition": "2026-autumn"}]})
+        self.assertIn("2026-autumn", msg)
+
+    def test_credit_licence_and_source_come_together(self):
+        msg = self.errors({"Nissan": [{**CAR_PHOTO, "credit": "Someone"}]})
+        self.assertIn("credit, license and source_url", msg)
+
+    def test_a_file_with_no_entry_is_refused(self):
+        msg = self.errors({"Nissan": [CAR_PHOTO]}, files=("datsun-meet-b", "stray"))
+        self.assertIn("photos/cars/stray.jpg", msg)
+
+    def test_an_entry_with_no_file_is_refused(self):
+        self.assertIn("photos/cars/datsun-meet-b.jpg", self.errors({"Nissan": [CAR_PHOTO]}, files=()))
+
+    def test_a_file_named_twice_is_refused(self):
+        # A third Lotus list gives Lotus a page too.
+        photos_by_group = {"Nissan": [CAR_PHOTO], "Lotus": [{**CAR_PHOTO, "make": "Lotus"}]}
+        msg = self.errors(photos_by_group, lists=NISSAN_LISTS + (("meet-e", 2026, ["Lotus"]),))
+        self.assertIn("datsun-meet-b is named twice", msg)
+
+    def test_metadata_left_in_is_refused_as_for_an_event_photo(self):
+        msg = self.errors({"Nissan": [CAR_PHOTO]}, meta=("exif",))
+        self.assertIn("photos/cars/datsun-meet-b.jpg still carries EXIF", msg)
+        self.assertIn("already public", msg)
+
+    def test_square_and_portrait_are_refused_with_their_ratio(self):
+        for size, ratio in (((1500, 1500), "1.00:1"), ((1500, 2000), "0.75:1")):
+            with self.subTest(size):
+                shutil.rmtree(self.tmp)
+                msg = self.errors({"Nissan": [CAR_PHOTO]}, size=size)
+                self.assertIn("photos/cars/datsun-meet-b.jpg", msg)
+                self.assertIn(ratio, msg)
+
+    def test_a_photo_too_narrow_is_refused(self):
+        self.assertIn("1440", self.errors({"Nissan": [CAR_PHOTO]}, size=(1200, 900)))
+
+    def test_a_panorama_too_narrow_after_its_crop_is_refused(self):
+        # 3000x700 crops to 1400x700.
+        self.assertIn("1440", self.errors({"Nissan": [CAR_PHOTO]}, size=(3000, 700)))
+
+    def test_a_model_its_edition_list_spells_otherwise_is_refused_naming_the_lists_models(self):
+        msg = self.errors({"Nissan": [{**CAR_PHOTO, "model": "Fairlady", "event": "meet-b", "year": 2026,
+                                       "edition": "2026"}]})
+        self.assertIn("Fairlady", msg)
+        self.assertIn("Datsun models are Car", msg)
+
+    def test_a_model_its_edition_list_spells_the_same_is_accepted(self):
+        self.accepts({"Nissan": [{**CAR_PHOTO, "event": "meet-b", "year": 2026, "edition": "2026"}]})
+
+    def test_an_edition_whose_list_lacks_the_make_does_not_bind_the_model(self):
+        # meet-a 2025 has Nissans and a Lotus, no Datsun.
+        self.accepts({"Nissan": [{**CAR_PHOTO, "model": "Fairlady", "event": "meet-a", "year": 2025,
+                                  "edition": "2025"}]})
+
+    def test_no_file_means_no_photos_and_the_cars_folder_is_not_an_event_photo(self):
+        self.accepts(None, files=())
+        self.accepts({"Nissan": [CAR_PHOTO]})
+
+
+class CarPhotoPageTests(unittest.TestCase):
+    ENTRY = {**CAR_PHOTO, "car_year": 1970, "event": "meet-b", "year": 2026, "edition": "2026"}
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = temp_dir(cls)
+        cls.data, cls.out = cls.tmp / "data", cls.tmp / "site"
+        write_car_site(cls.data, {"Nissan": [cls.ENTRY]}, icc=b"profile bytes")
+        build.build(cls.data, cls.out)
+
+    def page(self, rel: str) -> str:
+        return (self.out / rel).read_text(encoding="utf-8")
+
+    def caption(self, rel="cars/nissan/index.html") -> str:
+        return " ".join(re.search(r"(?s)<figcaption>(.*?)</figcaption>", self.page(rel)).group(1).split())
+
+    def test_the_photo_sits_between_the_heading_and_the_lede(self):
+        self.assertRegex(self.page("cars/nissan/index.html"),
+                         r'(?s)</h1>\s*<figure class="hero">.*?</figure>\s*<p>\d+ cars on')
+
+    def test_the_image_keeps_its_shape_at_both_widths(self):
+        img = re.search(r"<img [^>]+>", self.page("cars/nissan/index.html")).group(0)
+        self.assertIn('width="720" height="480"', img)
+        self.assertIn("static/photos/cars/datsun-meet-b-720.jpg 720w", img)
+        self.assertIn("static/photos/cars/datsun-meet-b-1440.jpg 1440w", img)
+        self.assertIn('alt="A white Datsun coupe"', img)
+        self.assertNotIn("loading", img)
+        for w, h in ((720, 480), (1440, 960)):
+            with Image.open(self.out / f"static/photos/cars/datsun-meet-b-{w}.jpg") as im:
+                self.assertEqual(im.size, (w, h))
+
+    def test_written_files_carry_no_exif_and_keep_the_colour_profile(self):
+        for p in (self.out / "static/photos/cars").iterdir():
+            with Image.open(p) as im:
+                self.assertEqual(dict(im.getexif()), {}, p.name)
+                self.assertEqual(im.info.get("icc_profile"), b"profile bytes", p.name)
+
+    def test_the_caption_links_the_edition(self):
+        self.assertEqual(self.caption(), 'Photo: 1970 Datsun Car at <a href="../../events/meet-b/2026/">Meet B 2026</a>')
+
+    def test_the_japanese_caption_marks_the_car_as_english(self):
+        self.assertEqual(self.caption("ja/cars/nissan/index.html"),
+                         '写真：1970年式 <span lang="en">Datsun Car</span>'
+                         '（<a href="../../events/meet-b/2026/">テストイベント 2026年</a>開催時）')
+        img = re.search(r"<img [^>]+>", self.page("ja/cars/nissan/index.html")).group(0)
+        self.assertIn('lang="en"', img)
+
+    def test_an_own_photo_is_the_share_image_in_both_languages(self):
+        for rel in ("cars/nissan/index.html", "ja/cars/nissan/index.html"):
+            meta = HeadParser(self.page(rel)).meta
+            self.assertTrue(meta["og:image"].startswith(
+                f"{settings.SITE_URL}/static/photos/cars/datsun-meet-b-share.jpg?v="), rel)
+            self.assertEqual(meta["og:image:alt"], "A white Datsun coupe", rel)
+        with Image.open(self.out / "static/photos/cars/datsun-meet-b-share.jpg") as im:
+            self.assertEqual(im.size, settings.SHARE_SIZE)
+
+    def test_every_other_page_is_byte_identical_to_a_build_without_the_photo(self):
+        bare = self.tmp / "bare"
+        write_car_site(bare / "data", None, files=())
+        build.build(bare / "data", bare / "site")
+        pages = sorted(p.relative_to(bare / "site") for p in (bare / "site").rglob("*.html"))
+        self.assertGreater(len(pages), 10)
+        for rel in pages:
+            if rel.as_posix() in ("cars/nissan/index.html", "ja/cars/nissan/index.html"):
+                continue
+            self.assertEqual((self.out / rel).read_bytes(), (bare / "site" / rel).read_bytes(), rel)
+
+
+class CarPhotoCaptionTests(unittest.TestCase):
+    """One build per caption shape."""
+
+    def caption(self, entry, lang="", **kw) -> str:
+        tmp = temp_dir(self)
+        write_car_site(tmp / "data", {"Nissan": [entry]}, **kw)
+        build.build(tmp / "data", tmp / "site")
+        html = (tmp / "site" / lang / "cars/nissan/index.html").read_text(encoding="utf-8")
+        self.html = html
+        return " ".join(re.search(r"(?s)<figcaption>(.*?)</figcaption>", html).group(1).split())
+
+    def test_an_event_without_an_edition_links_the_event_page(self):
+        self.assertEqual(self.caption({**CAR_PHOTO, "car_year": 1970, "event": "meet-b", "year": 2024}),
+                         'Photo: 1970 Datsun Car at <a href="../../events/meet-b/">Meet B 2024</a>')
+
+    def test_without_an_event_there_is_no_link(self):
+        self.assertEqual(self.caption({**CAR_PHOTO, "car_year": 1970}), "Photo: 1970 Datsun Car")
+
+    def test_without_a_car_year_the_year_is_left_out(self):
+        self.assertEqual(self.caption(CAR_PHOTO), "Photo: Datsun Car")
+        self.assertEqual(self.caption(CAR_PHOTO, lang="ja"), '写真：<span lang="en">Datsun Car</span>')
+
+    def test_someone_elses_photo_carries_credit_licence_and_the_change(self):
+        cap = self.caption({**CAR_PHOTO, "credit": "Test Author", "license": "CC BY-SA 4.0",
+                            "source_url": "https://commons.wikimedia.org/wiki/File:Test.jpg"})
+        self.assertEqual(cap, 'Photo: Datsun Car, by <a href="https://commons.wikimedia.org/wiki/File:Test.jpg">'
+                              'Test Author</a>, <a href="https://creativecommons.org/licenses/by-sa/4.0/">'
+                              'CC BY-SA 4.0</a>, edited')
+        # A link preview has no room for the credit.
+        self.assertIn("static/cards/site.png", HeadParser(self.html).meta["og:image"])
+
+    def test_a_panorama_is_cropped_to_two_to_one(self):
+        tmp = temp_dir(self)
+        write_car_site(tmp / "data", {"Nissan": [CAR_PHOTO]}, size=(3000, 1000))
+        build.build(tmp / "data", tmp / "site")
+        for w in (720, 1440):
+            with Image.open(tmp / "site" / f"static/photos/cars/datsun-meet-b-{w}.jpg") as im:
+                self.assertEqual(im.size, (w, w // 2))
+
+    def test_pending_lists_a_make_page_photo_still_carrying_metadata(self):
+        tmp = temp_dir(self)
+        save_jpeg(tmp / "photos" / "cars" / "dirty.jpg", meta=("xmp",))
+        self.assertEqual(photos.photos_with_metadata(tmp),
+                         ["photos/cars/dirty.jpg carries XMP: run it through tools/photo.py"])
 
 
 if __name__ == "__main__":

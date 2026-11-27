@@ -1,0 +1,12 @@
+# Photos on make pages (spec 4.12). Key: the make group, as named in make_groups.yml, or a make in no group.
+Bandini:
+  - file: bandini-saloncino-coppa-di-tokyo-2024
+    make: Bandini
+    model: 1000 Berlinetta Saloncino
+    car_year: 1968
+    event: coppa-di-tokyo
+    year: 2024
+    alt_en: A red 1968 Bandini Berlinetta Saloncino, rally number 60, driving past spectators at Shiodome
+    credit: Mr.choppers
+    license: CC BY-SA 3.0
+    source_url: "https://commons.wikimedia.org/wiki/File:1968_Bandini_1000_Berlinetta_Saloncino,_front_right_(Tokyo).jpg"

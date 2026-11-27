@@ -64,12 +64,13 @@
 </script>
 {% endmacro %}
 
-{# The event's photo under the heading. Someone else's carries the credit its licence asks for. #}
-{% macro hero(photo, root) -%}
+{# A photo under the heading, on event, edition and make pages. The caller gives the caption's
+   opening; someone else's photo then carries the credit its licence asks for. #}
+{% macro hero(photo, root, caption) -%}
 {% if photo %}
 <figure class="hero">
   <img src="{{ root }}{{ photo.src }}" srcset="{% for src, w in photo.srcset %}{{ root }}{{ src }} {{ w }}w{{ ", " if not loop.last }}{% endfor %}" sizes="(max-width: 720px) 100vw, 688px" width="{{ photo.width }}" height="{{ photo.height }}" alt="{{ photo.alt }}"{{ mark_en }}>
-  <figcaption>{{ t.photo_caption(photo.year) }}{% if not photo.own %}{{ t.photo_by }}<a href="{{ photo.source_url }}"{{ mark_en }}>{{ photo.credit }}</a>{{ t.sep }}<a href="{{ photo.license_url }}"{{ mark_en }}>{{ photo.license }}</a>{{ t.photo_edited }}{% endif %}</figcaption>
+  <figcaption>{{ caption }}{% if not photo.own %}{{ t.photo_by }}<a href="{{ photo.source_url }}"{{ mark_en }}>{{ photo.credit }}</a>{{ t.sep }}<a href="{{ photo.license_url }}"{{ mark_en }}>{{ photo.license }}</a>{{ t.photo_edited }}{% endif %}</figcaption>
 </figure>
 {% endif %}
 {%- endmacro %}

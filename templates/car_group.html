@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "icons.html" import hero %}
 {% block main %}
 <nav class="breadcrumbs" aria-label="{{ t.breadcrumb }}">
   <ol>
@@ -8,6 +9,13 @@
   </ol>
 </nav>
 <h1>{{ page.title }}</h1>
+{% if page.photo %}
+{% set ph = page.photo %}
+{% set car %}{% if ph.car_year %}{{ t.car_year(ph.car_year) }}{% endif %}{{ ph.car | latin }}{% endset %}
+{# The edition's page when it has one, else the event's. #}
+{% set where %}{% if ph.row %}<a href="{{ home }}{{ ph.row.path }}">{{ ph.row.full_name | latin }}</a>{% elif ph.ev %}<a href="{{ home }}events/{{ ph.ev.slug }}/">{{ local(ph.ev, "name") }} {{ t.photo_year(ph.year) }}</a>{% endif %}{% endset %}
+{{ hero(ph, root, t.car_photo_caption(car, where)) }}
+{% endif %}
 <p>{{ page.totals }}{{ t.full_stop }}</p>
 
 {# One table, every date: the script keeps each event's next date and moves the rest to the second table. #}

@@ -2,11 +2,9 @@
 from __future__ import annotations
 
 from formatting import fmt_span
-from settings import COUNTRIES
+from settings import COUNTRIES, PAGE_MIN_EDITIONS
 from validate import make_slug
 
-# A group needs lists from this many editions for a page; a smaller one has a line on /cars/.
-PAGE_MIN_EDITIONS = 3
 # The organiser's list did not name the make, so there is nothing for a reader to follow.
 NO_LINE = {"Unknown"}
 INDEX_DESCRIPTION = ("Every car make on the published entry lists of classic car events in Japan, "
