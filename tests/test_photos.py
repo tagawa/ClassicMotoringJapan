@@ -623,12 +623,27 @@ class PhotoSightingTests(unittest.TestCase):
         self.assertIn('<a href="../../events/meet-d/">Photographed in 2024</a>', row)
         self.assertIn('data-start="2026-05-10"', row)
 
-    def test_a_photo_counts_towards_no_list_or_total(self):
+    def test_a_photo_counts_towards_no_total(self):
+        site = self.build_with({**CAR_PHOTO, "car_year": 1970, "event": "meet-d", "year": 2026, "edition": "2026"})
+        self.assertIn("6 cars on 3 entry lists", (site / "cars/nissan/index.html").read_text(encoding="utf-8"))
+
+    # The folded list holds the photo's edition, dated and linked (spec 4.11, v58).
+    def test_the_folded_list_holds_the_photos_edition(self):
         site = self.build_with({**CAR_PHOTO, "car_year": 1970, "event": "meet-d", "year": 2026, "edition": "2026"})
         html = (site / "cars/nissan/index.html").read_text(encoding="utf-8")
-        self.assertIn("6 cars on 3 entry lists", html)
-        lists = re.search(r'(?s)<details class="all-cars">.*?</details>', html).group(0)
-        self.assertNotIn("meet-d", lists)
+        folded = re.search(r'(?s)<details class="all-cars">.*?</details>', html).group(0)
+        self.assertIn("<summary>All 3 entry lists and 1 photo</summary>", folded)
+        self.assertRegex(folded, r'<td><a href="\.\./\.\./events/meet-d/2026/">Meet D 2026</a></td>'
+                                 r'<td>Sun 10 May 2026</td><td>Photographed</td>')
+        ja = (site / "ja/cars/nissan/index.html").read_text(encoding="utf-8")
+        folded_ja = re.search(r'(?s)<details class="all-cars">.*?</details>', ja).group(0)
+        self.assertIn("<summary>エントリーリスト全3件と写真1件</summary>", folded_ja)
+        self.assertIn("<td>撮影</td>", folded_ja)
+
+    def test_without_an_edition_the_folded_list_is_unchanged(self):
+        site = self.build_with({**CAR_PHOTO, "car_year": 1970, "event": "meet-d", "year": 2024})
+        html = (site / "cars/nissan/index.html").read_text(encoding="utf-8")
+        self.assertIn("<summary>All 3 entry lists</summary>", html)
 
     def test_an_event_with_a_list_keeps_the_lists_count(self):
         site = self.build_with({**CAR_PHOTO, "car_year": 1970, "event": "meet-b", "year": 2026, "edition": "2026"})
@@ -637,13 +652,16 @@ class PhotoSightingTests(unittest.TestCase):
         self.assertNotIn("Photographed", html)
 
     def test_the_build_check_names_a_photo_whose_event_the_table_lacks(self):
-        photos_by_group = {"Nissan": [{"data": {**CAR_PHOTO, "event": "meet-d", "year": 2026}}]}
-        pages = [{"name": "Nissan", "events": [{"slug": "meet-b"}]}]
+        photos_by_group = {"Nissan": [{"data": {**CAR_PHOTO, "event": "meet-d", "year": 2026, "edition": "2026"}}]}
+        pages = [{"name": "Nissan", "events": [{"slug": "meet-b"}], "lists": []}]
         msg = car_pages.unlisted_photo_events(pages, photos_by_group)
-        self.assertEqual(len(msg), 1)
-        self.assertIn("meet-d", msg[0])
-        self.assertIn("datsun-meet-b", msg[0])
+        self.assertEqual(len(msg), 2)
+        self.assertIn("events table", msg[0])
+        self.assertIn("entry lists", msg[1])
+        self.assertIn("meet-d", msg[1])
+        self.assertIn("datsun-meet-b", msg[1])
         pages[0]["events"].append({"slug": "meet-d"})
+        pages[0]["lists"].append({"row": {"slug": "meet-d", "id": "2026"}})
         self.assertEqual(car_pages.unlisted_photo_events(pages, photos_by_group), [])
 
 

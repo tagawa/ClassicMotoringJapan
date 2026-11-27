@@ -46,7 +46,7 @@
     <thead><tr><th scope="col">{{ t.col_event_name }}</th><th scope="col">{{ t.col_date }}</th><th scope="col">{{ t.col_count }}</th></tr></thead>
     <tbody>
 {% for x in page.lists %}
-      <tr><td><a href="{{ home }}{{ x.row.path }}">{{ x.row.full_name | latin }}</a></td><td>{{ x.when }}</td><td>{{ x.text }}{% if x.row.list_provisional %}{{ t.provisional_list }}{% endif %}</td></tr>
+      <tr><td><a href="{{ home }}{{ x.path }}">{{ x.row.full_name | latin }}</a></td><td>{{ x.when }}</td><td>{{ x.text }}{% if x.count and x.row.list_provisional %}{{ t.provisional_list }}{% endif %}</td></tr>
 {% endfor %}
     </tbody>
   </table>

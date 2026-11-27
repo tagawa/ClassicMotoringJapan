@@ -53,9 +53,25 @@ def _photo_line(ph: dict, rows: list[dict]) -> dict | None:
             "text": f"Photographed in {ph['year']}", "dates": _dates(ph["event"], since, rows)}
 
 
-def _sightings(lists: list[dict], photos: list[dict], rows: list[dict]) -> list[dict]:
-    """Every event a group's page has evidence of, A to Z: its entry lists, then its photos (spec 4.11).
-    A new kind of evidence belongs here, so the table cannot miss what the page shows elsewhere."""
+def _photo_editions(lists: list[dict], photos: list[dict], rows: list[dict]) -> list[dict]:
+    """The folded list's line for each edition a photo names that no list including the group covers."""
+    covered = {(x["row"]["slug"], x["row"]["id"]) for x in lists}
+    found = {}
+    for ph in (item["data"] for item in photos if item["data"].get("edition")):
+        key = (ph["event"], ph["edition"])
+        r = next((r for r in rows if (r["slug"], r["id"]) == key), None)
+        if r and key not in covered:
+            found[key] = {"row": r, "count": None, "photo": True, "text": "Photographed",
+                          "path": r["path"] if r["has_page"] else f"events/{r['slug']}/",
+                          "when": fmt_span(r["ed"]["start"], r["ed"]["end"], year=True)}
+    return list(found.values())
+
+
+def _sightings(lists: list[dict], photos: list[dict], rows: list[dict]) -> tuple[list[dict], list[dict]]:
+    """Every event and edition a group's page has evidence of, from its entry lists and its photos
+    (spec 4.11): the events table A to Z, and the folded list newest first. A new kind of evidence
+    belongs here, so neither can miss what the page shows elsewhere."""
+    folded = sorted(lists + _photo_editions(lists, photos, rows), key=lambda x: x["row"]["ed"]["start"], reverse=True)
     latest_by_event: dict[str, dict] = {}
     for x in lists:  # newest first, so the first seen per event is its latest
         latest_by_event.setdefault(x["row"]["slug"], x)
@@ -64,7 +80,7 @@ def _sightings(lists: list[dict], photos: list[dict], rows: list[dict]) -> list[
     for ph in sorted((item["data"] for item in photos if item["data"].get("event")), key=lambda ph: -ph["year"]):
         if ph["event"] not in lines and (line := _photo_line(ph, rows)):
             lines[ph["event"]] = line
-    return sorted(lines.values(), key=lambda line: line["ev"]["name_en"].casefold())
+    return sorted(lines.values(), key=lambda line: line["ev"]["name_en"].casefold()), folded
 
 
 def unlisted_photo_events(pages: list[dict], car_photos: dict) -> list[str]:
@@ -72,16 +88,26 @@ def unlisted_photo_events(pages: list[dict], car_photos: dict) -> list[str]:
     errors = []
     for page in pages:
         listed = {line["slug"] for line in page["events"]}
+        folded = {(x["row"]["slug"], x["row"]["id"]) for x in page["lists"]}
         for item in car_photos.get(page["name"], []):
             ph = item["data"]
             if ph.get("event") and ph["event"] not in listed:
                 errors.append(f"car_photos.yml: {ph['file']} was taken at {ph['event']}, but the "
                               f"{page['name']} page's events table does not list it")
+            if ph.get("edition") and (ph["event"], ph["edition"]) not in folded:
+                errors.append(f"car_photos.yml: {ph['file']} was taken at {ph['event']} {ph['edition']}, but "
+                              f"the {page['name']} page's folded entry lists do not hold that edition")
     return errors
 
 
 def _group_of(groups: dict[str, list[str]]) -> dict[str, str]:
     return {member: name for name, members in groups.items() for member in members}
+
+
+def _lists_summary(lists: int, photos: int) -> str:
+    """As the edition page folds its cars: "1 entry list" alone, "All 3 ..." otherwise."""
+    text = _n(lists, "entry list") + (f" and {_n(photos, 'photo')}" if photos else "")
+    return f"All {text}" if lists + photos > 1 else text
 
 
 def _join(names: list[str]) -> str:
@@ -116,15 +142,17 @@ def group_pages(rows: list[dict], groups: dict[str, list[str]], car_photos: dict
             n = sum(1 for car in r["cars"] or [] if owner.get(car["make"], car["make"]) == name)
             if n:
                 lists.append({"row": r, "count": n, "when": fmt_span(r["ed"]["start"], r["ed"]["end"], year=True),
-                              "text": _n(n, "car")})
+                              "text": _n(n, "car"), "path": r["path"]})
         lists.reverse()
-        events = _sightings(lists, (car_photos or {}).get(name, []), rows)
+        events, folded = _sightings(lists, (car_photos or {}).get(name, []), rows)
+        photographed = len(folded) - len(lists)
         pages.append({"name": name, "slug": slug, "title": title, "members": members, "named": named,
                       "path": f"cars/{slug}/",
-                      "verified": verified[name], "lists": lists, "events": events,
+                      # The folded list: entry lists, and editions known only from a photo (count None).
+                      "verified": verified[name], "lists": folded, "events": events,
                       "totals": _counts_text(sum(x["count"] for x in lists), len(lists)),
                       # As the edition page folds its cars: "1 car" alone, "All 3 cars" otherwise.
-                      "lists_summary": f"All {len(lists)} entry lists" if len(lists) > 1 else "1 entry list",
+                      "lists_summary": _lists_summary(len(lists), photographed),
                       "description": f"Classic car events in Japan where {title} cars have run, from published "
                                      f"entry lists, with each event's next date."})
     return sorted(pages, key=lambda page: page["slug"])

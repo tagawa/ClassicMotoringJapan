@@ -447,14 +447,15 @@ def group_text(page: dict, lang: str) -> dict:
     if lang != "ja":
         return {}
     plain = "・".join(page["named"])
-    total = sum(x["count"] for x in page["lists"])
+    counted = [x for x in page["lists"] if x["count"] is not None]
+    total, photos = sum(x["count"] for x in counted), len(page["lists"]) - len(counted)
     lines = []
     for line in page["events"]:
         r = line["row"]
         if line.get("photo_year"):
             text = f"{line['photo_year']}年に撮影"
         else:
-            count = next(x["count"] for x in page["lists"] if x["row"] is r)
+            count = next(x["count"] for x in counted if x["row"] is r)
             text = f"{r['label']}：{count}台" + ("（暫定）" if r["list_provisional"] else "")
         lines.append({**line, "text": text,
                       "dates": [{**d, "text": span_ja(d["start"], d["end"], year=True)
@@ -463,10 +464,11 @@ def group_text(page: dict, lang: str) -> dict:
         "title": group_title_ja(page["named"]), "plain_title": plain,
         "page_title": f"{plain}が参加した日本のクラシックカーイベント",
         "description": f"{plain}が参加した日本のクラシックカーイベントと次回日程（公開エントリーリストより）。",
-        "totals": f"エントリーリスト{len(page['lists'])}件に計{total}台",
-        "lists_summary": f"エントリーリスト全{len(page['lists'])}件" if len(page["lists"]) > 1 else "エントリーリスト1件",
+        "totals": f"エントリーリスト{len(counted)}件に計{total}台",
+        "lists_summary": f"エントリーリスト{'全' if len(page['lists']) > 1 else ''}{len(counted)}件"
+                         + (f"と写真{photos}件" if photos else ""),
         "lists": [{**x, "when": span_ja(x["row"]["ed"]["start"], x["row"]["ed"]["end"], year=True),
-                   "text": f"{x['count']}台"} for x in page["lists"]],
+                   "text": "撮影" if x["count"] is None else f"{x['count']}台"} for x in page["lists"]],
         "events": lines,
     }
 
