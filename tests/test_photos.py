@@ -207,12 +207,15 @@ class PhotoOutputTests(unittest.TestCase):
         cap = re.search(r"(?s)<figcaption>(.*?)</figcaption>", self.page("events/own/index.html")).group(1)
         self.assertEqual(" ".join(cap.split()), "Photo: 2025 event")
 
-    def test_someone_elses_photo_carries_credit_source_licence_and_the_change(self):
+    # Never "edited": the owner asks for it when a photo needs it (2026-11-27).
+    def test_someone_elses_photo_carries_credit_source_and_licence_only(self):
         cap = re.search(r"(?s)<figcaption>(.*?)</figcaption>", self.page("events/commons/index.html")).group(1)
         self.assertIn('<a href="https://commons.wikimedia.org/wiki/File:Test.jpg">Test Author</a>', cap)
         self.assertIn('<a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>', cap)
-        self.assertIn("edited", cap)
+        self.assertTrue(cap.rstrip().endswith("CC BY-SA 4.0</a>"), cap)
         self.assertIn("2024 event", cap)
+        ja = re.search(r"(?s)<figcaption>(.*?)</figcaption>", self.page("ja/events/commons/index.html")).group(1)
+        self.assertTrue(ja.rstrip().endswith("CC BY-SA 4.0</a>"), ja)
 
     def test_the_same_photo_gives_the_same_bytes(self):
         again = self.tmp / "again"
@@ -288,7 +291,7 @@ class ShareCardTests(unittest.TestCase):
 # Make-page photos (spec 4.12), on the cars fixture: Nissan's group (Nissan, Datsun, Prince,
 # Nissan Diesel) has a page; Lotus, on two lists, does not. meet-b's 2026 list holds three
 # Datsuns, each a 1970 "Car".
-CAR_PHOTO = {"file": "datsun-meet-b", "make": "Datsun", "model": "Car", "alt_en": "A white Datsun coupe"}
+CAR_PHOTO = {"file": "datsun-meet-b", "make": "Datsun", "model": "Car", "alt_en": "A white Datsun Car coupe"}
 
 
 def write_car_site(data: Path, photos_by_group=None, size=(1500, 1000), meta=(), icc=None, files=("datsun-meet-b",),
@@ -407,7 +410,7 @@ class CarPhotoValidationTests(unittest.TestCase):
         self.assertIn("1440", self.errors({"Nissan": [CAR_PHOTO]}, size=(3000, 700)))
 
     def test_a_model_its_edition_list_spells_otherwise_is_refused_naming_the_lists_models(self):
-        msg = self.errors({"Nissan": [{**CAR_PHOTO, "model": "Fairlady", "event": "meet-b", "year": 2026,
+        msg = self.errors({"Nissan": [{**CAR_PHOTO, "model": "Fairlady", "alt_en": "A white Datsun Fairlady", "event": "meet-b", "year": 2026,
                                        "edition": "2026"}]})
         self.assertIn("Fairlady", msg)
         self.assertIn("Datsun models are Car", msg)
@@ -417,7 +420,7 @@ class CarPhotoValidationTests(unittest.TestCase):
 
     def test_an_edition_whose_list_lacks_the_make_does_not_bind_the_model(self):
         # meet-a 2025 has Nissans and a Lotus, no Datsun.
-        self.accepts({"Nissan": [{**CAR_PHOTO, "model": "Fairlady", "event": "meet-a", "year": 2025,
+        self.accepts({"Nissan": [{**CAR_PHOTO, "model": "Fairlady", "alt_en": "A white Datsun Fairlady", "event": "meet-a", "year": 2025,
                                   "edition": "2025"}]})
 
     # meet-b 2024 has no edition file, as Coppa di Tokyo 2024 has none; its 2026 list holds 1970 Datsuns.
@@ -436,14 +439,33 @@ class CarPhotoValidationTests(unittest.TestCase):
                     "meet-b", 2025, "2025-05-10", "2025-05-10",
                     extra='list_as_of: 2025-05-01\ncars:\n  - entry_no: "01"\n    year: 1970\n'
                           "    make: Datsun\n    model: Fairlady\n"))
-                self.accepts({"Nissan": [{**CAR_PHOTO, "model": model, "car_year": 1970, "event": "meet-b",
+                self.accepts({"Nissan": [{**CAR_PHOTO, "model": model, "alt_en": f"A white Datsun {model}", "car_year": 1970, "event": "meet-b",
                                           "year": 2024}]})
 
     def test_another_year_or_no_car_year_is_not_held_to_the_lists(self):
         for extra in ({"car_year": 1971}, {}):
             with self.subTest(extra):
                 shutil.rmtree(self.tmp)
-                self.accepts({"Nissan": [{**CAR_PHOTO, "model": "Fairlady", "event": "meet-b", "year": 2024, **extra}]})
+                self.accepts({"Nissan": [{**CAR_PHOTO, "model": "Fairlady", "alt_en": "A white Datsun Fairlady", "event": "meet-b", "year": 2024, **extra}]})
+
+    def test_alt_text_must_name_the_car_as_the_caption_does(self):
+        self.accepts({"Nissan": [{**CAR_PHOTO, "model": "Fairlady", "alt_en": "A white Datsun Fairlady Z"}]})
+        shutil.rmtree(self.tmp)
+        msg = self.errors({"Nissan": [{**CAR_PHOTO, "model": "Fairlady", "alt_en": "A white Datsun 240Z"}]})
+        self.assertIn("alt_en", msg)
+        self.assertIn("Datsun Fairlady", msg)
+
+    def test_the_same_picture_as_an_event_photo_has_the_same_alt_text(self):
+        source = "https://commons.wikimedia.org/wiki/File:Test.jpg"
+        credit = {"credit": "Test Author", "license": "CC BY-SA 4.0", "source_url": source}
+        write_car_site(self.data, {"Nissan": [{**CAR_PHOTO, **credit}]})
+        write_event(self.data, "meet-b", name_en="Meet B", extra=(
+            "photo:\n  alt_en: A white Datsun Car, an old spelling\n  year: 2024\n"
+            f"  credit: Test Author\n  license: CC BY-SA 4.0\n  source_url: {source}\n"))
+        write_photo(self.data, "meet-b")
+        msg = errors_for(self.data, self.out)
+        self.assertIn("events/meet-b.yml", msg)
+        self.assertIn("A white Datsun Car coupe", msg)
 
     def test_no_file_means_no_photos_and_the_cars_folder_is_not_an_event_photo(self):
         self.accepts(None, files=())
@@ -473,7 +495,7 @@ class CarPhotoPageTests(unittest.TestCase):
     def test_the_image_keeps_its_shape_at_three_widths_in_both_formats(self):
         html = self.page("cars/nissan/index.html")
         assert_picture(self, html, "static/photos/cars/datsun-meet-b", 480)
-        self.assertIn('alt="A white Datsun coupe"', re.search(r"<img [^>]+>", html).group(0))
+        self.assertIn('alt="A white Datsun Car coupe"', re.search(r"<img [^>]+>", html).group(0))
         assert_files(self, self.out / "static/photos/cars", "datsun-meet-b", {720: 480, 1080: 720, 1440: 960})
 
     def test_written_files_carry_no_exif_and_keep_the_colour_profile(self):
@@ -499,7 +521,7 @@ class CarPhotoPageTests(unittest.TestCase):
             meta = HeadParser(self.page(rel)).meta
             self.assertTrue(meta["og:image"].startswith(
                 f"{settings.SITE_URL}/static/photos/cars/datsun-meet-b-share.jpg?v="), rel)
-            self.assertEqual(meta["og:image:alt"], "A white Datsun coupe", rel)
+            self.assertEqual(meta["og:image:alt"], "A white Datsun Car coupe", rel)
         with Image.open(self.out / "static/photos/cars/datsun-meet-b-share.jpg") as im:
             self.assertEqual(im.size, settings.SHARE_SIZE)
 
@@ -537,12 +559,14 @@ class CarPhotoCaptionTests(unittest.TestCase):
         self.assertEqual(self.caption(CAR_PHOTO), "Photo: Datsun Car")
         self.assertEqual(self.caption(CAR_PHOTO, lang="ja"), '写真：<span lang="en">Datsun Car</span>')
 
-    def test_someone_elses_photo_carries_credit_licence_and_the_change(self):
-        cap = self.caption({**CAR_PHOTO, "credit": "Test Author", "license": "CC BY-SA 4.0",
-                            "source_url": "https://commons.wikimedia.org/wiki/File:Test.jpg"})
+    def test_someone_elses_photo_carries_credit_and_licence_only(self):
+        credited = {**CAR_PHOTO, "credit": "Test Author", "license": "CC BY-SA 4.0",
+                    "source_url": "https://commons.wikimedia.org/wiki/File:Test.jpg"}
+        self.assertTrue(self.caption(credited, lang="ja").endswith("CC BY-SA 4.0</a>"))
+        cap = self.caption(credited)
         self.assertEqual(cap, 'Photo: Datsun Car, by <a href="https://commons.wikimedia.org/wiki/File:Test.jpg">'
                               'Test Author</a>, <a href="https://creativecommons.org/licenses/by-sa/4.0/">'
-                              'CC BY-SA 4.0</a>, edited')
+                              'CC BY-SA 4.0</a>')
         # A link preview has no room for the credit.
         self.assertIn("static/cards/site.png", HeadParser(self.html).meta["og:image"])
 

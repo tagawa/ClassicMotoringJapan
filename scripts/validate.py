@@ -695,6 +695,7 @@ def load_car_photos(data_dir: Path, groups: dict[str, list[str]], events: dict, 
                 errors.append(f"{at}: give credit, license and source_url together for someone "
                               f"else's photo, or none of them for the site's own")
             _check_car_photo_event(ph, events, editions, at, errors)
+            _check_car_photo_alt(ph, events, at, errors)
             src = data_dir / CAR_PHOTOS_DIR / f"{file}.jpg"
             size = _read_photo(src, data_dir, at, errors)
             if size and (problem := car_photo_problem(*size)):
@@ -712,6 +713,23 @@ def load_car_photos(data_dir: Path, groups: dict[str, list[str]], events: dict, 
     if errors:
         raise ValidationError(errors)
     return found
+
+
+def _check_car_photo_alt(ph: dict, events: dict, at: str, errors: list[str]) -> None:
+    """The alt text names the car as the caption does, and matches the same picture's alt as an event photo.
+
+    A screen reader hears the alt text, so a car respelt in model but not here is still spelt two ways.
+    """
+    alt, car = ph.get("alt_en"), f"{ph.get('make')} {ph.get('model')}"
+    if isinstance(alt, str) and car not in alt:
+        errors.append(f"{at}: alt_en must name the car as the caption does, {car!r}, so a screen reader "
+                      f"hears the name the page shows")
+    source = ph.get("source_url")
+    for slug, ev in sorted(events.items()):
+        other = ev.get("photo")
+        if source and isinstance(other, dict) and other.get("source_url") == source and other.get("alt_en") != alt:
+            errors.append(f"{at}: the same picture is the photo in events/{slug}.yml, whose alt_en differs; "
+                          f"give both the same text, e.g. {alt!r}")
 
 
 def _check_car_photo_event(ph: dict, events: dict, editions: list, at: str, errors: list[str]) -> None:

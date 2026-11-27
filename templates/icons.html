@@ -77,7 +77,7 @@
     <source type="image/webp" srcset="{{ srcset(photo.webp_srcset, root) }}" sizes="{{ hero_sizes }}">
     <img src="{{ root }}{{ photo.src }}" srcset="{{ srcset(photo.srcset, root) }}" sizes="{{ hero_sizes }}" width="{{ photo.width }}" height="{{ photo.height }}" alt="{{ photo.alt }}"{{ mark_en }}>
   </picture>
-  <figcaption>{{ caption }}{% if not photo.own %}{{ t.photo_by }}<a href="{{ photo.source_url }}"{{ mark_en }}>{{ photo.credit }}</a>{{ t.sep }}<a href="{{ photo.license_url }}"{{ mark_en }}>{{ photo.license }}</a>{{ t.photo_edited }}{% endif %}</figcaption>
+  <figcaption>{{ caption }}{% if not photo.own %}{{ t.photo_by }}<a href="{{ photo.source_url }}"{{ mark_en }}>{{ photo.credit }}</a>{{ t.sep }}<a href="{{ photo.license_url }}"{{ mark_en }}>{{ photo.license }}</a>{% endif %}</figcaption>
 </figure>
 {% endif %}
 {%- endmacro %}

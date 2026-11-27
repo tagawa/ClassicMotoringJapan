@@ -60,7 +60,6 @@ TEXT = {
         "car_year": lambda year: f"{year} ",
         "photo_year": lambda year: f"{year}",
         "photo_by": ", by ",
-        "photo_edited": ", edited",
         "sep": ", ",
         # edition.html
         "crumb_home": "Home",
@@ -181,7 +180,6 @@ TEXT = {
         "car_year": lambda year: f"{year}年式 ",
         "photo_year": lambda year: f"{year}年",
         "photo_by": "、撮影：",
-        "photo_edited": "、加工あり",
         "sep": "、",
         "crumb_home": "ホーム",
         "breadcrumb": "現在地",
