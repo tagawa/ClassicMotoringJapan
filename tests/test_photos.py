@@ -634,7 +634,7 @@ class PhotoSightingTests(unittest.TestCase):
         folded = re.search(r'(?s)<details class="all-cars">.*?</details>', html).group(0)
         self.assertIn("<summary>All 3 entry lists and 1 photo</summary>", folded)
         self.assertRegex(folded, r'<td><a href="\.\./\.\./events/meet-d/2026/">Meet D 2026</a></td>'
-                                 r'<td>Sun 10 May 2026</td><td>Photographed</td>')
+                                 r'<td>10 May 2026</td><td>Photographed</td>')
         ja = (site / "ja/cars/nissan/index.html").read_text(encoding="utf-8")
         folded_ja = re.search(r'(?s)<details class="all-cars">.*?</details>', ja).group(0)
         self.assertIn("<summary>エントリーリスト全3件と写真1件</summary>", folded_ja)

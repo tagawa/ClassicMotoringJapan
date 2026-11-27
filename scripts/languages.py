@@ -11,7 +11,7 @@ from markupsafe import Markup, escape
 
 import re
 
-from formatting import (WEEKDAYS_JA, fmt_domain, fmt_fee, fmt_fee_ja, fmt_month_ja, fmt_span, fmt_span_ja, fmt_weekday,
+from formatting import (WEEKDAYS_JA, fmt_domain, fmt_fee, fmt_fee_ja, fmt_month_ja, fmt_range_ja, fmt_span, fmt_span_ja, fmt_weekday,
                         mark_ja)
 from settings import COUNTRIES, PREFECTURES_JA
 from validate import BuildError
@@ -467,7 +467,7 @@ def group_text(page: dict, lang: str) -> dict:
         "totals": f"エントリーリスト{len(counted)}件に計{total}台",
         "lists_summary": f"エントリーリスト{'全' if len(page['lists']) > 1 else ''}{len(counted)}件"
                          + (f"と写真{photos}件" if photos else ""),
-        "lists": [{**x, "when": span_ja(x["row"]["ed"]["start"], x["row"]["ed"]["end"], year=True),
+        "lists": [{**x, "when": fmt_range_ja(x["row"]["ed"]["start"], x["row"]["ed"]["end"]),
                    "text": "撮影" if x["count"] is None else f"{x['count']}台"} for x in page["lists"]],
         "events": lines,
     }

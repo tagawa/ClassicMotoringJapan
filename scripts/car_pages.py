@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from datetime import date
 
-from formatting import fmt_span
+from formatting import fmt_range, fmt_span
 from settings import COUNTRIES, PAGE_MIN_EDITIONS
 from validate import make_slug
 
@@ -63,7 +63,7 @@ def _photo_editions(lists: list[dict], photos: list[dict], rows: list[dict]) -> 
         if r and key not in covered:
             found[key] = {"row": r, "count": None, "photo": True, "text": "Photographed",
                           "path": r["path"] if r["has_page"] else f"events/{r['slug']}/",
-                          "when": fmt_span(r["ed"]["start"], r["ed"]["end"], year=True)}
+                          "when": fmt_range(r["ed"]["start"], r["ed"]["end"])}
     return list(found.values())
 
 
@@ -141,7 +141,7 @@ def group_pages(rows: list[dict], groups: dict[str, list[str]], car_photos: dict
         for r in rows:
             n = sum(1 for car in r["cars"] or [] if owner.get(car["make"], car["make"]) == name)
             if n:
-                lists.append({"row": r, "count": n, "when": fmt_span(r["ed"]["start"], r["ed"]["end"], year=True),
+                lists.append({"row": r, "count": n, "when": fmt_range(r["ed"]["start"], r["ed"]["end"]),
                               "text": _n(n, "car"), "path": r["path"]})
         lists.reverse()
         events, folded = _sightings(lists, (car_photos or {}).get(name, []), rows)

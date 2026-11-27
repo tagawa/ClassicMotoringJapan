@@ -291,6 +291,15 @@ class CountsTests(CarsSiteCase):
         self.assertIn("3 cars", rows["Rally A"])
         self.assertIn("1 car", rows["Show B"])
 
+    def test_entry_lists_dated_without_weekdays(self):
+        # A past list is looked up by its date, not planned by its weekday (owner, 2026-11-28).
+        self.assertIn("14 Jun 2026", self.entry_rows()["Rally C"])
+        for rel, weekday in (("cars/nissan/index.html", r"\b(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\b"),
+                             ("ja/cars/nissan/index.html", r"\([月火水木金土日]\)")):
+            folded = re.search(r'(?s)<details class="all-cars">(.*?)</details>', self.page(rel)).group(1)
+            self.assertRegex(folded, r"14 Jun 2026|2026年6月14日")
+            self.assertNotRegex(folded, weekday)
+
     def test_display_table_make_links_too(self):
         self.assertIn('<a href="../../../cars/nissan/">Datsun</a></td>', self.page("events/show-b/2026/index.html"))
 

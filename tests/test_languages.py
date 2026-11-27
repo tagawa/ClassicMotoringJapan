@@ -382,7 +382,7 @@ class JapanesePagesTests(unittest.TestCase):
         self.assertIn('<a href="../../events/parade/">パレード</a>', html)
         self.assertIn(">2026年11月15日(日)</span>", html)
         self.assertIn('<a href="../../events/parade/2026/">2026年：1台（暫定）</a>', html)
-        self.assertIn('<a href="../../events/parade/2026/">パレード 2026年</a></td><td>2026年11月15日(日)</td><td>1台（暫定リスト）</td>', html)
+        self.assertIn('<a href="../../events/parade/2026/">パレード 2026年</a></td><td>2026年11月15日</td><td>1台（暫定リスト）</td>', html)
         self.assertIn("<summary>エントリーリスト全3件</summary>", html)
         self.assertIn('content="Bentleyが参加した日本のクラシックカーイベントと次回日程（公開エントリーリストより）。"', html)
         self.assertIn("<p>台数は、エントリーリストを公開しているイベントのみの集計です。</p>", html)

@@ -29,6 +29,15 @@ class JapaneseFormatTests(unittest.TestCase):
         self.assertEqual(formatting.fmt_span_ja(dt.date(2026, 12, 31), dt.date(2027, 1, 1)),
                          "2026年12月31日(木)〜2027年1月1日(金)")
 
+    def test_range_without_weekdays(self):
+        # A past date, as a make page's folded list gives it (spec, /cars/<group>/).
+        cases = [((2026, 10, 18), (2026, 10, 18), "2026年10月18日"),
+                 ((2026, 10, 24), (2026, 10, 25), "2026年10月24日〜25日"),
+                 ((2026, 10, 31), (2026, 11, 1), "2026年10月31日〜11月1日"),
+                 ((2026, 12, 31), (2027, 1, 1), "2026年12月31日〜2027年1月1日")]
+        for start, end, want in cases:
+            self.assertEqual(formatting.fmt_range_ja(dt.date(*start), dt.date(*end)), want)
+
     def test_month_heading(self):
         self.assertEqual(formatting.fmt_month_ja("2026-10"), "2026年10月")
 

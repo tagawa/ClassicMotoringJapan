@@ -186,6 +186,18 @@ def fmt_span_ja(start: dt.date, end: dt.date) -> str:
     return f"{start.month}月{day(start)}〜{end.month}月{day(end)}"
 
 
+def fmt_range_ja(start: dt.date, end: dt.date) -> str:
+    """fmt_range in Japanese: dates without weekdays, the year always given."""
+    head = f"{start.year}年{start.month}月{start.day}日"
+    if start == end:
+        return head
+    if start.year != end.year:
+        return f"{head}〜{end.year}年{end.month}月{end.day}日"
+    if start.month != end.month:
+        return f"{head}〜{end.month}月{end.day}日"
+    return f"{head}〜{end.day}日"
+
+
 def fmt_month_ja(key: str) -> str:
     year, month = key.split("-")
     return f"{year}年{int(month)}月"
