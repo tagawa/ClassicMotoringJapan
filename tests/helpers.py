@@ -151,11 +151,11 @@ GROUPS = "Nissan: [Nissan, Datsun, Prince, Nissan Diesel]\nAustin-Healey: [Austi
 
 # One edition per event: its slug, its year, its cars and, optionally, a dict of `verified`,
 # `as_of` and `day` (the one day it runs, 10 May unless given). Cars given as makes are an entry list; as (make, model) pairs, a
-# display list. Nissan's group is on 3 editions, so it gets a page; Lotus is on 2, and
-# Unknown on 2. meet-d, checked last, has no Nissan group car.
-NISSAN_LISTS = (("meet-a", 2025, ["Nissan", "Nissan", "Lotus"]),
+# display list. Nissan's group is on 3 editions, so it gets a page; Lotus is on 1, so it
+# does not, and Unknown is on 2. meet-d, checked last, has no Nissan group car.
+NISSAN_LISTS = (("meet-a", 2025, ["Nissan", "Nissan", "Lotus", "Lotus"]),
                 ("meet-b", 2026, ["Datsun", "Datsun", "Datsun"], {"verified": "2026-09-25"}),
-                ("meet-c", 2026, ["Nissan Diesel", "Lotus", "Unknown"]),
+                ("meet-c", 2026, ["Nissan Diesel", "Unknown"]),
                 ("meet-d", 2026, ["Unknown"], {"verified": "2026-10-05"}))
 
 

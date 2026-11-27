@@ -1,6 +1,7 @@
 # Photos on make pages (spec 4.12). Key: the make group, as named in make_groups.yml, or a make in no group.
+# file: the car, the event and the year, joined by underscores.
 Bandini:
-  - file: bandini-saloncino-coppa-di-tokyo-2024
+  - file: bandini-saloncino_coppa-di-tokyo_2024
     make: Bandini
     model: Saloncino
     car_year: 1968
@@ -10,3 +11,14 @@ Bandini:
     credit: Mr.choppers
     license: CC BY-SA 3.0
     source_url: "https://commons.wikimedia.org/wiki/File:1968_Bandini_1000_Berlinetta_Saloncino,_front_right_(Tokyo).jpg"
+Bristol:
+  - file: bristol-406_coppa-di-tokyo_2024
+    make: Bristol
+    model: "406"
+    car_year: 1960
+    event: coppa-di-tokyo
+    year: 2024
+    alt_en: A silver 1960 Bristol 406 saloon, rally number 26, driving along a Tokyo street
+    credit: Mr.choppers
+    license: CC BY-SA 3.0
+    source_url: "https://commons.wikimedia.org/wiki/File:1960_Bristol_406_in_Silver_(Tokyo),_front_right.jpg"

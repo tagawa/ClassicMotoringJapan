@@ -53,7 +53,7 @@ class GroupPageTests(CarsSiteCase):
     def test_three_editions_get_a_page(self):
         self.assertTrue((self.out / "cars/nissan/index.html").is_file())
 
-    def test_two_editions_line_no_page(self):
+    def test_one_edition_line_no_page(self):
         self.assertFalse((self.out / "cars/lotus").exists())
         self.assertNotIn("<a ", self.index_line("Lotus"))
 
@@ -133,10 +133,10 @@ class GroupPageTests(CarsSiteCase):
         self.assertNotIn("cars at", body)
 
     def test_counts_are_numbers_only(self):
-        # Nissan: 2 cars at meet-a; Datsun: 3 at meet-b; Lotus: 1 each at meet-a and meet-c.
+        # Nissan: 2 cars at meet-a; Datsun: 3 at meet-b; Lotus: 2 at meet-a.
         self.assertEqual(self.cells(self.index_line("Nissan"))[1:], ["2", "1"])
         self.assertEqual(self.cells(self.index_line("Datsun"))[1:], ["3", "1"])
-        self.assertEqual(self.cells(self.index_line("Lotus"))[1:], ["2", "2"])
+        self.assertEqual(self.cells(self.index_line("Lotus"))[1:], ["2", "1"])
         self.assertIn('<td class="num">2</td>', self.index_line("Lotus"))
 
     def test_cars_pages_are_byte_identical(self):
@@ -166,8 +166,8 @@ class GroupPageTests(CarsSiteCase):
     def test_make_without_page_is_not_linked(self):
         html = self.page("events/meet-c/2026/index.html")
         self.assertIn('<a href="../../../cars/nissan/">Nissan Diesel</a></td>', html)
-        self.assertRegex(html, r"</svg>Lotus</td>")
         self.assertIn(">Unknown</td>", html)
+        self.assertRegex(self.page("events/meet-a/2025/index.html"), r"</svg>Lotus</td>")
 
     def test_api_has_no_cars_pages(self):
         api = self.page("api/events.json")
@@ -251,8 +251,11 @@ class CountsTests(CarsSiteCase):
         self.assertNotIn("<svg", self.index_line("Ford"))
         self.assertEqual(self.page("cars/index.html").count('<g id="flag-gb">'), 1)
 
+    def test_a_display_list_counts_towards_the_bar(self):
+        # Lotus is on rally-a's entry list and show-b's display list only.
+        self.assertTrue((self.out / "cars/lotus/index.html").is_file())
+
     def test_group_totals_count_models_as_cars(self):
-        # Also proves the display list counts towards the 3-edition bar: the page exists.
         text = text_of(self.page("cars/nissan/index.html"))
         self.assertIn("6 cars on 3 entry lists.", text)
         self.assertNotIn("model", text)
@@ -415,6 +418,15 @@ class EventsSectionTests(unittest.TestCase):
 
     def test_dates_carry_their_first_and_last_day(self):
         self.assertEqual(self.dates("cancelled-later")[0][:2], ("2026-05-10", "2026-05-10"))
+
+
+class TwoEditionsTests(CarsSiteCase):
+    """Two lists are enough for a page (owner, 2026-11-27: Bristol)."""
+    LISTS = (("meet-a", 2025, ["Lotus"]), ("meet-b", 2026, ["Lotus"]))
+
+    def test_two_editions_get_a_page(self):
+        self.assertTrue((self.out / "cars/lotus/index.html").is_file())
+        self.assertIn('href="lotus/"', self.index_line("Lotus"))
 
 
 class UnknownOnThreeEditionsTests(CarsSiteCase):

@@ -17,6 +17,8 @@ from settings import COUNTRIES, PAGE_MIN_EDITIONS, PREFECTURES_JA, SHARE_SIZE
 
 STATUSES = {"confirmed", "tentative", "cancelled"}
 SLUG_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
+# A make-page photo's name: slugs for its parts, joined by underscores (bristol-406_coppa-di-tokyo_2024).
+CAR_PHOTO_FILE_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*(_[a-z0-9]+(-[a-z0-9]+)*)*$")
 EDITION_FILE_RE = re.compile(r"^(?P<year>\d{4})(?:-(?P<edition>[a-z0-9]+(?:-[a-z0-9]+)*))?$")
 # Japan's bounding box, Yonaguni to Minamitorishima. A swapped or mistyped pair lands
 # outside it, which is the only coordinate mistake a build can catch on its own.
@@ -674,7 +676,11 @@ def load_car_photos(data_dir: Path, groups: dict[str, list[str]], events: dict, 
             if not _check_fields(ph, CAR_PHOTO_REQUIRED, CAR_PHOTO_OPTIONAL, at, errors):
                 continue
             file = ph.get("file")
-            if not isinstance(file, str) or not _check_slug(file, f"{at}: file", errors):
+            if not isinstance(file, str):
+                continue
+            if not CAR_PHOTO_FILE_RE.match(file):
+                errors.append(f"{at}: file {file!r} must be lowercase letters, digits and hyphens, with one "
+                              f"underscore between its parts, e.g. bristol-406_coppa-di-tokyo_2024")
                 continue
             if file in named:
                 errors.append(f"{at}: {file} is named twice; each photo file belongs to one entry")

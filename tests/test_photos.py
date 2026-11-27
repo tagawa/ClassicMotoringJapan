@@ -323,7 +323,7 @@ class CarPhotoValidationTests(unittest.TestCase):
 
     def test_a_group_without_a_page_is_refused(self):
         msg = self.errors({"Lotus": [{**CAR_PHOTO, "make": "Lotus"}]})
-        self.assertIn("Lotus has no make page yet; it gets one at 3 entry lists", msg)
+        self.assertIn("Lotus has no make page yet; it gets one at 2 entry lists", msg)
 
     def test_a_make_outside_the_group_is_refused(self):
         msg = self.errors({"Nissan": [{**CAR_PHOTO, "make": "Lotus"}]})
@@ -367,6 +367,18 @@ class CarPhotoValidationTests(unittest.TestCase):
 
     def test_an_entry_with_no_file_is_refused(self):
         self.assertIn("photos/cars/datsun-meet-b.jpg", self.errors({"Nissan": [CAR_PHOTO]}, files=()))
+
+    def test_a_file_name_may_join_slugs_with_underscores(self):
+        # The car, the event, the year (owner, 2026-11-27).
+        name = "datsun-fairlady_meet-b_2026"
+        self.accepts({"Nissan": [{**CAR_PHOTO, "file": name}]}, files=(name,))
+
+    def test_a_file_name_that_is_not_slugs_joined_by_underscores_is_refused(self):
+        for name in ("Datsun_meet", "datsun__meet", "_datsun", "datsun_", "datsun_-meet", "datsun meet"):
+            with self.subTest(name):
+                shutil.rmtree(self.tmp)
+                msg = self.errors({"Nissan": [{**CAR_PHOTO, "file": name}]}, files=())
+                self.assertIn(f"file {name!r}", msg)
 
     def test_a_file_named_twice_is_refused(self):
         # A third Lotus list gives Lotus a page too.
